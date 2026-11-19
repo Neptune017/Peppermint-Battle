@@ -84,7 +84,8 @@ const livingToyLibrary = [
   { id: 'lt-raterrot', title: 'Zodiac', name: 'Raterrot', type: 'Creature', maxCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/ZodiacRaterrot.png', ability: "On summon, if Fritz is on the field, draw an Avatar Gem." },
   { id: 'toy-store', title: 'Pocket World', name: 'Toy Store', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', ability: 'While on the field, all 1-cost Fighters and Creatures gain +1 attack.' },
 ];
-const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy' };
+const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', fun: 'Fun Deck' };
+function allCardCatalog() { return [...new Map([...cardLibrary, ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary].map((card) => [card.id, card])).values()]; }
 let selectedPlayerDeck = 'academy';
 let selectedRivalDeck = 'wild-west';
 const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false };
@@ -119,15 +120,15 @@ function shuffleDeck(cards) {
   return cards;
 }
 function newPlayer(isAI = false, deckId = 'academy') {
-  const sourceCards = deckId === 'wild-west' ? wildWestLibrary : deckId === 'island-paradise' ? islandParadiseLibrary : deckId === 'living-toy' ? livingToyLibrary : cardLibrary;
+  const sourceCards = deckId === 'fun' ? allCardCatalog() : deckId === 'wild-west' ? wildWestLibrary : deckId === 'island-paradise' ? islandParadiseLibrary : deckId === 'living-toy' ? livingToyLibrary : cardLibrary;
   const baseCards = sourceCards.filter((card) => card.type !== 'Transformation');
-  const deckPool = ['island-paradise', 'living-toy'].includes(deckId)
+  const deckPool = deckId === 'fun' ? baseCards.map(cloneCard) : ['island-paradise', 'living-toy'].includes(deckId)
     ? baseCards.flatMap((card) => Array.from({ length: card.deckCopies ?? card.maxCopies ?? (!card.type || card.type === 'Fighter' ? 1 : 3) }, () => cloneCard(card)))
     : Array.from({ length: 24 }, (_, i) => cloneCard(baseCards[i % baseCards.length]));
-  const deck = shuffleDeck(deckPool).slice(0, 24);
+  const deck = deckId === 'fun' ? shuffleDeck(deckPool) : shuffleDeck(deckPool).slice(0, 24);
   const avatarGem = baseCards.find((card) => card.id === 'avatar-gem');
   if (avatarGem && !deck.some((card) => card.id === 'avatar-gem') && deck.length) { deck[deck.length - 1] = cloneCard(avatarGem); shuffleDeck(deck); }
-  const transformationDeck = [...cardLibrary, ...islandParadiseLibrary, ...livingToyLibrary].filter((card) => card.type === 'Transformation').map(cloneCard);
+  const transformationDeck = allCardCatalog().filter((card) => card.type === 'Transformation').map(cloneCard);
   const lifeCards = deck.splice(0, 4);
   return { hand: deck.splice(0, 4), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
