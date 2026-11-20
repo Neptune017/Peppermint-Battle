@@ -431,6 +431,8 @@ function render() {
   const fieldBackgrounds = { 'academy-grounds': 'academy-grounds', 'ip-field': 'island-paradise', 'toy-store': 'toy-store', 'christmas-mall': 'christmas-mall' };
   const fieldName = match.fieldCard ? fieldNames[match.fieldCard.id] || 'Grass Plain' : '';
   if (match.fieldCard) {
+    if (match.fieldCard.card?.instance) fieldZone.dataset.cardPreview = match.fieldCard.card.instance;
+    else delete fieldZone.dataset.cardPreview;
     const background = fieldBackgrounds[match.fieldCard.id] || 'grass-plain';
     const mallUseKey = `${match.turn}-${match.active}`;
     const mallUsed = match.fieldCard.usedTurnKeys?.includes(mallUseKey);
@@ -439,6 +441,7 @@ function render() {
     fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.png')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>${mallButton}`;
   } else {
     fieldZone.innerHTML = '';
+    delete fieldZone.dataset.cardPreview;
   }
   fieldZone.classList.toggle('hidden', !match.fieldCard);
   document.getElementById('player-life-count').textContent = lifeCount(match.player);
@@ -460,6 +463,7 @@ function render() {
 function getSelected() { return match.player.hand.find((c) => c.instance === match.selected); }
 function cardOwner(card) {
   for (const owner of [match.player, match.opponent]) if (owner && (owner.hand.includes(card) || owner.lanes.includes(card) || owner.destroyed.includes(card))) return owner;
+  if (match.fieldCard?.card === card) return match.fieldCard.owner === 'player' ? match.player : match.opponent;
   return null;
 }
 function isTouchInput() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
@@ -1415,7 +1419,7 @@ document.addEventListener('click', (event) => {
         hideCardTooltip();
       } else if (!tooltip.classList.contains('visible') || tooltip.dataset.previewCard !== preview.dataset.cardPreview) {
         touchCardDetailsArmed = null;
-        const card = [match.player, match.opponent].filter(Boolean).flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).find((item) => item?.instance === preview.dataset.cardPreview);
+        const card = [match.player, match.opponent].filter(Boolean).flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).concat(match.fieldCard?.card || []).find((item) => item?.instance === preview.dataset.cardPreview);
         showCardTooltip(card, event);
         return;
       } else {
@@ -1624,7 +1628,7 @@ document.addEventListener('pointerover', (event) => {
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (event.relatedTarget?.closest?.('[data-card-preview]') === preview) return;
-  const card = [match.player, match.opponent].flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).find((item) => item?.instance === preview.dataset.cardPreview);
+  const card = [match.player, match.opponent].flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).concat(match.fieldCard?.card || []).find((item) => item?.instance === preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
 document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
