@@ -243,3 +243,5 @@ body.card-dragging{cursor:grabbing;user-select:none}
 .tooltip-class-icon{width:18px;height:18px;flex-basis:18px}
 
 @media(max-width:520px){.hand-card .card-name{font-size:8px;line-height:1}.hand-card .card-topline{font-size:5px;letter-spacing:.05em}.battle-card .card-heading{display:none}}
+.winter-ball-option{background:radial-gradient(circle at 80% 20%,#8bdfff38,transparent 54%),linear-gradient(145deg,#203d55,#211e2d);border-color:#8bdfff66}.winter-ball-option:hover,.winter-ball-option:focus-visible{border-color:#bcefff;box-shadow:0 8px 24px #55b9ec33}.winter-ball-option.selected{border-color:#bcefff;box-shadow:inset 0 0 0 1px #bcefff66,0 0 18px #55b9ec44}.hand-ability-trigger{position:absolute;z-index:6;top:5px;right:5px;border:1px solid #bcefff;border-radius:5px;background:#18334d;color:#e8faff;font-size:8px;font-weight:800;padding:4px 6px;cursor:pointer}
+.world-field-action{align-self:flex-start;margin:2px 0 0 41px;padding:5px 8px;border:1px solid #dce7ac99;border-radius:5px;background:#273b2e;color:#eff8d6;font:700 7px 'DM Mono',monospace;letter-spacing:.06em;cursor:pointer}.world-field-action:disabled{opacity:.45;cursor:default}
