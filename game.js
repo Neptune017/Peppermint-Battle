@@ -370,6 +370,8 @@ function cardOwner(card) {
   for (const owner of [match.player, match.opponent]) if (owner && (owner.hand.includes(card) || owner.lanes.includes(card) || owner.destroyed.includes(card))) return owner;
   return null;
 }
+function isTouchInput() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
+let touchCardDetailsArmed = null;
 function showCardTooltip(card, event) {
   if (!card) return;
   const tooltip = document.getElementById('card-tooltip'); const owner = cardOwner(card);
@@ -381,11 +383,19 @@ function showCardTooltip(card, event) {
     const modifier = breakdown.modifiers.length ? `<div class="tooltip-modifier-list">${breakdown.modifiers.map(({ amount, source }) => `<span class="tooltip-modifier ${amount > 0 ? 'modifier-up' : 'modifier-down'}">${amount > 0 ? '+' : '−'}${Math.abs(amount)} ${source}</span>`).join('')}</div>` : '';
     return `<div class="tooltip-stats"><span>⚔ <b>${breakdown.total}</b> attack</span><span>✧ <b>${card.cost}</b> energy</span></div>${modifier}`;
   })();
+  const inPlayerHand = owner === match.player && match.player.hand.includes(card);
+  const canUseFromHand = inPlayerHand && match.active === 'player' && !match.over && card.cost <= match.energy;
+  const openLanes = isTouchInput() && canUseFromHand && card.type !== 'Action' && canSummonCard(match.player, card)
+    ? match.player.lanes.map((unit, index) => unit ? '' : `<button type="button" data-tooltip-summon="${card.instance}" data-lane="${index}">SUMMON · LANE ${index + 1}</button>`).join('') : '';
+  const controls = isTouchInput() && canUseFromHand && card.type === 'Action'
+    ? `<div class="tooltip-card-controls"><button type="button" data-tooltip-use="${card.instance}">USE ACTION</button></div>`
+    : openLanes ? `<div class="tooltip-card-controls">${openLanes}</div>` : '';
   const artwork = card.art ? `<img src="${card.art}" alt="" />` : '<div class="tooltip-art-fallback">✦</div>';
   const classAbility = classAbilities[card.role] ? `<div class="tooltip-class-ability"><b>${card.role} class ability</b><span>${classAbilities[card.role]}</span></div>` : '';
   const tooltipIcon = elementIcons[card.element] ? `<img class="element-icon" src="assets/icons/${elementIcons[card.element]}.png" alt="" />` : '';
   const elementLabel = card.type === 'Action' || card.element === 'None' ? 'No element' : card.element;
-  tooltip.innerHTML = `<div class="tooltip-art">${artwork}</div><div class="tooltip-body"><div class="tooltip-kicker">${card.title} · ${tooltipIcon}${elementLabel}</div><strong class="tooltip-name">${card.name}</strong><div class="tooltip-class">${card.role}</div>${details}${classAbility}<div class="tooltip-card-ability"><b>CARD EFFECT</b><span>${card.ability}</span></div>${card.skipAttackThisTurn ? '<div class="tooltip-modifier frozen-note">Frozen: cannot attack this turn</div>' : ''}${laneIndex >= 0 ? `<div class="tooltip-status">FIELD · LANE ${laneIndex + 1}</div>` : ''}</div>`;
+  tooltip.innerHTML = `<button class="tooltip-dismiss" type="button" aria-label="Close card details">×</button><div class="tooltip-art">${artwork}</div><div class="tooltip-body"><div class="tooltip-kicker">${card.title} · ${tooltipIcon}${elementLabel}</div><strong class="tooltip-name">${card.name}</strong><div class="tooltip-class">${card.role}</div>${details}${classAbility}<div class="tooltip-card-ability"><b>CARD EFFECT</b><span>${card.ability}</span></div>${card.skipAttackThisTurn ? '<div class="tooltip-modifier frozen-note">Frozen: cannot attack this turn</div>' : ''}${laneIndex >= 0 ? `<div class="tooltip-status">FIELD · LANE ${laneIndex + 1}</div>` : ''}</div>${controls}`;
+  tooltip.dataset.previewCard = card.instance; tooltip.classList.toggle('mobile-open', isTouchInput());
   tooltip.classList.add('visible'); tooltip.setAttribute('aria-hidden', 'false'); positionCardTooltip(event);
 }
 function positionCardTooltip(event) {
@@ -394,7 +404,7 @@ function positionCardTooltip(event) {
   const top = event.clientY + rect.height + 18 < window.innerHeight ? event.clientY + 18 : Math.max(12, event.clientY - rect.height - 16);
   tooltip.style.left = `${Math.max(12, left)}px`; tooltip.style.top = `${top}px`;
 }
-function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible'); tooltip.setAttribute('aria-hidden', 'true'); } }
+function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); } }
 function showZoneCards(side, zoneKind) {
   const owner = side === 'player' ? match.player : match.opponent;
   const cards = zoneKind === 'transform' ? owner.transformationDeck : owner.destroyed;
@@ -412,6 +422,7 @@ function playCard(cardId, laneIndex) {
   const card = match.player.hand.find((c) => c.instance === cardId);
   if (!card || card.type === 'Action' || match.active !== 'player' || match.player.lanes[laneIndex] || card.cost > match.energy) return;
   if (!canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; }
+  match.attackMode = false; match.attackerLane = null;
   match.energy -= card.cost; match.player.hand.splice(match.player.hand.indexOf(card), 1); card.ready = false; match.player.lanes[laneIndex] = card; match.selected = null; render(); animateSummon(match.player, laneIndex, card).then(() => triggerOnSummon(card, match.player, laneIndex));
 }
 function canSummonCard(owner, card) { return card?.id !== 'vishnu' || Boolean(owner?.lanes.some((unit) => unit?.name === 'Peppermint')); }
@@ -796,7 +807,8 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   const targetName = target.type === 'life' ? `${battleSideName(defender)}'s ${target.main ? 'Main Life' : `Life Zone ${target.index + 1}`}` : defender.lanes[targetLane]?.name || `${battleSideName(defender)}'s lane ${targetLane + 1}`;
   logBattleEvent(`${battleSideName(from)} ${attacker.name} attacked ${targetName}.`, from === match.player ? 'player' : 'enemy');
   attacker.attacked = true;
-  attacker.attacksThisTurn = (attacker.attacksThisTurn || 0) + 1;
+  if (attacker.npcAttackReserved) delete attacker.npcAttackReserved;
+  else attacker.attacksThisTurn = (attacker.attacksThisTurn || 0) + 1;
   const attackPower = effectiveAttack(attacker, from, { attacking: true, targetIndex: targetLane });
   attacker.attacking = false; attacker.attackTargetIndex = null;
   if (target.type === 'life') {
@@ -936,10 +948,14 @@ function runNpcAttacks(index = 0) {
   }
   if (index >= 3) { window.setTimeout(startPlayerTurn, 350); return; }
   const card = match.opponent.lanes[index];
+  card.attacked = true;
+  card.attacksThisTurn = (card.attacksThisTurn || 0) + 1;
+  card.npcAttackReserved = true;
   animateAttack(match.opponent, index, (finalTarget) => battle(card, index, match.opponent, finalTarget), target);
   window.setTimeout(() => runNpcAttacks(card.id === 'ip-coyote' && (card.attacksThisTurn || 0) < 2 ? index : index + 1), 980);
 }
 function rivalTurn() {
+  if (match.active !== 'transition' || match.over) return;
   logBattleEvent('Enemy turn began.', 'enemy');
   match.active = 'opponent'; match.drawn = false;
   if (match.secondPlayerBonusPending) { match.energy = match.maxEnergy + 1; match.secondPlayerBonusPending = false; }
@@ -980,7 +996,7 @@ function startPlayerTurn() {
   activateIslandTurnEffects(match.player);
   drawCard(match.player); match.drawn = true; render();
 }
-function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
+function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
 function endMatch(won) {
   match.over = true;
   document.getElementById('result-title').textContent = won ? 'Victory!' : 'The rival wins';
@@ -1051,6 +1067,40 @@ function selectAttackerFromClick(index) {
   return true;
 }
 document.addEventListener('click', (event) => {
+  if (Date.now() < suppressHandClickUntil && event.target.closest('.hand-card, .lane, .battle-card')) { event.preventDefault(); return; }
+  const tooltipUse = event.target.closest('[data-tooltip-use]');
+  if (tooltipUse) { const id = tooltipUse.dataset.tooltipUse; hideCardTooltip(); match.attackMode = false; match.attackerLane = null; match.selected = null; activateAction(match.player, id); return; }
+  const tooltipSummon = event.target.closest('[data-tooltip-summon]');
+  if (tooltipSummon) { const id = tooltipSummon.dataset.tooltipSummon; const lane = Number(tooltipSummon.dataset.lane); hideCardTooltip(); playCard(id, lane); return; }
+  if (event.target.closest('#card-tooltip') && !event.target.closest('.tooltip-dismiss')) return;
+  if (isTouchInput()) {
+    const tooltip = document.getElementById('card-tooltip');
+    if (event.target.closest('.tooltip-dismiss')) { touchCardDetailsArmed = tooltip.dataset.previewCard || null; hideCardTooltip(); return; }
+    if (event.target.closest('#card-tooltip')) return;
+    const libraryCard = event.target.closest('.library-card');
+    if (libraryCard) {
+      document.querySelectorAll('.library-card.mobile-art-open').forEach((card) => { if (card !== libraryCard) card.classList.remove('mobile-art-open'); });
+      libraryCard.classList.toggle('mobile-art-open');
+      hideCardTooltip();
+      return;
+    }
+    const preview = event.target.closest('[data-card-preview]');
+    if (preview && !event.target.closest('button')) {
+      if (touchCardDetailsArmed === preview.dataset.cardPreview) {
+        touchCardDetailsArmed = null;
+        hideCardTooltip();
+      } else if (!tooltip.classList.contains('visible') || tooltip.dataset.previewCard !== preview.dataset.cardPreview) {
+        touchCardDetailsArmed = null;
+        const card = [match.player, match.opponent].filter(Boolean).flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).find((item) => item?.instance === preview.dataset.cardPreview);
+        showCardTooltip(card, event);
+        return;
+      } else {
+        touchCardDetailsArmed = null;
+        hideCardTooltip();
+      }
+    } else if (tooltip.classList.contains('visible')) hideCardTooltip();
+    document.querySelectorAll('.library-card.mobile-art-open').forEach((card) => card.classList.remove('mobile-art-open'));
+  }
   const libraryTab = event.target.closest('[data-library-deck]');
   if (libraryTab) { renderCardLibrary(libraryTab.dataset.libraryDeck); return; }
   const inspectedZone = event.target.closest('.inspect-zone');
@@ -1098,22 +1148,95 @@ document.addEventListener('click', (event) => {
 document.getElementById('attack-button').addEventListener('click', () => { if (match.active !== 'player' || match.attackResolving) return; match.selected = null; match.attackMode = !match.attackMode; match.attackerLane = null; render(); });
 document.getElementById('end-turn').addEventListener('click', endPlayerTurn);
 document.getElementById('give-up').addEventListener('click', giveUp);
+let handDragCandidate = null;
+let activeCardDrag = null;
+let suppressHandClickUntil = 0;
+function clearCardDrag() {
+  document.querySelectorAll('.drag-drop-target,.drag-action-target').forEach((node) => node.classList.remove('drag-drop-target', 'drag-action-target'));
+  document.querySelectorAll('.hand-card.dragging').forEach((node) => node.classList.remove('dragging'));
+  activeCardDrag?.ghost?.remove();
+  document.body.classList.remove('card-dragging');
+  activeCardDrag = null;
+  handDragCandidate = null;
+}
+document.addEventListener('pointerdown', (event) => {
+  const handCard = event.target.closest('.hand-card');
+  if (!handCard || event.target.closest('button') || event.button === 2 || match.active !== 'player' || match.over) return;
+  const card = match.player.hand.find((item) => item.instance === handCard.dataset.id);
+  if (!card || card.cost > match.energy) return;
+  handDragCandidate = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, card, element: handCard };
+});
+document.addEventListener('pointermove', (event) => {
+  if (!handDragCandidate || event.pointerId !== handDragCandidate.pointerId) return;
+  const dx = event.clientX - handDragCandidate.x;
+  const dy = event.clientY - handDragCandidate.y;
+  if (!activeCardDrag) {
+    if (Math.hypot(dx, dy) < 9) return;
+    if (isTouchInput() && Math.abs(dx) > Math.abs(dy) * 1.15) { handDragCandidate = null; return; }
+    const ghost = handDragCandidate.element.cloneNode(true);
+    ghost.classList.add('drag-ghost');
+    document.body.append(ghost);
+    handDragCandidate.element.classList.add('dragging');
+    document.body.classList.add('card-dragging');
+    try { handDragCandidate.element.setPointerCapture(event.pointerId); } catch {}
+    activeCardDrag = { ...handDragCandidate, ghost };
+  }
+  event.preventDefault();
+  activeCardDrag.ghost.style.left = `${event.clientX}px`;
+  activeCardDrag.ghost.style.top = `${event.clientY}px`;
+  document.querySelectorAll('.drag-drop-target,.drag-action-target').forEach((node) => node.classList.remove('drag-drop-target', 'drag-action-target'));
+  const under = document.elementFromPoint(event.clientX, event.clientY);
+  if (activeCardDrag.card.type === 'Action') {
+    const board = under?.closest('#player-board, .player-life, .player-field-zone, .battlefield');
+    if (board) board.classList.add('drag-action-target');
+  } else {
+    const lane = under?.closest('.lane[data-side="player"]');
+    const index = lane ? Number(lane.dataset.lane) : -1;
+    if (lane && index >= 0 && !match.player.lanes[index] && canSummonCard(match.player, activeCardDrag.card)) lane.classList.add('drag-drop-target');
+  }
+}, { passive: false });
+document.addEventListener('pointerup', (event) => {
+  if (!handDragCandidate || event.pointerId !== handDragCandidate.pointerId) return;
+  if (activeCardDrag) {
+    const drag = activeCardDrag;
+    const under = document.elementFromPoint(event.clientX, event.clientY);
+    const lane = under?.closest('.lane[data-side="player"]');
+    const laneIndex = lane ? Number(lane.dataset.lane) : -1;
+    const overBoard = !!under?.closest('#player-board, .player-life, .player-field-zone, .battlefield, .lane');
+    suppressHandClickUntil = Date.now() + 450;
+    clearCardDrag();
+    if (drag.card.type === 'Action' && overBoard) {
+      match.attackMode = false; match.attackerLane = null; match.selected = null;
+      activateAction(match.player, drag.card.instance);
+    } else if (laneIndex >= 0 && !match.player.lanes[laneIndex]) playCard(drag.card.instance, laneIndex);
+  } else handDragCandidate = null;
+});
+document.addEventListener('pointercancel', (event) => { if (handDragCandidate?.pointerId === event.pointerId) clearCardDrag(); });
 document.addEventListener('keydown', (event) => {
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.inspect-zone')) { event.preventDefault(); showZoneCards(event.target.dataset.zoneSide, event.target.dataset.zoneKind); }
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.battle-card[role="button"]')) { event.preventDefault(); selectAttackerFromClick(Number(event.target.dataset.lane)); }
 });
 document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
 document.addEventListener('pointerover', (event) => {
+  if (isTouchInput()) return;
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (event.relatedTarget?.closest?.('[data-card-preview]') === preview) return;
   const card = [match.player, match.opponent].flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).find((item) => item?.instance === preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
-document.addEventListener('pointermove', positionCardTooltip);
+document.addEventListener('pointermove', (event) => { if (!isTouchInput() && !event.target.closest('#card-tooltip') && !activeCardDrag) positionCardTooltip(event); });
 document.addEventListener('pointerout', (event) => {
+  if (isTouchInput()) return;
   const preview = event.target.closest('[data-card-preview]');
-  if (preview && !event.relatedTarget?.closest?.('[data-card-preview]')) hideCardTooltip();
+  const tooltip = document.getElementById('card-tooltip');
+  const related = event.relatedTarget;
+  if (event.target.closest('#card-tooltip')) {
+    if (related?.closest?.('#card-tooltip')) return;
+    if (related?.closest?.('[data-card-preview]')?.dataset.cardPreview === tooltip.dataset.previewCard) return;
+    hideCardTooltip(); return;
+  }
+  if (preview && !related?.closest?.('[data-card-preview]') && !related?.closest?.('#card-tooltip')) hideCardTooltip();
 });
 document.getElementById('effect-options').addEventListener('click', (event) => {
   const button = event.target.closest('[data-choice]');
