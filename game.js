@@ -64,7 +64,7 @@ const islandParadiseLibrary = [
   { id: 'ip-octospray', title: 'Island Paradise', name: 'Octospray', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/IslandParadiseOctospray.png', ability: 'After this is attacked, the attacking enemy loses 1 attack.' },
   { id: 'ip-field', title: 'Pocket World', name: 'Island Paradise', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/grok-image-13122f78-d1ea-4d68-a0d7-659c5b1cb2ae.png', ability: 'Island Paradise fighters cannot be targeted by attacks, but do not defend their lane’s Life Zone.' },
   { id: 'ip-coyote-zodiac', title: 'Zodiac Guardian', name: 'Coyote', type: 'Transformation', cost: 0, attack: 5, element: 'Mind', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.png', ability: 'Gains 1 attack for each Brawler in your Pandemonium Zone.' },
-  { id: 'ip-chase-zodiac', title: 'Zodiac Guardian', name: 'Chase', type: 'Transformation', cost: 0, attack: 5, element: 'Mind', role: 'Brawler', art: 'assets/cards/IslandParadiseChase.png', ability: 'Gains 1 attack for each Aqua card in your Pandemonium Zone.' },
+  { id: 'ip-chase-zodiac', title: 'Zodiac Guardian', name: 'Chase', type: 'Transformation', cost: 0, attack: 5, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseChase.png', ability: 'Gains 1 attack for each Aqua card in your Pandemonium Zone.' },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 3, deckCopies: 1 },
 ];
 const livingToyLibrary = [
