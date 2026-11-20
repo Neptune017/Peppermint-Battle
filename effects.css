@@ -12,8 +12,8 @@
 .life-card.main-life span{top:6px}
 .life-card{overflow:visible}
 .attack-boost{font:700 7px 'DM Mono',monospace;font-style:normal;color:#baffd4;background:#154b36;border:1px solid #91e2c070;border-radius:4px;padding:1px 3px;vertical-align:2px;margin:0 2px}.attack-reduced{color:#ffc5bc;background:#552d37;border-color:#ed9e9b77}
-.card-ability-trigger,.hand-ability-trigger{position:absolute;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.card-ability-trigger{right:3px;top:27px}.hand-ability-trigger{right:7px;top:auto;bottom:39px}.card-ability-trigger:disabled{opacity:.38;cursor:not-allowed}
-.hand-special-trigger{position:absolute;right:7px;top:auto;bottom:39px;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.hand-special-trigger:disabled{opacity:.38;cursor:not-allowed}.world-status{width:100%;margin-top:-9px;padding:8px 4px;border-top:1px solid #f5ce7944;color:#f5ce79;font:8px 'DM Mono',monospace;letter-spacing:.04em;line-height:1.45}
+.card-ability-trigger{position:absolute;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.card-ability-trigger{right:3px;top:27px}.card-ability-trigger:disabled{opacity:.38;cursor:not-allowed}
+.world-status{width:100%;margin-top:-9px;padding:8px 4px;border-top:1px solid #f5ce7944;color:#f5ce79;font:8px 'DM Mono',monospace;letter-spacing:.04em;line-height:1.45}
 .freeze-mark{position:absolute;right:5px;top:6px;z-index:3;border:1px solid #a6eaff99;border-radius:50%;width:18px;height:18px;display:grid;place-items:center;background:#183d59;color:#c4f3ff;font-size:11px;box-shadow:0 0 12px #71c9ff88}
 .direct-life-target{cursor:crosshair;border-color:#71c9ff!important;box-shadow:0 0 13px #71c9ff77,inset 0 0 11px #71c9ff33!important;animation:lifeTargetPulse 1s ease-in-out infinite alternate}
 .card-art-fallback{position:absolute;inset:0;display:grid;place-items:center;padding:12px;text-align:center;color:var(--element-light,#fff);font:700 14px Manrope,sans-serif;background:radial-gradient(circle at 50% 25%,color-mix(in srgb,var(--element,#b7a7c2) 50%,transparent),#15121f 85%)}
@@ -241,3 +241,5 @@ body.card-dragging{cursor:grabbing;user-select:none}
 .tooltip-element-chip,.tooltip-class-chip{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .tooltip-class-chip{color:var(--element-light,#d6c9e7)}
 .tooltip-class-icon{width:18px;height:18px;flex-basis:18px}
+
+@media(max-width:520px){.hand-card .card-name{font-size:8px;line-height:1}.hand-card .card-topline{font-size:5px;letter-spacing:.05em}.battle-card .card-heading{display:none}}

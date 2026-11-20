@@ -238,7 +238,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const attacking = compact && (card.attacking || (!enemy && match.attackMode && laneIndex === match.attackerLane));
   const attackInfo = compact ? attackBreakdown(card, owner, { attacking, targetIndex: card.attackTargetIndex ?? (attacking ? laneIndex : null) }) : { total: card.attack + (card.attackBonus || 0), change: card.attackBonus || 0, reasons: card.attackBonus ? ['Card effect'] : [], sources: card.attackBonusSources || (card.attackBonus ? [card.name] : []) };
   const attackBadge = attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
-  const actionButton = compact && !enemy && ['zoya','ww-medusa','ip-croaktail'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Use ${card.name}’s once-per-turn effect">USE</button>` : (!compact && card.id === 'peppermint-ally' ? `<button class="hand-special-trigger" data-id="${card.instance}" ${match.fieldCard?.id === 'academy-grounds' ? 'disabled' : ''}>USE</button>` : (!compact && card.type === 'Action' ? `<button class="hand-ability-trigger ${card.id === 'avatar-gem' ? 'avatar-gem-action' : ''}" data-id="${card.instance}" title="${card.ability}">USE</button>` : ''));
+  const actionButton = compact && !enemy && ['zoya','ww-medusa','ip-croaktail'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Use ${card.name}’s once-per-turn effect">USE</button>` : '';
   const freezeBadge = compact && card.skipAttackThisTurn ? '<span class="freeze-mark" title="Cannot attack this turn">❄</span>' : '';
   const handArtClass = !compact && ['ww-academy-rick'].includes(card.id) ? ' hand-art-rick' : !compact && ['academy-lynda', 'ww-academy-lynda'].includes(card.id) ? ' hand-art-lynda' : '';
   const art = card.art ? `<img class="card-art${handArtClass}" src="${card.art}" alt="${card.name}" />` : `<div class="card-art-fallback">${card.name}</div>`;
@@ -1181,10 +1181,6 @@ document.addEventListener('click', (event) => {
   if (inspectedZone) { showZoneCards(inspectedZone.dataset.zoneSide, inspectedZone.dataset.zoneKind); return; }
   const abilityButton = event.target.closest('.card-ability-trigger');
   if (abilityButton) { const lane = abilityButton.closest('.lane'); if (lane) { const index = Number(lane.dataset.lane); if (abilityButton.dataset.ability === 'ww-medusa') activateMedusa(match.player, index); else if (abilityButton.dataset.ability === 'ip-croaktail') activateCroaktail(match.player, index); else activateZoya(match.player, index); } return; }
-  const handAbility = event.target.closest('.hand-ability-trigger');
-  if (handAbility) { activateAction(match.player, handAbility.dataset.id); return; }
-  const handSpecial = event.target.closest('.hand-special-trigger');
-  if (handSpecial) { useCotton(match.player, handSpecial.dataset.id); return; }
   const mainLife = event.target.closest('.life-card[data-life-side="opponent"][data-life-main="true"]');
   if (mainLife && match.active === 'player' && match.attackMode && !match.attackResolving && match.attackerLane !== null) {
     const attacker = match.player.lanes[match.attackerLane];
@@ -1206,7 +1202,7 @@ document.addEventListener('click', (event) => {
     return;
   }
   const handCard = event.target.closest('.hand-card');
-  if (handCard) { if (match.attackMode) { match.attackMode = false; match.attackerLane = null; } const card = match.player.hand.find((c) => c.instance === handCard.dataset.id); if (card && card.type !== 'Action' && !canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; } if (card?.type === 'Action') { activateAction(match.player, card.instance); return; } if (card && card.cost <= match.energy) match.selected = match.selected === card.instance ? null : card.instance; render(); return; }
+  if (handCard) { if (match.attackMode) { match.attackMode = false; match.attackerLane = null; } const card = match.player.hand.find((c) => c.instance === handCard.dataset.id); if (card && card.type !== 'Action' && !canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; } if (card?.type === 'Action') { activateAction(match.player, card.instance); return; } if (card?.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds') { useCotton(match.player, card.instance); return; } if (card && card.cost <= match.energy) match.selected = match.selected === card.instance ? null : card.instance; render(); return; }
   const lane = event.target.closest('.lane');
   if (lane && match.attackMode && lane.dataset.side === 'player') {
     selectAttackerFromClick(Number(lane.dataset.lane));
