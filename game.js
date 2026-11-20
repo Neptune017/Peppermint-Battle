@@ -109,7 +109,7 @@ const winterBallLibrary = [
   { id: 'wb-magnus', title: 'Winter Ball', name: 'Magnus', maxCopies: 1, deckCopies: 1, cost: 5, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallMagnus.png', ability: 'Gains +1 attack whenever any card moves on the field.' },
   { id: 'wb-sageape', title: 'Winter Ball', name: 'Sageape', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallSageape.png', ability: 'Discard this card from your hand to move a Glacial card to another Fighter Zone.' },
   { id: 'wb-steepod', title: 'Winter Ball', name: 'Steepod', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Healer', art: 'assets/cards/WinterBallSteepod.png', ability: 'Once per turn, move this card to an adjacent Fighter Zone.' },
-  { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 1, attack: 1, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.png', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
+  { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.png', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
   { id: 'wb-zodiac-topaz', title: 'Zodiac Guardian', name: 'Topaz', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacGuardianTopaz.png', ability: 'Gains +1 attack for each Aer card on the field or in your hand.' },
   { id: 'wb-zodiac-dimitri', title: 'Zodiac Guardian', name: 'Dimitri', type: 'Transformation', cost: 0, attack: 5, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacGuardianDimitri.png', ability: 'Gains +1 attack for each Glacial card on the field or in your hand.' },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 1, deckCopies: 1 },
@@ -559,8 +559,27 @@ function chooseEffect(owner, title, copy, choices, callback) {
   if (owner.isAI) { callback(choices[0].value); return; }
   document.getElementById('effect-title').textContent = title;
   document.getElementById('effect-copy').textContent = copy;
-  document.getElementById('effect-options').innerHTML = choices.map((choice, index) => `<button class="effect-option" data-choice="${index}"><strong>${choice.label}</strong><small>${choice.detail || ''}</small></button>`).join('');
+  document.getElementById('effect-options').innerHTML = choices.map((choice, index) => {
+    const card = cardForEffectChoice(choice);
+    const art = card?.art ? `<span class="effect-option-art"><img src="${escapeHTML(card.art)}" alt=""/><b>${card.cost}</b></span>` : '<span class="effect-option-art effect-option-art-fallback">✦</span>';
+    const stats = card ? `<span class="effect-option-stats">${card.type === 'Action' ? `${escapeHTML(displayedCardType(card))} · ${card.cost} Mana` : `${card.attack} ATK · ${card.cost} Mana`}</span>` : '';
+    return `<button class="effect-option" data-choice="${index}">${art}<span class="effect-option-copy"><strong>${escapeHTML(choice.label)}</strong><small>${escapeHTML(choice.detail || '')}</small></span>${stats}</button>`;
+  }).join('');
   pendingEffectChoice = callback; chooseEffect.choices = choices; document.getElementById('effect-dialog').showModal();
+}
+function cardForEffectChoice(choice) {
+  if (!choice) return null;
+  const activeCards = [match.player, match.opponent].filter(Boolean).flatMap((side) => [
+    ...side.hand, ...side.deck, ...side.destroyed, ...side.transformationDeck,
+    ...side.lanes.filter(Boolean), ...side.life.middle.filter(Boolean), side.life.main,
+    ...(side.life.familiars || []).filter(Boolean),
+  ]).filter(Boolean);
+  const activeMatch = activeCards.find((card) => card.instance === choice.value);
+  if (activeMatch) return activeMatch;
+  const name = String(choice.label || '').split(' · ')[0].trim();
+  const candidates = [...activeCards, ...allCardCatalog()].filter((card) => card.name === name || `${card.title} ${card.name}` === name);
+  const detail = String(choice.detail || '');
+  return candidates.find((card) => detail.includes(card.title) || detail.includes(`${card.cost} Mana`)) || candidates[0] || null;
 }
 function drawMatching(owner, predicate, label) {
   const index = owner.deck.findIndex(predicate);
@@ -787,8 +806,9 @@ function activateChristmasMall(owner) {
   const field = match.fieldCard; if (field?.id !== 'christmas-mall') return;
   const turnKey = `${match.turn}-${owner === match.player ? 'player' : 'opponent'}`;
   if (field.usedTurnKeys?.includes(turnKey)) return;
-  const choices = [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((firstCard, first) => firstCard ? side.lanes.flatMap((secondCard, second) => second > first && secondCard && (firstCard.element === 'Glacial' || secondCard.element === 'Glacial') ? [{ value: `${side === match.player ? 'p' : 'o'}:${first}:${second}`, label: `${firstCard.name} ↔ ${secondCard.name}`, detail: `${side === match.player ? 'Your' : 'Rival'} lanes ${first + 1} and ${second + 1}` }] : []) : []));
-  chooseEffect(owner, 'Christmas Mall: switch partners', 'Swap two fighters on the same side. At least one must be Glacial.', choices, (key) => { if (match.fieldCard !== field) return; const [sideKey, first, second] = key.split(':'); field.usedTurnKeys ||= []; field.usedTurnKeys.push(turnKey); swapChristmasMallFighters(sideKey === 'p' ? match.player : match.opponent, Number(first), Number(second)); });
+  const sideKey = owner === match.player ? 'p' : 'o';
+  const choices = owner.lanes.flatMap((firstCard, first) => firstCard ? owner.lanes.flatMap((secondCard, second) => second > first && secondCard && (firstCard.element === 'Glacial' || secondCard.element === 'Glacial') ? [{ value: `${first}:${second}`, label: `${firstCard.name} ↔ ${secondCard.name}`, detail: `Your lanes ${first + 1} and ${second + 1}` }] : []) : []);
+  chooseEffect(owner, 'Christmas Mall: switch partners', 'Swap two of your fighters. At least one must be Glacial.', choices, (key) => { if (match.fieldCard !== field) return; const [first, second] = key.split(':'); field.usedTurnKeys ||= []; field.usedTurnKeys.push(turnKey); swapChristmasMallFighters(sideKey === 'p' ? match.player : match.opponent, Number(first), Number(second)); });
 }
 function addPermanentAttack(card, amount, source) { card.attackBonus = (card.attackBonus || 0) + amount; card.attackBonusModifiers = [...(card.attackBonusModifiers || []), { amount, source }]; card.attackBonusSources = [...(card.attackBonusSources || []), source]; }
 function triggerOnSummon(card, owner, laneIndex) {
@@ -1014,8 +1034,9 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   }
   if (!opposing) { dealLifeHit(defender, targetLane); return; }
   const defensePower = effectiveAttack(opposing, defender, { defending: true });
-  const loseDefender = attackPower >= defensePower;
-  const loseAttacker = attackPower <= defensePower;
+  const tie = attackPower === defensePower;
+  const loseDefender = attackPower > defensePower || tie;
+  const loseAttacker = attackPower < defensePower || tie;
   if (opposing?.id === 'ip-octospray') { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; announceEffect(`${attacker.name} loses 1 attack to Octospray.`); }
   if (opposing?.id === 'ww-sunnythorn' && loseDefender) { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; announceEffect(`${attacker.name} loses 1 attack to Sunnythorn.`); }
   if (attacker.id === 'ww-sunnythorn' && loseAttacker && opposing) { opposing.attackBonus = (opposing.attackBonus || 0) - 1; opposing.attackBonusSources = [...(opposing.attackBonusSources || []), attacker.name]; opposing.attackBonusModifiers = [...(opposing.attackBonusModifiers || []), { amount: -1, source: attacker.name }]; announceEffect(`${opposing.name} loses 1 attack to Sunnythorn.`); }
@@ -1025,6 +1046,7 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
     if (attacker.id === 'ip-floatbite') { const owner = from; const targets = [index - 1, index + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler' && owner.lanes[slot]?.element === 'Aqua').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` })); if (targets.length) chooseEffect(owner, 'Floatbite: tide of strength', 'Choose an adjacent Aqua Brawler to gain +1 attack.', targets, (slot) => { const ally = owner.lanes[slot]; ally.attackBonus = (ally.attackBonus || 0) + 1; ally.attackBonusModifiers = [...(ally.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; ally.attackBonusSources = [...(ally.attackBonusSources || []), attacker.name]; render(); }); }
   }
   if (loseAttacker) { match.eventActor = defender; match.eventSource = opposing.name; destroyUnit(from, index, true); }
+  if (tie) announceEffect(`Both fighters were destroyed in the ${attackPower}–${defensePower} clash.`);
 }
 let soundContext;
 document.addEventListener('pointerdown', () => {
@@ -1439,6 +1461,7 @@ document.addEventListener('pointerdown', (event) => {
   if (!handCard || event.target.closest('button') || event.button === 2 || match.active !== 'player' || match.over) return;
   const card = match.player.hand.find((item) => item.instance === handCard.dataset.id);
   if (!card || card.cost > match.energy) return;
+  hideCardTooltip();
   handDragCandidate = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, card, element: handCard };
 });
 document.addEventListener('pointermove', (event) => {
@@ -1493,14 +1516,14 @@ document.addEventListener('keydown', (event) => {
 });
 document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
 document.addEventListener('pointerover', (event) => {
-  if (isTouchInput()) return;
+  if (isTouchInput() || activeCardDrag || handDragCandidate) { if (activeCardDrag) hideCardTooltip(); return; }
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (event.relatedTarget?.closest?.('[data-card-preview]') === preview) return;
   const card = [match.player, match.opponent].flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).find((item) => item?.instance === preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
-document.addEventListener('pointermove', (event) => { if (!isTouchInput() && !event.target.closest('#card-tooltip') && !activeCardDrag) positionCardTooltip(event); });
+document.addEventListener('pointermove', (event) => { if (activeCardDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
 document.addEventListener('pointerout', (event) => {
   if (isTouchInput()) return;
   const preview = event.target.closest('[data-card-preview]');
