@@ -12,7 +12,7 @@
 .life-card.main-life span{top:6px}
 .life-card{overflow:visible}
 .attack-boost{font:700 7px 'DM Mono',monospace;font-style:normal;color:#baffd4;background:#154b36;border:1px solid #91e2c070;border-radius:4px;padding:1px 3px;vertical-align:2px;margin:0 2px}.attack-reduced{color:#ffc5bc;background:#552d37;border-color:#ed9e9b77}
-.card-ability-trigger,.hand-ability-trigger{position:absolute;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.card-ability-trigger{right:5px;top:5px}.hand-ability-trigger{right:7px;top:auto;bottom:39px}.card-ability-trigger:disabled{opacity:.38;cursor:not-allowed}
+.card-ability-trigger,.hand-ability-trigger{position:absolute;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.card-ability-trigger{right:3px;top:27px}.hand-ability-trigger{right:7px;top:auto;bottom:39px}.card-ability-trigger:disabled{opacity:.38;cursor:not-allowed}
 .hand-special-trigger{position:absolute;right:7px;top:auto;bottom:39px;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px 'DM Mono',monospace;letter-spacing:.08em;padding:4px 6px}.hand-special-trigger:disabled{opacity:.38;cursor:not-allowed}.world-status{width:100%;margin-top:-9px;padding:8px 4px;border-top:1px solid #f5ce7944;color:#f5ce79;font:8px 'DM Mono',monospace;letter-spacing:.04em;line-height:1.45}
 .freeze-mark{position:absolute;right:5px;top:6px;z-index:3;border:1px solid #a6eaff99;border-radius:50%;width:18px;height:18px;display:grid;place-items:center;background:#183d59;color:#c4f3ff;font-size:11px;box-shadow:0 0 12px #71c9ff88}
 .direct-life-target{cursor:crosshair;border-color:#71c9ff!important;box-shadow:0 0 13px #71c9ff77,inset 0 0 11px #71c9ff33!important;animation:lifeTargetPulse 1s ease-in-out infinite alternate}
@@ -194,7 +194,7 @@
 .hand-card{touch-action:pan-x;user-select:none;-webkit-user-select:none}
 .class-icon{display:none}
 .class-icon-badge{width:21px;height:21px;flex:0 0 21px;display:inline-grid;place-items:center;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--class-color,#c9b7df) 84%,white);border-radius:50%;background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--class-color,#c9b7df) 35%,#262132),color-mix(in srgb,var(--class-color,#c9b7df) 15%,#16141e));color:var(--class-color,#c9b7df);box-shadow:0 0 8px color-mix(in srgb,var(--class-color,#c9b7df) 34%,transparent),inset 0 0 5px color-mix(in srgb,var(--class-color,#c9b7df) 20%,transparent)}
-.class-icon{display:block;width:13px;height:13px;object-fit:contain;color:var(--class-color,#c9b7df)}
+.class-icon{display:block;width:13px;height:13px;overflow:visible;filter:drop-shadow(0 0 2px color-mix(in srgb,var(--class-color,#c9b7df) 55%,transparent))}
 .card-class-icon{position:absolute;z-index:6;right:3px;top:3px;width:21px;height:21px;flex-basis:21px}
 .hand-card .card-class-icon{top:24px;width:21px;height:21px;flex-basis:21px}
 .card-element .element-icon,.hand-card .card-icons .element-icon{width:21px;height:21px;object-fit:contain}
