@@ -11,7 +11,8 @@ const cardLibrary = [
   { id: 'runny', title: 'Candy Goblin', name: 'Runny', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Brawler', art: 'assets/cards/CandyGoblinRunny.png', ability: 'Choose an Academy card costing 4 or less from your deck and add it to your hand.' },
   { id: 'amethyst', title: 'Academy', name: 'Amethyst', cost: 4, attack: 4, element: 'Dark', role: 'Shielder', art: 'assets/cards/AcademyAmethyst.png', ability: 'Destroy the opposing fighter.' },
   { id: 'den', title: 'Academy', name: 'Den', cost: 4, attack: 2, element: 'Mind', role: 'Enchanter', art: 'assets/cards/AcademyDen.png?v=20261120bm', ability: 'Let a fighter attack on its first turn.' },
-  { id: 'peppermint-ally', title: 'Academy', name: 'Cotton', cost: 4, attack: 4, element: 'Mind', role: 'Blader', art: 'assets/cards/AcademyCotton.png', ability: 'Discard this card to find Academy Hall.' },
+  { id: 'peppermint-ally', title: 'Academy', name: 'Cotton', cost: 4, attack: 4, element: 'Mind', role: 'Blader', art: 'assets/cards/AcademyCotton.png', ability: 'Discard this card to draw Academy Hall from your deck into your hand.' },
+  { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.png', ability: 'Academy cards gain +1 attack if there are no Fighter or Creature cards in the Pandemonium Zone, other than Academy cards.' },
   { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.png', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
   { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.png', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
   { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.png', ability: 'Replace a card in a fighter zone with a card from the Ascendance Deck that has the same name.' },
@@ -21,7 +22,7 @@ const cardLibrary = [
   { id: 'horatio', title: 'Academy', name: 'Horatio', cost: 5, attack: 4, element: 'Terra', role: 'Enchanter', art: 'assets/cards/AcademyHoratio.png', ability: 'On summon, draw a Terra Action card.' },
   { id: 'vishnu', title: 'Djinn', name: 'Vishnu', cost: 5, attack: 5, element: 'Dark', role: 'Shooter', art: 'assets/cards/DjinnVishnu.png', ability: 'Can only be summoned if Peppermint is in one of your Fighter Zones. On summon, draw Avatar Gem.' },
   { id: 'brewy', title: 'Candy Goblin', name: 'Brewy', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/CandyGoblinBrewy.png', ability: 'On summon, draw a Potion card.' },
-  { id: 'mana-potion', title: 'General', name: 'Mana Potion', type: 'Action', cost: 1, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/ManaPotion.png', ability: 'Restore up to 2 spent Mana this turn.' },
+  { id: 'mana-potion', title: 'General', name: 'Mana Potion', type: 'Action', cost: 0, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/ManaPotion.png', ability: 'Restore up to 2 spent Mana this turn.' },
   { id: 'health-potion', title: 'General', name: 'Health Potion', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/HealthPotion.png', ability: 'Restore an empty Life Zone with the top card of your deck.' },
   { id: 'patchy', title: 'Candy Goblin', name: 'Patchy', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Healer', art: 'assets/cards/CandyGoblinPatchy.png', ability: 'When destroyed, draw a Dharma card.' },
   { id: 'zesty', title: 'Candy Goblin', name: 'Zesty', type: 'Creature', cost: 1, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/CandyGoblinZesty.png', ability: 'On summon, return an Action card from your Pandemonium Zone to your hand.' },
@@ -225,7 +226,7 @@ function syncDeckPicker() {
 }
 function showDeckSelect() { syncDeckPicker(); document.getElementById('deck-select-dialog').showModal(); }
 function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
-function displayedCardType(card) { return ['toy-store', 'ip-field', 'christmas-mall'].includes(card.id) ? 'Field' : card.type || 'Fighter'; }
+function displayedCardType(card) { return ['academy-grounds', 'toy-store', 'ip-field', 'christmas-mall'].includes(card.id) ? 'Field' : card.type || 'Fighter'; }
 function cardTypeIcon(card, extraClass = '') { return displayedCardType(card) === 'Field' ? `<svg class="field-type-icon ${extraClass}" viewBox="0 0 48 48" role="img" aria-label="Field card"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 5 9 11 9 18s-3 13-9 18M24 6c-6 5-9 11-9 18s3 13 9 18M9 15h30M9 33h30"/></svg>` : ''; }
 function hasCardClass(card) { return !!card.role && card.role !== 'Action' && card.type !== 'Action'; }
 function libraryCardMarkup(card) {
@@ -306,10 +307,10 @@ function lifeMarkup(player, side) {
   const middle = player.life.middle.map((card, index) => {
     const direct = side === 'opponent' && match.attackMode && match.attackerLane === index && attacker?.role === 'Shooter' && card;
     const familiar = player.life.familiars?.[index];
-    return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}">${card ? '<span class="life-heart" aria-hidden="true">♥</span>' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
+    return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}">${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
   }).join('');
   const mainDirect = side === 'opponent' && match.attackMode && match.attackerLane !== null && canAttackMainLife(attacker, match.attackerLane, player);
-  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone"><span>MAIN</span></div>`;
+  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone">${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}<span>MAIN</span></div>`;
   return `<div class="life-middle">${middle}</div><div class="main-life-back">${main}</div>`;
 }
 function allMiddleLifeGone(player) { return player.life.middle.every((card) => !card); }
@@ -368,7 +369,7 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
   if (card.id === 'ww-wade') { const opponent = owner === match.player ? match.opponent : match.player; const bonus = (opponent?.lanes || []).filter((unit) => !unit).length * 2; if (bonus) { attack += bonus; reasons.push(`Empty enemy zones +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'ww-littlebeak' && match.active !== (owner === match.player ? 'player' : 'opponent')) { attack++; reasons.push('Littlebeak enemy-turn +1'); addModifier(1, card.name); }
   if (match.fieldCard?.id === 'toy-store' && index >= 0 && card.cost === 1 && ['Fighter', 'Creature'].includes(card.type || 'Fighter')) { attack++; reasons.push('Toy Store +1'); addModifier(1, 'Toy Store'); }
-  if (match.fieldCard?.id === 'academy-grounds' && card.title === 'Academy' && owner.destroyed.every((unit) => ['Academy', 'Candy Goblin'].includes(unit.title))) { attack++; reasons.push('Academy Hall +1'); addModifier(1, 'Academy Hall'); }
+  if (match.fieldCard?.id === 'academy-grounds' && card.title === 'Academy' && owner.destroyed.every((unit) => !['Fighter', 'Creature'].includes(unit.type || 'Fighter') || unit.title === 'Academy')) { attack++; reasons.push('Academy Hall +1'); addModifier(1, 'Academy Hall'); }
   if (card.id === 'zodiac-guardian-rick') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Terra').length; if (bonus) { attack += bonus; reasons.push(`Terra cards destroyed +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'wb-zodiac-topaz' || card.id === 'wb-zodiac-dimitri') { const element = card.id === 'wb-zodiac-topaz' ? 'Aer' : 'Glacial'; const bonus = [...owner.hand, ...owner.lanes.filter(Boolean)].filter((unit) => unit.element === element).length; if (bonus) { attack += bonus; reasons.push(`${element} cards in hand or on field +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'zodiac-guardian-kage') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Dark').length; if (bonus) { attack += bonus; reasons.push(`Dark cards destroyed +${bonus}`); addModifier(bonus, card.name); } }
@@ -401,7 +402,7 @@ function laneMarkup(card, index, side, isActive) {
 function render() {
   if (!match.player || !match.opponent) return;
   hideCardTooltip();
-  const fieldTheme = match.fieldCard?.id || 'grass-plain';
+  const fieldTheme = match.fieldCard?.id || 'city-night';
   document.body.dataset.fieldTheme = fieldTheme;
   document.getElementById('player-board').innerHTML = match.player.lanes.map((card, i) => laneMarkup(card, i, 'player', match.active === 'player')).join('');
   document.getElementById('opponent-board').innerHTML = match.opponent.lanes.map((card, i) => laneMarkup(card, i, 'opponent', false)).join('');
@@ -423,25 +424,27 @@ function render() {
   });
   document.getElementById('player-discard').textContent = match.player.destroyed.length;
   document.getElementById('opponent-discard').textContent = match.opponent.destroyed.length;
-  ['player', 'opponent'].forEach((side) => {
-    const owner = side === 'player' ? match.player : match.opponent;
-    const world = document.getElementById(`${side}-world`);
-    const fieldName = match.fieldCard?.id === 'academy-grounds' ? 'Academy Hall' : match.fieldCard?.id === 'ip-field' ? 'Island Paradise' : match.fieldCard?.id === 'toy-store' ? 'Toy Store' : match.fieldCard?.id === 'christmas-mall' ? 'Christmas Mall' : '';
-    const fieldDescription = match.fieldCard?.id === 'ip-field' ? 'Island Paradise fighters on both sides cannot be targeted, but do not defend their Life Zones.' : match.fieldCard?.id === 'toy-store' ? '1-cost Fighters and Creatures on both sides gain +1 attack.' : match.fieldCard?.id === 'christmas-mall' ? 'Once per turn, swap two fighters if at least one is Glacial.' : 'Academy fighters on both sides gain +1 attack while their owner’s Pandemonium Zone contains only Academy or Candy Goblin cards.';
-    const showsField = Boolean(match.fieldCard && side === 'player');
-    const fieldArt = match.fieldCard?.card?.art ? `<img class="world-card-preview" src="${match.fieldCard.card.art}" alt="${fieldName} field card" />` : '<span class="world-field-glyph">✧</span>';
+  document.getElementById('player-world').classList.add('hidden');
+  document.getElementById('opponent-world').classList.add('hidden');
+  const fieldZone = document.getElementById('field-zone');
+  const fieldNames = { 'academy-grounds': 'Academy Hall', 'ip-field': 'Island Paradise', 'toy-store': 'Toy Store', 'christmas-mall': 'Christmas Mall' };
+  const fieldBackgrounds = { 'academy-grounds': 'academy-grounds', 'ip-field': 'island-paradise', 'toy-store': 'toy-store', 'christmas-mall': 'christmas-mall' };
+  const fieldName = match.fieldCard ? fieldNames[match.fieldCard.id] || 'Grass Plain' : '';
+  if (match.fieldCard) {
+    const background = fieldBackgrounds[match.fieldCard.id] || 'grass-plain';
     const mallUseKey = `${match.turn}-${match.active}`;
-    const mallUsed = match.fieldCard?.usedTurnKeys?.includes(mallUseKey);
-    const mallButton = showsField && match.fieldCard?.id === 'christmas-mall' && match.active === 'player' && !match.over ? `<button class="world-field-action" data-field-ability="christmas-mall" ${mallUsed ? 'disabled' : ''}>SWAP FIGHTERS</button>` : '';
-    world.innerHTML = showsField ? `<span class="world-card-label">FIELD ZONE · SHARED</span><div class="world-card-content">${fieldArt}<div><strong>${fieldName}</strong><small>${fieldDescription}</small></div></div>${mallButton}` : '';
-    world.classList.toggle('hidden', !showsField);
-  });
+    const mallUsed = match.fieldCard.usedTurnKeys?.includes(mallUseKey);
+    const mallButton = match.fieldCard.id === 'christmas-mall' && match.active === 'player' && !match.over ? `<button class="field-zone-action" data-field-ability="christmas-mall" ${mallUsed ? 'disabled' : ''}>SWAP FIGHTERS</button>` : '';
+    const activeCardArt = match.fieldCard.card?.art ? `<img class="field-zone-card-art" src="${match.fieldCard.card.art}" alt=""/>` : '';
+    fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.png')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>${mallButton}`;
+  } else {
+    fieldZone.innerHTML = '';
+  }
+  fieldZone.classList.toggle('hidden', !match.fieldCard);
   document.getElementById('player-life-count').textContent = lifeCount(match.player);
   document.getElementById('opponent-life-count').textContent = lifeCount(match.opponent);
   document.getElementById('player-life').innerHTML = lifeMarkup(match.player, 'player');
   document.getElementById('opponent-life').innerHTML = lifeMarkup(match.opponent, 'opponent');
-  document.getElementById('draw-base').disabled = match.active !== 'player' || match.drawn;
-  document.getElementById('draw-spell').disabled = true;
   document.getElementById('end-turn').disabled = match.active !== 'player' || match.over || match.attackResolving;
   document.getElementById('give-up').disabled = !match.player || match.over || match.attackResolving;
   document.getElementById('attack-button').disabled = match.active !== 'player' || match.over || !match.player.lanes.some((card, index) => canCardAttack(card) && canAttackLane(card, index, match.opponent));
@@ -494,13 +497,43 @@ function positionCardTooltip(event) {
   const tooltip = document.getElementById('card-tooltip'); if (!tooltip.classList.contains('visible')) return;
   const anchor = tooltip._anchorElement?.isConnected ? tooltip._anchorElement : null;
   const cardRect = anchor?.getBoundingClientRect();
-  if (cardRect?.height) tooltip.style.setProperty('--tooltip-card-height', `${cardRect.height}px`);
-  const rect = tooltip.getBoundingClientRect();
-  const anchorLeft = cardRect?.left ?? event.clientX; const anchorRight = cardRect?.right ?? event.clientX;
-  const sideGap = 4;
-  const left = anchorRight + rect.width + sideGap <= window.innerWidth ? anchorRight + sideGap : anchorLeft - rect.width - sideGap;
-  const top = cardRect ? cardRect.top + (cardRect.height - rect.height) / 2 : event.clientY - rect.height / 2;
-  tooltip.style.left = `${Math.max(8, Math.min(left, window.innerWidth - rect.width - 8))}px`; tooltip.style.top = `${Math.max(8, Math.min(top, window.innerHeight - rect.height - 8))}px`;
+  const pad = 8; const gap = 10; const viewportWidth = window.innerWidth; const viewportHeight = window.innerHeight;
+  const x = event?.clientX ?? viewportWidth / 2; const y = event?.clientY ?? viewportHeight / 2;
+  const anchorRect = cardRect || { left: x, right: x, top: y, bottom: y, width: 0, height: 0 };
+  const maxPanelHeight = Math.min(viewportHeight - pad * 2, 720);
+  const leftWidth = Math.max(0, anchorRect.left - gap - pad);
+  const rightWidth = Math.max(0, viewportWidth - anchorRect.right - gap - pad);
+  const verticalWidth = Math.max(0, viewportWidth - pad * 2);
+  const topHeight = Math.max(0, anchorRect.top - gap - pad);
+  const bottomHeight = Math.max(0, viewportHeight - anchorRect.bottom - gap - pad);
+  const mobile = tooltip.classList.contains('mobile-open');
+  let placement;
+  if (mobile || Math.max(leftWidth, rightWidth) < Math.min(280, viewportWidth * .38)) {
+    placement = topHeight >= bottomHeight ? 'top' : 'bottom';
+  } else {
+    placement = rightWidth >= leftWidth ? 'right' : 'left';
+  }
+  let width; let height; let left; let top;
+  if (placement === 'right') {
+    width = Math.min(760, viewportWidth * .48, rightWidth);
+    height = maxPanelHeight; left = anchorRect.right + gap;
+    top = Math.max(pad, Math.min(anchorRect.top + (anchorRect.height - height) / 2, viewportHeight - height - pad));
+  } else if (placement === 'left') {
+    width = Math.min(760, viewportWidth * .48, leftWidth);
+    height = maxPanelHeight; left = anchorRect.left - gap - width;
+    top = Math.max(pad, Math.min(anchorRect.top + (anchorRect.height - height) / 2, viewportHeight - height - pad));
+  } else if (placement === 'top') {
+    width = Math.min(760, verticalWidth); height = Math.min(maxPanelHeight, topHeight);
+    left = pad; top = anchorRect.top - gap - height;
+  } else {
+    width = Math.min(760, verticalWidth); height = Math.min(maxPanelHeight, bottomHeight);
+    left = pad; top = anchorRect.bottom + gap;
+  }
+  tooltip.dataset.tooltipSide = placement;
+  tooltip.style.setProperty('--tooltip-left', `${Math.max(pad, left)}px`);
+  tooltip.style.setProperty('--tooltip-top', `${Math.max(pad, top)}px`);
+  tooltip.style.setProperty('--tooltip-width', `${Math.max(1, width)}px`);
+  tooltip.style.setProperty('--tooltip-height', `${Math.max(1, height)}px`);
 }
 function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); } }
 function showZoneCards(side, zoneKind) {
@@ -531,7 +564,7 @@ function drawCard(player, count = 1) {
 }
 let pendingEffectChoice = null;
 const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.png',runny:'30FPS_FA02_04_Impulse.png',berry:'30FPS_FA01_09_Barrier.png',frosty:'30FPS_FA01_08_Shield.png',den:'30FPS_FA01_04_Buff.png',ryota:'30FPS_FA01_01_Slash.png',healer:'30FPS_FA01_07_Cure.png',summoner:'30FPS_FA02_01_EnergyBurst.png',gummy:'30FPS_FA02_03_CrystalBlossom.png',zoya:'30FPS_FA02_02_Smokescreen.png',cooking:'30FPS_FA02_03_CrystalBlossom.png',cotton:'30FPS_FA02_03_CrystalBlossom.png',kage:'30FPS_FA02_02_Smokescreen.png',amethyst:'30FPS_FA01_10_Burst.png',shielder:'30FPS_FA01_08_Shield.png',shooter:'30FPS_FA01_02_Thrust.png',enchanter:'30FPS_FA01_04_Buff.png',trickster:'30FPS_FA01_05_Debuff.png',blader:'30FPS_FA01_01_Slash.png',brawler:'30FPS_FA01_03_Punch.png',peppermint:'30FPS_FA01_04_Buff.png','avatar-gem':'30FPS_FA02_07_HyperCharge.png' };
-function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false } = {}) {
+function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, silent = false } = {}) {
   const side = owner === match.player ? 'player' : 'opponent';
   window.setTimeout(() => {
     const host = laneIndex >= 0 ? document.querySelector(`[data-side="${side}"][data-lane="${laneIndex}"]`) : document.getElementById(`${side}-board`);
@@ -552,8 +585,34 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false } =
       sheet.src = `assets/effects/${spriteFile}`;
     } else window.setTimeout(() => fx.remove(), 1250);
     const abilityElements = { aemi:'Dark',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','solar-explosion':'Solar' };
-    playSfx('special', abilityElements[key] || 'Mind');
+    if (!silent) playSfx('special', abilityElements[key] || 'Mind');
   }, 0);
+}
+let fieldFxSequence = 0;
+function playFieldActivationFx(fieldId) {
+  const host = document.querySelector('.battlefield');
+  if (!host) return;
+  const names = { 'ip-field':'ISLAND PARADISE', 'toy-store':'TOY STORE', 'christmas-mall':'CHRISTMAS MALL', 'academy-grounds':'ACADEMY HALL' };
+  const id = `field-flow-${++fieldFxSequence}`;
+  const fx = document.createElement('div');
+  fx.className = `field-activation-fx field-activation-${fieldId}`;
+  fx.innerHTML = `<svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ff657a"/><stop offset=".17" stop-color="#ffbd67"/><stop offset=".34" stop-color="#fff283"/><stop offset=".5" stop-color="#7dffca"/><stop offset=".67" stop-color="#68ddff"/><stop offset=".84" stop-color="#a78bff"/><stop offset="1" stop-color="#ff8de1"/></linearGradient><filter id="${id}-glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g class="field-flow-lines" stroke="url(#${id})" filter="url(#${id}-glow)"><path id="${id}-a" d="M600 350 C480 290 250 200 0 150"/><path id="${id}-b" d="M600 350 C420 350 190 350 0 350"/><path id="${id}-c" d="M600 350 C480 410 250 500 0 550"/><path id="${id}-d" d="M600 350 C720 290 950 200 1200 150"/><path id="${id}-e" d="M600 350 C780 350 1010 350 1200 350"/><path id="${id}-f" d="M600 350 C720 410 950 500 1200 550"/></g><g class="field-flow-particles" fill="url(#${id})"><circle r="6"><animateMotion dur="1.05s" repeatCount="1"><mpath href="#${id}-a"/></animateMotion></circle><circle r="4"><animateMotion dur=".92s" begin=".12s" repeatCount="1"><mpath href="#${id}-b"/></animateMotion></circle><circle r="5"><animateMotion dur="1.15s" begin=".04s" repeatCount="1"><mpath href="#${id}-c"/></animateMotion></circle><circle r="5"><animateMotion dur="1.08s" begin=".08s" repeatCount="1"><mpath href="#${id}-d"/></animateMotion></circle><circle r="6"><animateMotion dur=".95s" begin=".16s" repeatCount="1"><mpath href="#${id}-e"/></animateMotion></circle><circle r="4"><animateMotion dur="1.12s" begin=".05s" repeatCount="1"><mpath href="#${id}-f"/></animateMotion></circle></g><circle class="field-flow-core" cx="600" cy="350" r="20"/><circle class="field-flow-ring" cx="600" cy="350" r="40"/></svg><b>${names[fieldId] || 'FIELD SHIFT'}</b>`;
+  host.appendChild(fx);
+  window.setTimeout(() => fx.remove(), 1750);
+}
+function playHealthPotionFx(owner, index) {
+  const side = owner === match.player ? 'player' : 'opponent';
+  const host = document.querySelector(`#${side}-life .life-middle .life-card:nth-child(${index + 1})`);
+  if (!host) return;
+  const fx = document.createElement('span'); fx.className = 'health-crystal-fx'; fx.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><path class="crystal-heart" d="M50 86 15 51C-6 24 18 4 39 18l11 11 11-11c21-14 45 6 24 33Z"/><path class="crystal-facet" d="m50 29-13 20 13 37 13-37Z M15 51h70 M37 49l13-20 13 20"/><circle class="crystal-orbit" cx="50" cy="50" r="43"/><path class="crystal-spark" d="M50 1v14M50 85v14M1 50h14M85 50h14M16 16l10 10M74 74l10 10M84 16 74 26M26 74 16 84"/></svg>';
+  host.appendChild(fx);
+  window.setTimeout(() => fx.remove(), 1300);
+}
+function playManaPotionFx() {
+  const host = document.querySelector('.energy');
+  if (!host) return;
+  const fx = document.createElement('span'); fx.className = 'mana-crystal-fx'; fx.innerHTML = '<svg viewBox="0 0 80 100" aria-hidden="true"><path d="M40 4 70 39 40 94 10 39Z"/><path d="m40 4 0 90M10 39h60M40 4 25 39l15 55 15-55Z"/><circle cx="40" cy="47" r="34"/></svg>';
+  host.appendChild(fx); window.setTimeout(() => fx.remove(), 1050);
 }
 function announceEffect(message) {
   const kind = match.eventActor ? (match.eventActor === match.player ? 'player' : 'enemy') : 'system';
@@ -611,7 +670,7 @@ function useCooking(owner, actionInstance) {
   chooseEffect(owner, 'Cooking', 'Return a Fighter or Creature from your destroyed zone to your hand.', choices, (instance) => {
     const targetIndex = owner.destroyed.findIndex((card) => card.instance === instance);
     if (targetIndex < 0) return;
-    const [revived] = owner.destroyed.splice(targetIndex, 1); owner.hand.push(revived); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; playSpecialFx(owner, -1, 'cooking', 'COOKING · REVIVE', { generatedOnly: true }); render(); announceEffect(`${revived.name} returned from the destroyed zone.`);
+    const [revived] = owner.destroyed.splice(targetIndex, 1); owner.hand.push(revived); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; playSpecialFx(owner, -1, 'cooking', 'COOKING · REVIVE', { generatedOnly: true, silent: true }); render(); announceEffect(`${revived.name} returned from the destroyed zone.`);
   });
 }
 function usePlanting(owner, actionInstance) {
@@ -629,7 +688,7 @@ function usePlanting(owner, actionInstance) {
     const cardIndex = pile.findIndex((card) => card.instance === instance && card.title === 'Vegcritter');
     if (cardIndex < 0 || owner.lanes[laneIndex] || !owner.hand.includes(action) || match.energy < action.cost) return;
     const [creature] = pile.splice(cardIndex, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.lanes[laneIndex] = creature; match.energy -= action.cost;
-    render(); animateSummon(owner, laneIndex, creature).then(() => triggerOnSummon(creature, owner, laneIndex));
+    render(); playSpecialFx(owner, laneIndex, 'cotton', 'PLANTING · VEGCRITTER', { generatedOnly: true, silent: true }); animateSummon(owner, laneIndex, creature).then(() => triggerOnSummon(creature, owner, laneIndex));
     announceEffect(`${creature.name} was summoned by Planting.`);
   });
 }
@@ -657,7 +716,7 @@ function useAvatarGem(owner, actionInstance) {
     owner.destroyed.push(target); owner.lanes[laneIndex] = transformed;
     owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost;
     match.eventActor = owner; match.eventSource = action.name;
-    render(); playSpecialFx(owner, laneIndex, 'avatar-gem', 'AVATAR GEM · TRANSFORM'); animateSummon(owner, laneIndex, transformed).then(() => triggerOnSummon(transformed, owner, laneIndex));
+    render(); playSpecialFx(owner, laneIndex, 'avatar-gem', 'AVATAR GEM · TRANSFORM', { silent: true }); animateSummon(owner, laneIndex, transformed).then(() => triggerOnSummon(transformed, owner, laneIndex));
     announceEffect(`${target.name} transformed into a Zodiac Guardian.`);
   });
 }
@@ -672,19 +731,21 @@ function setSharedField(owner, id, card = null) {
 function activateAction(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (action) { match.eventActor = owner; match.eventSource = action.name; logBattleEvent(`${battleSideName(owner)} activated ${action.name}.`, owner === match.player ? 'player' : 'enemy'); }
+  if (action?.type === 'Action' && match.energy >= action.cost) playActionSfx(action);
   if (action?.id === 'avatar-gem') useAvatarGem(owner, actionInstance);
-  else if (action?.id === 'mana-potion' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy = Math.min(10, match.energy - action.cost + 2); render(); announceEffect('Mana Potion restored 2 Mana this turn.'); }
-  else if (action?.id === 'health-potion' && match.energy >= action.cost) { const openLifeIndex = owner.life.middle.findIndex((lifeCard) => !lifeCard); if (openLifeIndex < 0 || !owner.deck.length) { announceEffect('Health Potion needs an empty Life Zone and a card in your deck.'); return; } owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.life.middle[openLifeIndex] = owner.deck.shift(); match.energy -= action.cost; render(); announceEffect('Health Potion restored a Life Zone.'); }
+  else if (action?.id === 'mana-potion' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy = Math.min(match.turnEnergyCap, match.energy - action.cost + 2); render(); playManaPotionFx(); announceEffect('Mana Potion restored up to 2 Mana, without exceeding this turn’s maximum.'); }
+  else if (action?.id === 'health-potion' && match.energy >= action.cost) { const openLifeIndex = owner.life.middle.findIndex((lifeCard) => !lifeCard); if (openLifeIndex < 0 || !owner.deck.length) { announceEffect('Health Potion needs an empty Life Zone and a card in your deck.'); return; } owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.life.middle[openLifeIndex] = owner.deck.shift(); match.energy -= action.cost; render(); playHealthPotionFx(owner, openLifeIndex); announceEffect('Health Potion restored a Life Zone.'); }
   else if (action?.id === 'cooking') useCooking(owner, actionInstance);
   else if (action?.id === 'locker-room') useLockerRoom(owner, actionInstance);
   else if (action?.id === 'drinking-tea' && match.energy >= action.cost) {
     const choices = owner.lanes.flatMap((unit, lane) => unit?.element === 'Glacial' && !unit.ready ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · may act this turn` }] : []);
-    chooseEffect(owner, 'Drinking Tea: quicken a Glacial ally', 'Choose a Glacial fighter to attack on the turn it was summoned.', choices, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.ready = true; target.skipAttackThisTurn = false; render(); announceEffect(`${target.name} can act on its first turn.`); });
+    chooseEffect(owner, 'Drinking Tea: quicken a Glacial ally', 'Choose a Glacial fighter to attack on the turn it was summoned.', choices, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.ready = true; target.skipAttackThisTurn = false; render(); playSpecialFx(owner, Number(lane), 'frosty', 'DRINKING TEA · QUICKEN', { generatedOnly: true, silent: true }); announceEffect(`${target.name} can act on its first turn.`); });
   }
   else if (action?.id === 'ww-planting') usePlanting(owner, actionInstance);
-  else if (action?.id === 'ip-field' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'ip-field', action); playSpecialFx(owner, -1, 'summoner', 'SHARED FIELD · ISLAND PARADISE', { generatedOnly: true }); render(); announceEffect('Island Paradise is now the shared field. Its fighters on both sides cannot be targeted, but do not defend their Life Zones.'); }
-  else if (action?.id === 'toy-store' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'toy-store', action); playSpecialFx(owner, -1, 'enchanter', 'SHARED FIELD · TOY STORE'); render(); announceEffect('Toy Store is now the shared field. All 1-cost Fighters and Creatures on both sides gain +1 attack.'); }
-  else if (action?.id === 'christmas-mall' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'christmas-mall', action); match.fieldCard.usedTurnKeys = []; playSpecialFx(owner, -1, 'enchanter', 'SHARED FIELD · CHRISTMAS MALL'); render(); announceEffect('Christmas Mall is now the shared field. Swap two fighters once per turn if one is Glacial.'); }
+  else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack if there are no non-Academy Fighter or Creature cards in their owner’s Pandemonium Zone.'); }
+  else if (action?.id === 'ip-field' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'ip-field', action); render(); playFieldActivationFx('ip-field'); announceEffect('Island Paradise is now the shared field. Its fighters on both sides cannot be targeted, but do not defend their Life Zones.'); }
+  else if (action?.id === 'toy-store' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'toy-store', action); render(); playFieldActivationFx('toy-store'); announceEffect('Toy Store is now the shared field. All 1-cost Fighters and Creatures on both sides gain +1 attack.'); }
+  else if (action?.id === 'christmas-mall' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'christmas-mall', action); match.fieldCard.usedTurnKeys = []; render(); playFieldActivationFx('christmas-mall'); announceEffect('Christmas Mall is now the shared field. Swap two fighters once per turn if one is Glacial.'); }
 }
 function useLockerRoom(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
@@ -704,7 +765,7 @@ function useLockerRoom(owner, actionInstance) {
       const [replacement] = pile.splice(index, 1);
       owner.lanes[lane] = null; owner.destroyed.push(current); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost;
       replacement.ready = false; replacement.attacked = false; owner.lanes[lane] = replacement;
-      render();
+      render(); playSpecialFx(owner, lane, 'avatar-gem', 'LOCKER ROOM · REPLACEMENT', { generatedOnly: true, silent: true });
       animateSummon(owner, lane, replacement).then(() => triggerOnSummon(replacement, owner, lane));
       announceEffect(`${replacement.title} ${replacement.name} entered the field through Locker Room.`);
     });
@@ -712,9 +773,12 @@ function useLockerRoom(owner, actionInstance) {
 }
 function useCotton(owner, cardInstance) {
   const cotton = owner.hand.find((card) => card.instance === cardInstance);
-  if (!cotton || match.fieldCard?.id === 'academy-grounds') return;
-  const replacedField = match.fieldCard?.id === 'ip-field' ? 'Island Paradise' : match.fieldCard?.id === 'toy-store' ? 'Toy Store' : match.fieldCard?.id === 'academy-grounds' ? 'Academy Hall' : '';
-  owner.hand.splice(owner.hand.indexOf(cotton), 1); owner.destroyed.push(cotton); setSharedField(owner, 'academy-grounds'); playSpecialFx(owner, -1, 'cotton', 'SHARED FIELD · ACADEMY GROUNDS'); render(); announceEffect(`${replacedField ? `${replacedField} was replaced. ` : ''}Academy Hall is now the shared field. Both sides’ Academy fighters gain +1 attack if their owner’s destroyed cards are Academy or Candy Goblin.`);
+  if (!cotton) return;
+  const hallIndex = owner.deck.findIndex((card) => card.id === 'academy-grounds');
+  if (hallIndex < 0) { announceEffect('Cotton could not find Academy Hall in your deck.'); return; }
+  const [hall] = owner.deck.splice(hallIndex, 1);
+  owner.hand.splice(owner.hand.indexOf(cotton), 1); owner.destroyed.push(cotton); owner.hand.push(hall);
+  render(); playSpecialFx(owner, -1, 'cotton', 'COTTON · FIELD FOUND', { generatedOnly: true }); announceEffect('Cotton added Academy Hall to your hand.');
 }
 function isEffectProtected(card) { return card?.id === 'ww-academy-rick'; }
 function animateShatter(source, element, variant = '') {
@@ -1057,6 +1121,37 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   if (tie) announceEffect(`Both fighters were destroyed in the ${attackPower}–${defensePower} clash.`);
 }
 let soundContext;
+function playActionSfx(action) {
+  const profiles = {
+    'avatar-gem': { element:'Dark', boom:88, shimmer:1480, noise:520 }, 'mana-potion': { element:'Aqua', boom:0, shimmer:1760, noise:1850 },
+    'health-potion': { element:'Solar', boom:0, shimmer:1260, noise:1150 }, cooking: { element:'Ignis', boom:125, shimmer:480, noise:720 },
+    'locker-room': { element:'Terra', boom:95, shimmer:620, noise:420 }, 'drinking-tea': { element:'Glacial', boom:0, shimmer:2250, noise:2800 },
+    'ww-planting': { element:'Terra', boom:140, shimmer:720, noise:560 }, 'academy-grounds': { element:'Mind', boom:100, shimmer:1560, noise:1200 },
+    'ip-field': { element:'Aqua', boom:95, shimmer:1540, noise:1350 }, 'toy-store': { element:'Mind', boom:110, shimmer:1840, noise:1020 },
+    'christmas-mall': { element:'Glacial', boom:85, shimmer:2100, noise:2450 },
+  };
+  const profile = profiles[action.id] || { element:action.element, boom:110, shimmer:1200, noise:900 };
+  playSfx('special', profile.element);
+  try {
+    soundContext ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (soundContext.state === 'suspended') soundContext.resume();
+    const now = soundContext.currentTime;
+    const makeSweep = (type, start, end, duration, volume, delay = 0) => {
+      const osc = soundContext.createOscillator(); const gain = soundContext.createGain();
+      osc.type = type; osc.frequency.setValueAtTime(start, now + delay); osc.frequency.exponentialRampToValueAtTime(Math.max(35, end), now + delay + duration);
+      gain.gain.setValueAtTime(.0001, now + delay); gain.gain.exponentialRampToValueAtTime(volume, now + delay + .012); gain.gain.exponentialRampToValueAtTime(.0001, now + delay + duration);
+      osc.connect(gain); gain.connect(soundContext.destination); osc.start(now + delay); osc.stop(now + delay + duration + .02);
+    };
+    if (profile.boom) makeSweep('triangle', profile.boom, 38, .22, .105);
+    makeSweep('sine', profile.shimmer, profile.shimmer * 1.45, .2, .035, .025);
+    const duration = .23; const buffer = soundContext.createBuffer(1, Math.floor(soundContext.sampleRate * duration), soundContext.sampleRate); const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+    const noise = soundContext.createBufferSource(); const filter = soundContext.createBiquadFilter(); const gain = soundContext.createGain();
+    noise.buffer = buffer; filter.type = 'bandpass'; filter.frequency.value = profile.noise; filter.Q.value = 1.4;
+    gain.gain.setValueAtTime(.0001, now); gain.gain.exponentialRampToValueAtTime(.052, now + .018); gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+    noise.connect(filter); filter.connect(gain); gain.connect(soundContext.destination); noise.start(now); noise.stop(now + duration + .02);
+  } catch (_) { /* Sound remains optional when a browser blocks Web Audio. */ }
+}
 document.addEventListener('pointerdown', () => {
   try { soundContext ??= new (window.AudioContext || window.webkitAudioContext)(); if (soundContext.state === 'suspended') soundContext.resume(); } catch (_) { /* Audio remains optional. */ }
 }, { once: true });
@@ -1552,7 +1647,6 @@ document.getElementById('effect-options').addEventListener('click', (event) => {
   pendingEffectChoice = null; document.getElementById('effect-dialog').close(); callback(choice.value);
 });
 document.getElementById('close-effect').addEventListener('click', () => { pendingEffectChoice = null; document.getElementById('effect-dialog').close(); });
-document.getElementById('draw-base').addEventListener('click', () => { if (match.active === 'player' && !match.drawn) { drawCard(match.player); match.drawn = true; render(); } });
 document.getElementById('rules-button').addEventListener('click', () => document.getElementById('rules-dialog').showModal());
 document.getElementById('card-library-button').addEventListener('click', () => showCardLibrary());
 document.getElementById('close-card-library').addEventListener('click', () => document.getElementById('card-library-dialog').close());
