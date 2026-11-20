@@ -406,3 +406,6 @@ body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient
 @keyframes mana-crystal-rise{0%{opacity:0;transform:translateY(22px) scale(.4) rotate(-18deg)}25%{opacity:1;transform:translateY(-10px) scale(1.2) rotate(8deg)}70%{opacity:1;transform:translateY(-28px) scale(.95)}100%{opacity:0;transform:translateY(-48px) scale(.5) rotate(22deg)}}
 @media(prefers-reduced-motion:reduce){.field-activation-fx,.health-crystal-fx,.mana-crystal-fx,.field-flow-lines path,.field-flow-particles circle,.field-flow-core,.field-flow-ring,.crystal-orbit,.crystal-spark{animation-duration:.18s!important;animation-iteration-count:1!important}}
 @media(max-width:520px){.deck-stack>span,.discard-count>span:last-child{display:block!important;min-width:0}.deck-stack small,.discard-count small{display:none!important}.deck-stack,.discard-count{gap:2px}.deck-stack b,.discard-count b{font-size:9px}}
+.card-tooltip .tooltip-class-ability,.card-tooltip .tooltip-card-ability{font-size:13px;line-height:1.55}
+.card-tooltip .tooltip-class-ability b,.card-tooltip .tooltip-card-ability b{font-size:9px}
+@media(max-width:520px){.card-tooltip.mobile-open .tooltip-class-ability,.card-tooltip.mobile-open .tooltip-card-ability{font-size:15px;line-height:1.55}.card-tooltip.mobile-open .tooltip-class-ability b,.card-tooltip.mobile-open .tooltip-card-ability b{font-size:9px}}
