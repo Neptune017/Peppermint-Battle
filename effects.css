@@ -409,3 +409,5 @@ body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient
 .card-tooltip .tooltip-class-ability,.card-tooltip .tooltip-card-ability{font-size:13px;line-height:1.55}
 .card-tooltip .tooltip-class-ability b,.card-tooltip .tooltip-card-ability b{font-size:9px}
 @media(max-width:520px){.card-tooltip.mobile-open .tooltip-class-ability,.card-tooltip.mobile-open .tooltip-card-ability{font-size:15px;line-height:1.55}.card-tooltip.mobile-open .tooltip-class-ability b,.card-tooltip.mobile-open .tooltip-card-ability b{font-size:9px}}
+.life-card.main-life::after{content:none!important}
+@media(max-width:520px){.deck-stack,.discard-count{width:100%;max-width:100%;overflow:hidden;gap:2px;padding-inline:0}.deck-stack .deck-card{width:23px;height:31px;flex:0 0 23px}.deck-stack .deck-card .ui-icon{width:100%;height:100%}.discard-count .discard-icon{width:23px;height:31px;flex:0 0 23px}.deck-stack>span,.discard-count>span:last-child{flex:0 0 auto}.deck-stack b,.discard-count b{font-size:9px;white-space:nowrap}}

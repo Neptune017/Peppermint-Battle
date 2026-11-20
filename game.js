@@ -310,7 +310,7 @@ function lifeMarkup(player, side) {
     return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}">${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
   }).join('');
   const mainDirect = side === 'opponent' && match.attackMode && match.attackerLane !== null && canAttackMainLife(attacker, match.attackerLane, player);
-  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone">${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}<span>MAIN</span></div>`;
+  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone">${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}</div>`;
   return `<div class="life-middle">${middle}</div><div class="main-life-back">${main}</div>`;
 }
 function allMiddleLifeGone(player) { return player.life.middle.every((card) => !card); }
