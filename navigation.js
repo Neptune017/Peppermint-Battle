@@ -31,9 +31,8 @@
     openChild(document.getElementById('deck-editor-dialog'));
   });
   document.getElementById('menu-boosters').addEventListener('click', () => {
-    returnToMenu = true;
-    menu.close();
-    document.getElementById('booster-button').click();
+    window.peppermintCollection?.renderBoosterDisplay();
+    openChild(document.getElementById('booster-dialog'));
   });
   document.getElementById('menu-library').addEventListener('click', () => {
     returnToMenu = true; menu.close(); window.showCardLibrary?.();

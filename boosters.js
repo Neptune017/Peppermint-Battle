@@ -62,7 +62,7 @@
       if (!next) break;
       deckList.push(next.id); counts.set(next.id, (counts.get(next.id) || 0) + 1);
     }
-    return { version: 2, diamonds: STARTING_DIAMONDS, cards: Object.fromEntries(counts), deckList, deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {} };
+    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {} };
   }
   function collectionCards() {
     const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
@@ -83,6 +83,8 @@
       const owned = aliasesFor(card).reduce((sum, id) => sum + Math.max(0, Math.floor(Number(rawCards[id]) || 0)), 0);
       if (owned) cards[card.id] = Math.min(collectionLimit(card), owned);
     }
+    cards['zodiac-guardian-kage'] = Math.max(1, cards['zodiac-guardian-kage'] || 0);
+    cards['zodiac-guardian-ryota'] = Math.max(1, cards['zodiac-guardian-ryota'] || 0);
     const academy = [...new Map(mainCards('academy').map((card) => [card.id, card])).values()];
     const migratedDeck = academy.flatMap((card) => Array.from({ length: Math.min(Math.max(0, Math.floor(Number(cards[card.id]) || 0)), collectionLimit(card)) }, () => card.id)).slice(0, 40);
     const oldDeck = Array.isArray(save.deckList) ? save.deckList.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : migratedDeck;
@@ -123,13 +125,13 @@
   function setMessage(text, kind = '') { const el = document.getElementById('booster-message'); el.textContent = text || ''; el.dataset.kind = kind; }
   function renderWallet() { document.getElementById('diamond-total').textContent = player.diamonds.toLocaleString(); }
   function renderDeckTabs() {
-    document.getElementById('booster-deck-tabs').innerHTML = DECKS.map((deck) => { const unlocked = isUnlocked(deck.id); return `<button class="booster-deck-tab ${deck.id === activeDeck ? 'selected' : ''} ${unlocked ? '' : 'locked'}" data-booster-deck="${deck.id}" aria-pressed="${deck.id === activeDeck}" ${unlocked ? '' : 'aria-label="${deck.name} booster locked; beat this deck in Collection Battle"'}><img src="${deck.logo}" alt=""/><span>${unlocked ? deck.name : `🔒 ${deck.name}`}</span></button>`; }).join('');
+    document.getElementById('booster-deck-tabs').innerHTML = DECKS.map((deck) => { const unlocked = isUnlocked(deck.id); return `<button class="booster-deck-tab ${deck.id === activeDeck ? 'selected' : ''} ${unlocked ? '' : 'locked'}" data-booster-deck="${deck.id}" aria-pressed="${deck.id === activeDeck}" ${unlocked ? '' : 'aria-label="${deck.name} booster locked; beat this deck in Standard"'}><img src="${deck.logo}" alt=""/><span>${unlocked ? deck.name : `🔒 ${deck.name}`}</span></button>`; }).join('');
   }
   function rarityClass(rarity) { return `rarity-${rarity.toLowerCase().replaceAll(' ', '-')}`; }
   function renderDisplay() {
     const deck = getDeck();
     if (!isUnlocked(activeDeck)) {
-      document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">BOOSTER LOCKED</span><h3>${deck.name}</h3><p>Defeat the ${deck.name} deck in Collection Battle to unlock this display.</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div>`;
+      document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">BOOSTER LOCKED</span><h3>${deck.name}</h3><p>Defeat the ${deck.name} deck in Standard to unlock this display.</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div>`;
       return;
     }
     const rarityOrder = Object.keys(DISPLAY_SIZE);
@@ -245,6 +247,8 @@
     }).catch(() => { cloudUserId = null; setMessage('Could not load the account collection. Local collection remains available.', 'error'); render(); });
   }
   window.peppermintCollection = {
+    renderBoosterDisplay() { render(); },
+    openBoosterDisplay() { render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
     count(cardId) { return collectionCount({ id: cardId }); },
     deckList() { return [...player.deckList]; },
     setDeckList(ids) {
@@ -280,18 +284,20 @@
       }
       player.deckList = next; storeSave(); renderDeckEditor(); return true;
     },
-    awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0 }) {
-      const base = won ? 10 : 5;
-      const gem = Math.max(0, Math.floor(Number(avatarGemUses) || 0)) * 10;
-      const life = Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 10;
+    awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
+      const base = won ? 50 : 25;
+      const gem = Math.max(0, Math.floor(Number(avatarGemUses) || 0)) * 20;
+      const life = Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 20;
+      const turns = Math.max(0, Math.floor(Number(turnsElapsed) || 0));
+      const destroyed = Math.max(0, Math.floor(Number(battleDestroyedCards) || 0));
       const unlocked = Boolean(won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId) && !player.unlockedBoosters[opponentDeckId]);
       if (won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId)) {
         player.defeatedDecks[opponentDeckId] = true;
         player.unlockedBoosters[opponentDeckId] = true;
       }
-      player.diamonds += base + gem + life;
+      player.diamonds += base + gem + life + turns + destroyed;
       storeSave(); render();
-      return { total: base + gem + life, base, avatarGem: gem, life, unlocked };
+      return { total: base + gem + life + turns + destroyed, base, avatarGem: gem, life, turns, destroyed, unlocked };
     },
   };
   function renderDeckEditor() {
@@ -343,14 +349,14 @@
   bindEditorDrop(document.getElementById('deck-editor-cards'), 'remove', -1);  document.getElementById('deck-editor-sort').addEventListener('change', renderDeckEditor);
   document.getElementById('deck-editor-cards').addEventListener('click', (event) => { const button = event.target.closest('[data-editor-card]'); if (button) window.peppermintCollection.editorChange(button.dataset.editorCard, Number(button.dataset.editorDelta)); });
   document.getElementById('deck-editor-list').addEventListener('click', (event) => { const button = event.target.closest('[data-editor-card]'); if (button) window.peppermintCollection.editorChange(button.dataset.editorCard, Number(button.dataset.editorDelta)); });
-  document.getElementById('booster-button').addEventListener('click', () => { render(); document.getElementById('booster-dialog').showModal(); });
+  document.getElementById('booster-button').addEventListener('click', () => window.peppermintCollection.openBoosterDisplay());
   document.getElementById('close-boosters').addEventListener('click', () => document.getElementById('booster-dialog').close());
   document.getElementById('booster-dialog').addEventListener('close', () => { if (opening) finishPackReveal(); });
   document.getElementById('skip-booster-animation').addEventListener('click', finishPackReveal);
   document.getElementById('next-booster-pack').addEventListener('click', () => { if (!revealBundle) return; if (revealIndex >= revealItems.length) { finishPackReveal(); return; } document.getElementById('booster-pack-revealed').replaceChildren(); document.getElementById('next-booster-pack').hidden = true; revealTimer = window.setTimeout(revealNextCard, 180); });
   document.getElementById('booster-deck-tabs').addEventListener('click', (event) => {
     const tab = event.target.closest('[data-booster-deck]'); if (!tab) return;
-    if (!isUnlocked(tab.dataset.boosterDeck)) { setMessage(`Defeat the ${getDeck(tab.dataset.boosterDeck).name} deck in Collection Battle to unlock this booster.`, 'error'); return; }
+    if (!isUnlocked(tab.dataset.boosterDeck)) { setMessage(`Defeat the ${getDeck(tab.dataset.boosterDeck).name} deck in Standard to unlock this booster.`, 'error'); return; }
     activeDeck = tab.dataset.boosterDeck; document.getElementById('booster-results').replaceChildren(); setMessage('', ''); render();
   });
   document.getElementById('open-collection').addEventListener('click', () => { renderCollection(); document.getElementById('collection-dialog').showModal(); });

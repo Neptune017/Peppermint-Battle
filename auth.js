@@ -6,11 +6,17 @@
   const form = document.getElementById('account-form');
   const emailInput = document.getElementById('account-email');
   const passwordInput = document.getElementById('account-password');
+  const signupNicknameGroup = document.getElementById('account-nickname-signup-group');
+  const signupNickname = document.getElementById('account-nickname-signup');
   const submit = document.getElementById('account-submit');
   const status = document.getElementById('account-status');
   const modeToggle = document.getElementById('account-mode-toggle');
   const signedInPanel = document.getElementById('account-signed-in');
   const emailLabel = document.getElementById('account-email-label');
+  const profileForm = document.getElementById('account-profile-form');
+  const profileNickname = document.getElementById('account-profile-nickname');
+  const newPassword = document.getElementById('account-new-password');
+  const profileSave = document.getElementById('account-profile-save');
   const signOut = document.getElementById('account-signout');
   let supabaseClient = null;
   let currentSession = null;
@@ -28,6 +34,9 @@
       : 'Sign in to keep your player profile and save data attached to your account.';
     submit.textContent = signUp ? 'CREATE ACCOUNT' : 'SIGN IN';
     passwordInput.autocomplete = signUp ? 'new-password' : 'current-password';
+    signupNicknameGroup.classList.toggle('hidden', !signUp);
+    signupNickname.required = signUp;
+    document.getElementById('account-profile-form').classList.toggle('hidden', !currentSession?.user);
     modeToggle.textContent = signUp ? 'I already have an account' : 'Create a new account';
   }
   function updateAccountUI(session) {
@@ -38,6 +47,11 @@
     modeToggle.classList.toggle('hidden', Boolean(user));
     signedInPanel.classList.toggle('hidden', !user);
     emailLabel.textContent = user?.email || '';
+    document.getElementById('account-title').textContent = user ? 'Your profile' : (isSignUp ? 'Create account' : 'Sign in');
+    document.getElementById('account-description').textContent = user
+      ? 'Update the nickname shown for your player account or change your password.'
+      : (isSignUp ? 'Create an account to keep your player save with you across devices.' : 'Sign in to keep your player profile and save data attached to your account.');
+    if (user) profileNickname.value = user.user_metadata?.nickname || '';
     if (user) setStatus('You are signed in. Your save is stored under this account.', 'success');
     window.dispatchEvent(new CustomEvent('peppermint-auth-state', { detail: { user: user ? { id: user.id, email: user.email } : null } }));
   }
@@ -70,7 +84,7 @@
     try {
       const credentials = { email: emailInput.value.trim(), password: passwordInput.value };
       const result = isSignUp
-        ? await supabaseClient.auth.signUp(credentials)
+        ? await supabaseClient.auth.signUp({ ...credentials, options: { data: { nickname: signupNickname.value.trim() } } })
         : await supabaseClient.auth.signInWithPassword(credentials);
       if (result.error) throw result.error;
       if (isSignUp && !result.data.session) {
@@ -82,6 +96,27 @@
       setStatus(error.message || 'Could not sign in. Try again.', 'error');
     } finally {
       submit.disabled = false;
+    }
+  });
+  profileForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!supabaseClient || !currentSession?.user) return setStatus('Sign in to edit your profile.', 'error');
+    profileSave.disabled = true;
+    setStatus('Saving profile…');
+    try {
+      const nickname = profileNickname.value.trim();
+      if (nickname.length < 2) throw new Error('Nickname must be at least 2 characters.');
+      const updates = { data: { ...currentSession.user.user_metadata, nickname } };
+      if (newPassword.value) updates.password = newPassword.value;
+      const { data, error } = await supabaseClient.auth.updateUser(updates);
+      if (error) throw error;
+      newPassword.value = '';
+      updateAccountUI({ ...currentSession, user: data.user || { ...currentSession.user, user_metadata: { ...currentSession.user.user_metadata, nickname } } });
+      setStatus('Profile updated.', 'success');
+    } catch (error) {
+      setStatus(error.message || 'Could not update the profile.', 'error');
+    } finally {
+      profileSave.disabled = false;
     }
   });
   signOut.addEventListener('click', async () => {

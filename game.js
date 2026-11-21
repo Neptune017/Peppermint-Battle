@@ -148,8 +148,8 @@ function transformationsForDeck(deckId) {
 }
 let selectedPlayerDeck = 'academy';
 let selectedRivalDeck = 'wild-west';
-let selectedBattleMode = 'standard';
-const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false };
+let selectedBattleMode = 'collection';
+const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
 document.getElementById('battle-history-list')?.previousElementSibling?.addEventListener('click', () => {
@@ -224,7 +224,8 @@ function newPlayer(isAI = false, deckId = 'academy', collectionOnly = false) {
   const shuffledPool = shuffleDeck(deckPool);
   const deck = [...shuffledPool];
   shuffleDeck(deck);
-  const transformationDeck = transformationsForDeck(deckId).filter((card) => !collectionOnly || isAI || (window.peppermintCollection?.count(card.id) || 0) > 0).map(cloneCard);
+  const ascendanceCards = collectionOnly && !isAI ? allCardCatalog().filter((card) => card.type === 'Transformation' && (window.peppermintCollection?.count(card.id) || 0) > 0) : transformationsForDeck(deckId);
+  const transformationDeck = ascendanceCards.map(cloneCard);
   const lifeCards = deck.splice(0, 4);
   return { hand: deck.splice(0, 4), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
@@ -232,11 +233,11 @@ function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', coll
   battleHistory.length = 0;
   const historyList = document.getElementById('battle-history-list'); if (historyList) historyList.replaceChildren();
   const historyCount = document.getElementById('history-count'); if (historyCount) historyCount.textContent = '0';
-  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.avatarGemUses = 0;
+  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.avatarGemUses = 0; match.battleDestroyedCards = 0;
   match.playerDeckId = collectionOnly ? 'collection' : playerDeckId; match.opponentDeckId = opponentDeckId;
   match.player = newPlayer(false, collectionOnly ? 'academy' : match.playerDeckId, collectionOnly); match.opponent = newPlayer(true, match.opponentDeckId);
-  if (collectionOnly) { const size = window.peppermintCollection?.deckList().length || 0; if (size < 20 || size > 40) { announceEffect('Collection Battle decks must contain 20–40 gained cards.'); showDeckSelect(); return; } }
-  render(); logBattleEvent(`Battle started · You: ${deckNames[playerDeckId]} · Enemy: ${deckNames[opponentDeckId]}${collectionOnly ? ' · Collection Battle' : ''}.`);
+  if (collectionOnly) { const size = window.peppermintCollection?.deckList().length || 0; if (size < 20 || size > 40) { announceEffect('Standard decks must contain 20–40 gained cards.'); showDeckSelect(); return; } }
+  render(); logBattleEvent(`Battle started · You: ${deckNames[playerDeckId]} · Enemy: ${deckNames[opponentDeckId]}${collectionOnly ? ' · Standard' : ''}.`);
 }
 function syncDeckPicker() {
   document.querySelectorAll('[data-player-deck]').forEach((button) => {
@@ -248,7 +249,7 @@ function syncDeckPicker() {
     button.classList.toggle('selected', selected); button.setAttribute('aria-pressed', String(selected));
   });
 }
-function showDeckSelect() { syncDeckPicker(); document.getElementById('deck-select-dialog').showModal(); }
+function showDeckSelect() { syncDeckPicker(); document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'collection'); document.getElementById('deck-select-dialog').showModal(); }
 function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
 function displayedCardType(card) { return ['academy-grounds', 'toy-store', 'ip-field', 'christmas-mall', 'cactus-creek'].includes(card.id) ? 'Field' : card.type || 'Fighter'; }
 function cardTypeIcon(card, extraClass = '') { return displayedCardType(card) === 'Field' ? `<svg class="field-type-icon ${extraClass}" viewBox="0 0 48 48" role="img" aria-label="Field card"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 5 9 11 9 18s-3 13-9 18M24 6c-6 5-9 11-9 18s3 13 9 18M9 15h30M9 33h30"/></svg>` : ''; }
@@ -966,7 +967,7 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
   if (familiarIndex >= 0) { owner.destroyed.push(owner.life.familiars[familiarIndex]); owner.life.familiars[familiarIndex] = null; announceEffect(`${card.name}’s Familiar was destroyed with its owner.`); }
   if (zombyReturns) { card.cost += 1; owner.hand.push(card); announceEffect(`Zomby returned to its owner’s hand and its cost increased to ${card.cost} Mana.`); }
   else if (galactaSaves) { owner.hand.push(card); announceEffect(`${card.name} returned to your hand through GaLacta.`); }
-  else owner.destroyed.push(card);
+  else { owner.destroyed.push(card); if (inBattle) match.battleDestroyedCards = (match.battleDestroyedCards || 0) + 1; }
   if (!galactaSaves && card.id === 'kage') { playSpecialFx(owner, laneIndex, 'kage', 'KAGE · LAST VEIL'); drawMatching(owner, (candidate) => candidate.name === 'Zoya', 'Zoya'); }
   if (card.id === 'amethyst') { const opponent = owner === match.player ? match.opponent : match.player; if (opponent.lanes[laneIndex]) { playSpecialFx(owner, laneIndex, 'amethyst', 'AMETHYST · SHATTER'); if (destroyUnit(opponent, laneIndex)) announceEffect('Amethyst destroys the fighter opposite it.'); } }
   if (!galactaSaves && card.id === 'ww-eggscythe') {
@@ -1629,7 +1630,7 @@ function endMatch(won) {
 function settleCollectionBattle(won) {
   if (!match.collectionOnly || !window.peppermintCollection) { renderBattleRewards(null); return null; }
   const remainingLifeCards = match.player.life.middle.filter(Boolean).length + Number(Boolean(match.player.life.main));
-  return { ...window.peppermintCollection.awardBattle({ won, opponentDeckId: match.opponentDeckId, remainingLifeCards, avatarGemUses: match.avatarGemUses || 0 }), won, remainingLifeCards };
+  return { ...window.peppermintCollection.awardBattle({ won, opponentDeckId: match.opponentDeckId, remainingLifeCards, avatarGemUses: match.avatarGemUses || 0, turnsElapsed: match.turn, battleDestroyedCards: match.battleDestroyedCards || 0 }), won, remainingLifeCards, turnsElapsed: match.turn, battleDestroyedCards: match.battleDestroyedCards || 0 };
 }
 function renderBattleRewards(reward) {
   const list = document.getElementById('result-rewards');
@@ -1639,7 +1640,16 @@ function renderBattleRewards(reward) {
     { label: reward.won ? 'Victory' : 'Loss', value: reward.base },
     { label: 'Avatar Gem used', value: reward.avatarGem },
     { label: `Life cards remaining (${reward.remainingLifeCards})`, value: reward.life },
+    { label: `Turns elapsed (${reward.turnsElapsed})`, value: reward.turns },
+    { label: `Cards destroyed in battle (${reward.battleDestroyedCards})`, value: reward.destroyed },
   ].filter((row) => row.value > 0) : [];
+  const total = rows.reduce((sum, row) => sum + row.value, 0);
+  const totalPanel = document.getElementById('result-diamond-total');
+  const totalAmount = document.getElementById('result-diamond-amount');
+  if (totalPanel && totalAmount) {
+    totalAmount.textContent = `+${total.toLocaleString()}`;
+    totalPanel.classList.toggle('hidden', total <= 0);
+  }
   list.innerHTML = rows.map((row) => `<li><img src="assets/ui-icons/diamond-currency.png" alt=""/><span>${row.label}</span><strong>+${row.value}</strong></li>`).join('');
   list.classList.toggle('hidden', !rows.length);
   note.textContent = reward?.unlocked ? `${deckNames[match.opponentDeckId]} booster display unlocked!` : '';
