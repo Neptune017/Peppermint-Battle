@@ -250,6 +250,16 @@
     renderBoosterDisplay() { render(); },
     openBoosterDisplay() { render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
     count(cardId) { return collectionCount({ id: cardId }); },
+    ascendanceDeck() {
+      const seen = new Set();
+      return allCardCatalog().filter((card) => {
+        if (card.type !== 'Transformation') return false;
+        const key = `${card.title}|${card.name}`;
+        if (seen.has(key) || collectionCount(card) < 1) return false;
+        seen.add(key);
+        return true;
+      }).map((card) => card.id);
+    },
     deckList() { return [...player.deckList]; },
     setDeckList(ids) {
       const cards = collectionCards(); const catalog = new Map(cards.map((card) => [card.id, card]));
