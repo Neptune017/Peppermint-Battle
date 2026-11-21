@@ -434,5 +434,77 @@
   "ZodiacWildOx.png": {
     "x": 0.5,
     "y": 0.29
+  },
+  "VegcritterHopkin.png": {
+    "x": 0.5,
+    "y": 0.42
+  },
+  "VegCritterPurrnip.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "WildWestBlake.png": {
+    "x": 0.5,
+    "y": 0.38
+  },
+  "ZodiacEgg.png": {
+    "x": 0.5,
+    "y": 0.36
+  },
+  "QuickDraw.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "DuelistsGambit.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "BountyRaid.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "Root.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "WantedPoster.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "WeddingProposal.png": {
+    "x": 0.53,
+    "y": 0.53
+  },
+  "Shopping.png": {
+    "x": 0.5,
+    "y": 0.38
+  },
+  "MerryChristmas.png": {
+    "x": 0.5,
+    "y": 0.41
+  },
+  "RideTheWave.png": {
+    "x": 0.5,
+    "y": 0.36
+  },
+  "NoPainNoGain.png": {
+    "x": 0.5,
+    "y": 0.39
+  },
+  "SwimDontSink.png": {
+    "x": 0.5,
+    "y": 0.38
+  },
+  "DollChorus.png": {
+    "x": 0.5,
+    "y": 0.39
+  },
+  "WindUpToy.png": {
+    "x": 0.5,
+    "y": 0.4
+  },
+  "ToyCapsule.png": {
+    "x": 0.5,
+    "y": 0.43
   }
 }
