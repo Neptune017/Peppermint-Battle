@@ -1,6 +1,6 @@
 (() => {
   const STARTING_DIAMONDS = 100;
-  const DISPLAY_SIZE = { Common: 100, Uncommon: 60, Rare: 40, 'Super Rare': 20, 'Ultra Rare': 10 };
+  const DISPLAY_SIZE = { Common: 150, Uncommon: 60, Rare: 30, 'Super Rare': 3, 'Ultra Rare': 1 };
   const DUPLICATE_DIAMONDS = { Common: 1, Uncommon: 1, Rare: 1, 'Super Rare': 2, 'Ultra Rare': 3 };
   const DECKS = [
     { id: 'wild-west', name: 'Wild West', logo: 'assets/deck-logos/wild-west.png', pack: 'assets/booster-packs/wild-west-booster-pack-cutout.png' },
