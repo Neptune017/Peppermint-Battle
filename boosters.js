@@ -62,7 +62,7 @@
       if (!next) break;
       deckList.push(next.id); counts.set(next.id, (counts.get(next.id) || 0) + 1);
     }
-    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {} };
+    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, ascendanceDeck: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'], deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList], ascendance: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {} };
   }
   function collectionCards() {
     const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
@@ -85,21 +85,24 @@
     }
     cards['zodiac-guardian-kage'] = Math.max(1, cards['zodiac-guardian-kage'] || 0);
     cards['zodiac-guardian-ryota'] = Math.max(1, cards['zodiac-guardian-ryota'] || 0);
+    const ownedAscendance = [...new Map(allCardCatalog().filter((card) => card.type === 'Transformation' && (cards[card.id] || 0) > 0).map((card) => [card.id, card])).keys()].slice(0, 12);
     const academy = [...new Map(mainCards('academy').map((card) => [card.id, card])).values()];
     const migratedDeck = academy.flatMap((card) => Array.from({ length: Math.min(Math.max(0, Math.floor(Number(cards[card.id]) || 0)), collectionLimit(card)) }, () => card.id)).slice(0, 40);
     const oldDeck = Array.isArray(save.deckList) ? save.deckList.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : migratedDeck;
-    const slots = Array.isArray(save.deckSlots) ? save.deckSlots.slice(0, 20).filter((slot) => slot && typeof slot === 'object').map((slot, index) => ({ id: typeof slot.id === 'string' ? slot.id : `deck-${index + 1}`, name: String(slot.name || `Deck ${index + 1}`).slice(0, 28), cards: Array.isArray(slot.cards) ? slot.cards.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : [] })) : [];
-    if (!slots.length) slots.push({ id: 'deck-1', name: 'Academy Starter', cards: oldDeck });
+    const slots = Array.isArray(save.deckSlots) ? save.deckSlots.slice(0, 20).filter((slot) => slot && typeof slot === 'object').map((slot, index) => ({ id: typeof slot.id === 'string' ? slot.id : `deck-${index + 1}`, name: String(slot.name || `Deck ${index + 1}`).slice(0, 28), cards: Array.isArray(slot.cards) ? slot.cards.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : [], ascendance: (Array.isArray(slot.ascendance) ? slot.ascendance : (Array.isArray(save.ascendanceDeck) && slot.id === save.activeDeckId ? save.ascendanceDeck : ownedAscendance)).filter((id) => ownedAscendance.includes(id)).slice(0, 12) })) : [];
+    if (!slots.length) slots.push({ id: 'deck-1', name: 'Academy Starter', cards: oldDeck, ascendance: ownedAscendance });
     const activeDeckId = slots.some((slot) => slot.id === save.activeDeckId) ? save.activeDeckId : slots[0].id;
     const active = slots.find((slot) => slot.id === activeDeckId);
-    return { version: 2, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards, deckList: [...active.cards], deckSlots: slots, activeDeckId, displays: save.displays && typeof save.displays === 'object' ? save.displays : {}, unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {}, defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {} };
+    return { version: 2, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards, deckList: [...active.cards], ascendanceDeck: [...active.ascendance], deckSlots: slots, activeDeckId, displays: save.displays && typeof save.displays === 'object' ? save.displays : {}, unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {}, defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {} };
   }  function loadLocalSave() {
-    try { const saved = localStorage.getItem(STORAGE_KEY); return saved ? normalizeSave(JSON.parse(saved)) : freshSave(); }
+    try { const saved = localStorage.getItem(STORAGE_KEY); const normalized = saved ? normalizeSave(JSON.parse(saved)) : freshSave(); localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)); return normalized; }
     catch { return freshSave(); }
   }
   function storeSave() {
     const activeSlot = player.deckSlots?.find((slot) => slot.id === player.activeDeckId);
     if (activeSlot) activeSlot.cards = [...player.deckList];
+    if (activeSlot) activeSlot.ascendance = [...(player.ascendanceDeck || [])];
+    player.ascendanceDeck = [...(activeSlot?.ascendance || player.ascendanceDeck || [])];
     if (!cloudUserId) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(player)); } catch { setMessage('This browser could not save local collection data.', 'error'); }
     }
@@ -212,6 +215,10 @@
     const canonical = canonicalId(chosen.id);
     aliasesFor(chosen).forEach((id) => { delete player.cards[id]; });
     player.cards[canonical] = nextCount;
+    if (chosen.type === 'Transformation') {
+      player.deckSlots.forEach((slot) => { if (slot.ascendance.length < 12 && !slot.ascendance.includes(canonical)) slot.ascendance.push(canonical); });
+      player.ascendanceDeck = [...(player.deckSlots.find((slot) => slot.id === player.activeDeckId)?.ascendance || [])];
+    }
     return { card: chosen, converted: false, reward: 0, count: nextCount, limit, wasNew: oldCount === 0 };
   }
   function openPack(bundle) {
@@ -242,7 +249,8 @@
     window.peppermintPlayerSave.load().then((data) => {
       cloudSaveData = data && typeof data === 'object' ? data : {};
       if (cloudSaveData.boosters) player = normalizeSave(cloudSaveData.boosters);
-      else { player = freshSave(); storeSave(); }
+      else player = freshSave();
+      storeSave();
       render();
     }).catch(() => { cloudUserId = null; setMessage('Could not load the account collection. Local collection remains available.', 'error'); render(); });
   }
@@ -250,16 +258,6 @@
     renderBoosterDisplay() { render(); },
     openBoosterDisplay() { render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
     count(cardId) { return collectionCount({ id: cardId }); },
-    ascendanceDeck() {
-      const seen = new Set();
-      return allCardCatalog().filter((card) => {
-        if (card.type !== 'Transformation') return false;
-        const key = `${card.title}|${card.name}`;
-        if (seen.has(key) || collectionCount(card) < 1) return false;
-        seen.add(key);
-        return true;
-      }).map((card) => card.id);
-    },
     deckList() { return [...player.deckList]; },
     setDeckList(ids) {
       const cards = collectionCards(); const catalog = new Map(cards.map((card) => [card.id, card]));
@@ -277,9 +275,17 @@
     listOwnedCards() {
       return collectionCards().filter((card) => card.type !== 'Transformation').map((card) => ({ ...card, type: card.title === 'Pocket World' ? 'Field' : card.type, role: card.title === 'Pocket World' ? 'Field' : card.role, owned: collectionCount(card), deckLimit: Math.min(collectionCount(card), collectionLimit(card)), inDeck: player.deckList.filter((id) => canonicalId(id) === card.id).length }));
     },
+    listOwnedAscendance() { return allCardCatalog().filter((card) => card.type === 'Transformation').map((card) => ({ ...card, owned: collectionCount(card) })).sort((a, b) => a.name.localeCompare(b.name)); },
+    ascendanceDeck() { return [...(player.ascendanceDeck || [])]; },
+    setAscendanceDeck(ids) {
+      const owned = new Set(this.listOwnedAscendance().filter((card) => card.owned > 0).map((card) => card.id));
+      const next = [...new Set(Array.isArray(ids) ? ids : [])];
+      if (next.length > 12 || next.some((id) => !owned.has(id))) return false;
+      player.ascendanceDeck = next; storeSave(); renderDeckEditor(); return true;
+    },
     deckSlots() { return player.deckSlots.map((slot) => ({ id: slot.id, name: slot.name, count: slot.cards.length, active: slot.id === player.activeDeckId })); },
-    selectDeck(id) { const slot = player.deckSlots.find((entry) => entry.id === id); if (!slot) return false; player.activeDeckId = id; activeDeckSlot = id; player.deckList = [...slot.cards]; storeSave(); renderDeckEditor(); return true; },
-    createDeck(name) { if (player.deckSlots.length >= 20) return false; const n = player.deckSlots.length + 1; const id = `deck-${Date.now()}-${n}`; const slot = { id, name: String(name || `My Deck ${n}`).slice(0, 28), cards: [] }; player.deckSlots.push(slot); player.activeDeckId = id; activeDeckSlot = id; player.deckList = []; storeSave(); renderDeckEditor(); return true; },
+    selectDeck(id) { const slot = player.deckSlots.find((entry) => entry.id === id); if (!slot) return false; player.activeDeckId = id; activeDeckSlot = id; player.deckList = [...slot.cards]; player.ascendanceDeck = [...slot.ascendance]; storeSave(); renderDeckEditor(); return true; },
+    createDeck(name) { if (player.deckSlots.length >= 20) return false; const n = player.deckSlots.length + 1; const id = `deck-${Date.now()}-${n}`; const ascendance = this.listOwnedAscendance().filter((card) => card.owned > 0).slice(0, 12).map((card) => card.id); const slot = { id, name: String(name || `My Deck ${n}`).slice(0, 28), cards: [], ascendance }; player.deckSlots.push(slot); player.activeDeckId = id; activeDeckSlot = id; player.deckList = []; player.ascendanceDeck = ascendance; storeSave(); renderDeckEditor(); return true; },
     renameDeck(name) { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); if (!slot || !String(name || '').trim()) return false; slot.name = String(name).trim().slice(0, 28); storeSave(); renderDeckEditor(); return true; },
     renderDeckEditor() { renderDeckEditor(); },
     editorChange(cardId, delta) {
@@ -295,9 +301,9 @@
       player.deckList = next; storeSave(); renderDeckEditor(); return true;
     },
     awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
-      const base = won ? 50 : 25;
+      const base = won ? 20 : 10;
       const gem = Math.max(0, Math.floor(Number(avatarGemUses) || 0)) * 20;
-      const life = Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 20;
+      const life = Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 15;
       const turns = Math.max(0, Math.floor(Number(turnsElapsed) || 0));
       const destroyed = Math.max(0, Math.floor(Number(battleDestroyedCards) || 0));
       const unlocked = Boolean(won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId) && !player.unlockedBoosters[opponentDeckId]);
@@ -343,6 +349,13 @@
       const unavailable = !card.owned || deck.length >= 40 || card.inDeck >= card.deckLimit;
       return `<article class="editor-card ${unavailable ? 'cannot-add' : ''}" draggable="${!unavailable}" data-editor-drag-add="${card.id}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="editor-card-info"><small>${card.title} · ${card.type || 'Fighter'} · ${card.cost} Mana</small><strong>${card.name}</strong><span>Owned ${card.owned} · In deck ${card.inDeck} / ${card.deckLimit}</span><button type="button" data-editor-card="${card.id}" data-editor-delta="1" ${unavailable ? 'disabled' : ''}>ADD CARD</button></div></article>`;
     }).join('') || '<p class="editor-empty">No cards match this search.</p>';
+    const ascCards = window.peppermintCollection.listOwnedAscendance();
+    const ascDeck = window.peppermintCollection.ascendanceDeck();
+    document.getElementById('ascendance-editor-count').textContent = `${ascDeck.length} / 12 cards`;
+    document.getElementById('ascendance-editor-list').innerHTML = ascCards.map((card) => {
+      const inDeck = ascDeck.includes(card.id), unavailable = !card.owned || (!inDeck && ascDeck.length >= 12);
+      return `<article class="ascendance-editor-card ${card.owned ? '' : 'cannot-add'}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small>ZODIAC GUARDIAN · ${card.element}</small><strong>${card.name}</strong><span>${card.owned ? (inDeck ? 'In this Ascendance Deck' : 'Owned') : 'Not owned'}</span></div><button type="button" data-ascendance-card="${card.id}" data-ascendance-action="${inDeck ? 'remove' : 'add'}" ${unavailable ? 'disabled' : ''}>${inDeck ? 'REMOVE' : 'ADD'}</button></article>`;
+    }).join('');
   }
   document.getElementById('deck-editor-search').addEventListener('input', renderDeckEditor);
   ['deck-editor-type','deck-editor-element','deck-editor-class','deck-editor-pack','deck-editor-hide-unowned'].forEach((id) => document.getElementById(id).addEventListener('change', renderDeckEditor));
@@ -359,6 +372,13 @@
   bindEditorDrop(document.getElementById('deck-editor-cards'), 'remove', -1);  document.getElementById('deck-editor-sort').addEventListener('change', renderDeckEditor);
   document.getElementById('deck-editor-cards').addEventListener('click', (event) => { const button = event.target.closest('[data-editor-card]'); if (button) window.peppermintCollection.editorChange(button.dataset.editorCard, Number(button.dataset.editorDelta)); });
   document.getElementById('deck-editor-list').addEventListener('click', (event) => { const button = event.target.closest('[data-editor-card]'); if (button) window.peppermintCollection.editorChange(button.dataset.editorCard, Number(button.dataset.editorDelta)); });
+  document.getElementById('ascendance-editor-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-ascendance-card]'); if (!button) return;
+    const ids = window.peppermintCollection.ascendanceDeck();
+    if (button.dataset.ascendanceAction === 'add') ids.push(button.dataset.ascendanceCard);
+    else ids.splice(ids.indexOf(button.dataset.ascendanceCard), 1);
+    window.peppermintCollection.setAscendanceDeck(ids);
+  });
   document.getElementById('booster-button').addEventListener('click', () => window.peppermintCollection.openBoosterDisplay());
   document.getElementById('close-boosters').addEventListener('click', () => document.getElementById('booster-dialog').close());
   document.getElementById('booster-dialog').addEventListener('close', () => { if (opening) finishPackReveal(); });
