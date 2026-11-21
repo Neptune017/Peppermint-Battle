@@ -416,3 +416,5 @@ body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(1
 .enemy-life-row .life-card.main-life{background:linear-gradient(110deg,#392650,#282039);border-color:#bd8cff;box-shadow:0 0 15px #bd8cff35}
 .field-zone[data-card-preview]{cursor:help}
 .deck-option{position:relative}
+
+.special-dharma-revival{--special-color:#a9ffc9}.special-dharma-revival>span{animation:fx-heal 1s ease-out both}

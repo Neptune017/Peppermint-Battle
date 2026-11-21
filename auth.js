@@ -1,0 +1,111 @@
+(function () {
+  const config = window.PB_SUPABASE_CONFIG || {};
+  const button = document.getElementById('account-button');
+  const dialog = document.getElementById('account-dialog');
+  const close = document.getElementById('close-account');
+  const form = document.getElementById('account-form');
+  const emailInput = document.getElementById('account-email');
+  const passwordInput = document.getElementById('account-password');
+  const submit = document.getElementById('account-submit');
+  const status = document.getElementById('account-status');
+  const modeToggle = document.getElementById('account-mode-toggle');
+  const signedInPanel = document.getElementById('account-signed-in');
+  const emailLabel = document.getElementById('account-email-label');
+  const signOut = document.getElementById('account-signout');
+  let supabaseClient = null;
+  let currentSession = null;
+  let isSignUp = false;
+
+  function setStatus(message, kind) {
+    status.textContent = message || '';
+    status.dataset.kind = kind || '';
+  }
+  function setMode(signUp) {
+    isSignUp = signUp;
+    document.getElementById('account-title').textContent = signUp ? 'Create account' : 'Sign in';
+    document.getElementById('account-description').textContent = signUp
+      ? 'Create an account to keep your player save with you across devices.'
+      : 'Sign in to keep your player profile and save data attached to your account.';
+    submit.textContent = signUp ? 'CREATE ACCOUNT' : 'SIGN IN';
+    passwordInput.autocomplete = signUp ? 'new-password' : 'current-password';
+    modeToggle.textContent = signUp ? 'I already have an account' : 'Create a new account';
+  }
+  function updateAccountUI(session) {
+    currentSession = session || null;
+    const user = currentSession?.user;
+    button.textContent = user ? 'ACCOUNT' : 'SIGN IN';
+    form.classList.toggle('hidden', Boolean(user));
+    modeToggle.classList.toggle('hidden', Boolean(user));
+    signedInPanel.classList.toggle('hidden', !user);
+    emailLabel.textContent = user?.email || '';
+    if (user) setStatus('You are signed in. Your save is stored under this account.', 'success');
+    window.dispatchEvent(new CustomEvent('peppermint-auth-state', { detail: { user: user ? { id: user.id, email: user.email } : null } }));
+  }
+  async function loadPlayerSave() {
+    if (!supabaseClient || !currentSession?.user) return null;
+    const { data, error } = await supabaseClient.from('player_profiles').select('save_data').eq('user_id', currentSession.user.id).maybeSingle();
+    if (error) throw error;
+    return data?.save_data ?? null;
+  }
+  async function savePlayerSave(saveData) {
+    if (!supabaseClient || !currentSession?.user) throw new Error('Sign in before saving player data.');
+    const { error } = await supabaseClient.from('player_profiles').upsert({
+      user_id: currentSession.user.id,
+      save_data: saveData,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (error) throw error;
+    return true;
+  }
+  window.peppermintPlayerSave = { load: loadPlayerSave, save: savePlayerSave };
+
+  button.addEventListener('click', () => { setStatus('', ''); dialog.showModal(); });
+  close.addEventListener('click', () => dialog.close());
+  modeToggle.addEventListener('click', () => { setMode(!isSignUp); setStatus('', ''); });
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!supabaseClient) return setStatus('Account sign-in is not connected yet. Add your Supabase project URL and publishable key in auth-config.js.', 'error');
+    submit.disabled = true;
+    setStatus(isSignUp ? 'Creating your account…' : 'Signing in…');
+    try {
+      const credentials = { email: emailInput.value.trim(), password: passwordInput.value };
+      const result = isSignUp
+        ? await supabaseClient.auth.signUp(credentials)
+        : await supabaseClient.auth.signInWithPassword(credentials);
+      if (result.error) throw result.error;
+      if (isSignUp && !result.data.session) {
+        setStatus('Account created. Check your email to confirm it, then sign in.', 'success');
+      } else {
+        updateAccountUI(result.data.session);
+      }
+    } catch (error) {
+      setStatus(error.message || 'Could not sign in. Try again.', 'error');
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  signOut.addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) setStatus(error.message, 'error');
+    else { updateAccountUI(null); setMode(false); setStatus('You are signed out.'); }
+  });
+
+  setMode(false);
+  if (!config.url || !config.anonKey) {
+    submit.disabled = true;
+    setStatus('Supabase connection needed: add the project URL and publishable key to auth-config.js.', 'setup');
+    return;
+  }
+  if (!window.supabase?.createClient) {
+    submit.disabled = true;
+    setStatus('The sign-in service could not load. Check your internet connection and reload.', 'error');
+    return;
+  }
+  supabaseClient = window.supabase.createClient(config.url, config.anonKey);
+  supabaseClient.auth.getSession().then(({ data, error }) => {
+    if (error) setStatus(error.message, 'error');
+    updateAccountUI(data?.session);
+  });
+  supabaseClient.auth.onAuthStateChange((_event, session) => updateAccountUI(session));
+})();

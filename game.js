@@ -12,7 +12,7 @@ const cardLibrary = [
   { id: 'amethyst', title: 'Academy', name: 'Amethyst', cost: 4, attack: 4, element: 'Dark', role: 'Shielder', art: 'assets/cards/AcademyAmethyst.png', ability: 'Destroy the opposing fighter.' },
   { id: 'den', title: 'Academy', name: 'Den', cost: 4, attack: 2, element: 'Mind', role: 'Enchanter', art: 'assets/cards/AcademyDen.png?v=20261120bm', ability: 'Let a fighter attack on its first turn.' },
   { id: 'peppermint-ally', title: 'Academy', name: 'Cotton', cost: 4, attack: 4, element: 'Mind', role: 'Blader', art: 'assets/cards/AcademyCotton.png', ability: 'Discard this card to draw Academy Hall from your deck into your hand.' },
-  { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.png', ability: 'Academy cards gain +1 attack for each Academy card on the field.' },
+  { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.png', ability: 'Academy cards gain +1 attack while at least one Academy card is on the field.' },
   { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.png', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
   { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.png', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
   { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.png', ability: 'Replace a card in a fighter zone with a card from the Ascendance Deck that has the same name.' },
@@ -140,10 +140,15 @@ const winterBallLibrary = [
   { id: 'wb-shopping', title: 'General', name: 'Shopping', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/Shopping.png', ability: 'Draw 2 cards.' },
   { id: 'wb-merry-christmas', title: 'General', name: 'Merry Christmas!', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Glacial', role: 'Action', art: 'assets/cards/MerryChristmas.png', ability: 'Search your deck for a Glacial card and add it to your hand.' },
 ];
-const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', fun: 'Fun Deck' };
+const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', fun: 'Fun Deck', collection: 'My Collection' };
 function allCardCatalog() { return [...new Map([...cardLibrary, ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary].map((card) => [card.id, card])).values()]; }
+function transformationsForDeck(deckId) {
+  const ids = { academy:['zodiac-guardian-kage','zodiac-guardian-ryota'], 'wild-west':['zodiac-guardian-rick'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'], fun:allCardCatalog().filter((card) => card.type === 'Transformation').map((card) => card.id) }[deckId] || [];
+  return allCardCatalog().filter((card) => card.type === 'Transformation' && ids.includes(card.id));
+}
 let selectedPlayerDeck = 'academy';
 let selectedRivalDeck = 'wild-west';
+let selectedBattleMode = 'standard';
 const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
@@ -188,11 +193,14 @@ function shuffleDeck(cards) {
   }
   return cards;
 }
-function newPlayer(isAI = false, deckId = 'academy') {
+function newPlayer(isAI = false, deckId = 'academy', collectionOnly = false) {
   const sourceCards = deckId === 'fun' ? allCardCatalog() : deckId === 'wild-west' ? wildWestLibrary : deckId === 'island-paradise' ? islandParadiseLibrary : deckId === 'living-toy' ? livingToyLibrary : deckId === 'winter-ball' ? winterBallLibrary : cardLibrary.filter((card) => !['locker-room', 'zodiac-egg'].includes(card.id));
   const baseCards = sourceCards.filter((card) => card.type !== 'Transformation');
   let deckPool;
-  if (deckId === 'fun') deckPool = baseCards.map(cloneCard);
+  if (collectionOnly && !isAI) {
+    const catalog = new Map(allCardCatalog().map((card) => [card.id, card]));
+    deckPool = (window.peppermintCollection?.deckList() || []).map((id) => catalog.get(id)).filter(Boolean).map(cloneCard);
+  } else if (deckId === 'fun') deckPool = baseCards.map(cloneCard);
   else {
     const copyCounts = new Map();
     deckPool = baseCards.flatMap((card) => {
@@ -216,18 +224,19 @@ function newPlayer(isAI = false, deckId = 'academy') {
   const shuffledPool = shuffleDeck(deckPool);
   const deck = [...shuffledPool];
   shuffleDeck(deck);
-  const transformationDeck = allCardCatalog().filter((card) => card.type === 'Transformation').map(cloneCard);
+  const transformationDeck = transformationsForDeck(deckId).filter((card) => !collectionOnly || isAI || (window.peppermintCollection?.count(card.id) || 0) > 0).map(cloneCard);
   const lifeCards = deck.splice(0, 4);
   return { hand: deck.splice(0, 4), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
-function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west') {
+function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', collectionOnly = false) {
   battleHistory.length = 0;
   const historyList = document.getElementById('battle-history-list'); if (historyList) historyList.replaceChildren();
   const historyCount = document.getElementById('history-count'); if (historyCount) historyCount.textContent = '0';
-  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false;
-  match.playerDeckId = playerDeckId; match.opponentDeckId = opponentDeckId;
-  match.player = newPlayer(false, match.playerDeckId); match.opponent = newPlayer(true, match.opponentDeckId);
-  render(); logBattleEvent(`Battle started · You: ${deckNames[playerDeckId]} · Enemy: ${deckNames[opponentDeckId]}.`);
+  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.avatarGemUses = 0;
+  match.playerDeckId = collectionOnly ? 'collection' : playerDeckId; match.opponentDeckId = opponentDeckId;
+  match.player = newPlayer(false, collectionOnly ? 'academy' : match.playerDeckId, collectionOnly); match.opponent = newPlayer(true, match.opponentDeckId);
+  if (collectionOnly) { const size = window.peppermintCollection?.deckList().length || 0; if (size < 20 || size > 40) { announceEffect('Collection Battle decks must contain 20–40 gained cards.'); showDeckSelect(); return; } }
+  render(); logBattleEvent(`Battle started · You: ${deckNames[playerDeckId]} · Enemy: ${deckNames[opponentDeckId]}${collectionOnly ? ' · Collection Battle' : ''}.`);
 }
 function syncDeckPicker() {
   document.querySelectorAll('[data-player-deck]').forEach((button) => {
@@ -307,7 +316,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
     const filename = cleanArt.split('/').pop();
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261121-wide-crops`;
     const size = compact ? 'battle' : 'hand';
     return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" alt="${card.name}" /></picture>`;
   })() : `<div class="card-art-fallback">${card.name}</div>`;
@@ -354,14 +363,16 @@ function canTargetLane(attacker, sourceIndex, defender, targetIndex) {
   return sourceIndex === targetIndex && Boolean(defender.lanes[targetIndex] || hasLifeTarget(defender, targetIndex, attacker));
 }
 function resolveAttackTarget(defender, target, sourceIndex = -1) {
-  const shield = shielderLane(defender);
-  if (shield < 0) return target;
-  const shieldIsCenter = shield === 1;
-  const targetIsOtherLane = target.type === 'lane' && target.index !== shield;
-  const centerIntercepts = shieldIsCenter && (target.type !== 'lane' || targetIsOtherLane);
   const protectedLane = target.type === 'life' ? (target.main ? sourceIndex : target.index) : target.index;
-  const sideInterceptsAdjacent = !shieldIsCenter && Math.abs(shield - protectedLane) === 1 && (target.type === 'lane' || target.type === 'life');
-  return centerIntercepts || sideInterceptsAdjacent ? { type: 'lane', index: shield, redirected: true, redirectedFrom: target, sourceIndex } : target;
+  const interceptors = defender.lanes.flatMap((card, lane) => {
+    if (card?.role !== 'Shielder') return [];
+    const centerIntercepts = lane === 1 && (target.type !== 'lane' || target.index !== lane);
+    const sideInterceptsAdjacent = lane !== 1 && Math.abs(lane - protectedLane) === 1 && (target.type === 'lane' || target.type === 'life');
+    return centerIntercepts || sideInterceptsAdjacent ? [{ lane, card }] : [];
+  });
+  if (!interceptors.length) return target;
+  interceptors.sort((a, b) => effectiveAttack(b.card, defender, { defending: true }) - effectiveAttack(a.card, defender, { defending: true }));
+  const shield = interceptors[0].lane; return { type: 'lane', index: shield, redirected: true, redirectedFrom: target, sourceIndex };
 }
 function attackBreakdown(card, owner, { attacking = false, defending = false, targetIndex: preferredTarget = null } = {}) {
   if (!card || !owner) return { total: 0, change: 0, reasons: [], sources: [], modifiers: [] };
@@ -393,7 +404,7 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
   if (match.fieldCard?.id === 'cactus-creek' && index >= 0 && card.title === 'Wild West' && match.active === (owner === match.player ? 'opponent' : 'player')) { attack++; reasons.push('Cactus Creek +1'); addModifier(1, 'Cactus Creek'); }
   if (match.fieldCard?.id === 'academy-grounds' && index >= 0 && card.title === 'Academy') {
     const academyCount = [...(match.player?.lanes || []), ...(match.opponent?.lanes || [])].filter((unit) => unit?.title === 'Academy').length;
-    if (academyCount) { attack += academyCount; reasons.push(`Academy Hall +${academyCount}`); addModifier(academyCount, 'Academy Hall'); }
+    if (academyCount) { attack += 1; reasons.push('Academy Hall +1'); addModifier(1, 'Academy Hall'); }
   }
   if (card.id === 'zodiac-guardian-rick') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Terra').length; if (bonus) { attack += bonus; reasons.push(`Terra cards destroyed +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'wb-zodiac-topaz' || card.id === 'wb-zodiac-dimitri') { const element = card.id === 'wb-zodiac-topaz' ? 'Aer' : 'Glacial'; const bonus = [...owner.hand, ...owner.lanes.filter(Boolean)].filter((unit) => unit.element === element).length; if (bonus) { attack += bonus; reasons.push(`${element} cards in hand or on field +${bonus}`); addModifier(bonus, card.name); } }
@@ -592,13 +603,13 @@ function drawCard(player, count = 1) {
   for (let i = 0; i < count; i++) { if (player.deck.length) player.hand.push(player.deck.shift()); }
 }
 let pendingEffectChoice = null;
-const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.png',runny:'30FPS_FA02_04_Impulse.png',berry:'30FPS_FA01_09_Barrier.png',frosty:'30FPS_FA01_08_Shield.png',den:'30FPS_FA01_04_Buff.png',ryota:'30FPS_FA01_01_Slash.png',healer:'30FPS_FA01_07_Cure.png',summoner:'30FPS_FA02_01_EnergyBurst.png',gummy:'30FPS_FA02_03_CrystalBlossom.png',zoya:'30FPS_FA02_02_Smokescreen.png',cooking:'30FPS_FA02_03_CrystalBlossom.png',cotton:'30FPS_FA02_03_CrystalBlossom.png',kage:'30FPS_FA02_02_Smokescreen.png',amethyst:'30FPS_FA01_10_Burst.png',shielder:'30FPS_FA01_08_Shield.png',shooter:'30FPS_FA01_02_Thrust.png',enchanter:'30FPS_FA01_04_Buff.png',trickster:'30FPS_FA01_05_Debuff.png',blader:'30FPS_FA01_01_Slash.png',brawler:'30FPS_FA01_03_Punch.png',peppermint:'30FPS_FA01_04_Buff.png','avatar-gem':'30FPS_FA02_07_HyperCharge.png' };
+const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.png',runny:'30FPS_FA02_04_Impulse.png',berry:'30FPS_FA01_09_Barrier.png',frosty:'30FPS_FA01_08_Shield.png',den:'30FPS_FA01_04_Buff.png',ryota:'30FPS_FA01_01_Slash.png',healer:'30FPS_FA01_07_Cure.png',summoner:'30FPS_FA02_01_EnergyBurst.png',gummy:'30FPS_FA02_03_CrystalBlossom.png',zoya:'30FPS_FA02_02_Smokescreen.png',cooking:'30FPS_FA02_03_CrystalBlossom.png',cotton:'30FPS_FA02_03_CrystalBlossom.png',kage:'30FPS_FA02_02_Smokescreen.png',amethyst:'30FPS_FA01_10_Burst.png',shielder:'30FPS_FA01_08_Shield.png',shooter:'30FPS_FA01_02_Thrust.png',enchanter:'30FPS_FA01_04_Buff.png',trickster:'30FPS_FA01_05_Debuff.png',blader:'30FPS_FA01_01_Slash.png',brawler:'30FPS_FA01_03_Punch.png',peppermint:'30FPS_FA01_04_Buff.png','avatar-gem':'30FPS_FA02_07_HyperCharge.png','dharma-revival':'30FPS_FA02_03_CrystalBlossom.png' };
 function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, silent = false } = {}) {
   const side = owner === match.player ? 'player' : 'opponent';
   window.setTimeout(() => {
     const host = laneIndex >= 0 ? document.querySelector(`[data-side="${side}"][data-lane="${laneIndex}"]`) : document.getElementById(`${side}-board`);
     if (!host) return;
-    const fx = document.createElement('div'); fx.className = `special-fx special-${key}`; fx.innerHTML = `<span>${({ aemi:'⌕',runny:'⌖',berry:'↩',frosty:'❄',den:'✦',ryota:'⚔',healer:'✚',summoner:'✧',gummy:'✹',zoya:'⟲',cooking:'↶',cotton:'⌘',kage:'◐',amethyst:'◆',shielder:'⬟',shooter:'➶',enchanter:'✺',trickster:'♟',blader:'✦',brawler:'✹',peppermint:'✿','avatar-gem':'◇','solar-explosion':'☼' })[key] || '✧'}</span><b>${label}</b>`;
+    const fx = document.createElement('div'); fx.className = `special-fx special-${key}`; fx.innerHTML = `<span>${({ aemi:'⌕',runny:'⌖',berry:'↩',frosty:'❄',den:'✦',ryota:'⚔',healer:'✚',summoner:'✧',gummy:'✹',zoya:'⟲',cooking:'↶',cotton:'⌘',kage:'◐',amethyst:'◆',shielder:'⬟',shooter:'➶',enchanter:'✺',trickster:'♟',blader:'✦',brawler:'✹',peppermint:'✿','avatar-gem':'◇','dharma-revival':'✚','solar-explosion':'☼' })[key] || '✧'}</span><b>${label}</b>`;
     host.appendChild(fx);
     const spriteFile = generatedOnly ? null : specialSprites[key];
     if (spriteFile) {
@@ -613,7 +624,7 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, si
       };
       sheet.src = `assets/effects/${spriteFile}`;
     } else window.setTimeout(() => fx.remove(), 1250);
-    const abilityElements = { aemi:'Dark',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','solar-explosion':'Solar' };
+    const abilityElements = { aemi:'Dark',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','dharma-revival':'Terra','solar-explosion':'Solar' };
     if (!silent) playSfx('special', abilityElements[key] || 'Mind');
   }, 0);
 }
@@ -750,6 +761,7 @@ function useAvatarGem(owner, actionInstance) {
     transformed.ready = target.ready; transformed.attacked = target.attacked; transformed.skipAttackThisTurn = target.skipAttackThisTurn; transformed.skipAttackNext = target.skipAttackNext;
     owner.destroyed.push(target); owner.lanes[laneIndex] = transformed;
     owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost;
+    if (match.collectionOnly && owner === match.player) match.avatarGemUses = (match.avatarGemUses || 0) + 1;
     match.eventActor = owner; match.eventSource = action.name;
     render(); playSpecialFx(owner, laneIndex, 'avatar-gem', 'AVATAR GEM · TRANSFORM', { silent: true }); animateSummon(owner, laneIndex, transformed).then(() => triggerOnSummon(transformed, owner, laneIndex));
     announceEffect(`${target.name} transformed into a Zodiac Guardian.`);
@@ -759,7 +771,7 @@ function setSharedField(owner, id, card = null) {
   const oldField = match.fieldCard;
   if (oldField?.card) {
     const oldOwner = oldField.owner === 'player' ? match.player : match.opponent;
-    if (oldOwner && !oldOwner.hand.includes(oldField.card)) oldOwner.hand.push(oldField.card);
+    if (oldOwner && !oldOwner.destroyed.includes(oldField.card)) oldOwner.destroyed.push(oldField.card);
   }
   match.fieldCard = { id, owner: owner === match.player ? 'player' : 'opponent', card };
 }
@@ -852,7 +864,7 @@ function activateAction(owner, actionInstance) {
     const enemy = owner === match.player ? match.opponent : match.player; const targets = enemy.lanes.map((card, lane) => card ? { value: lane, label: card.name, detail: `Enemy lane ${lane + 1} · −1 attack until your next turn` } : null).filter(Boolean);
     chooseEffect(owner, 'Wanted Poster · mark a target', 'Choose an enemy fighter to lose 1 attack until your next turn.', targets, (lane) => { const target = enemy.lanes[lane]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; target.attackBonus = (target.attackBonus || 0) - 1; target.attackBonusSources = [...(target.attackBonusSources || []), 'Wanted Poster']; target.attackBonusModifiers = [...(target.attackBonusModifiers || []), { amount: -1, source: 'Wanted Poster', expiresTurn: match.turn + 1 }]; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); announceEffect(`${target.name} lost 1 attack until your next turn.`); });
   }
-  else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack for each Academy card on the field.'); }
+  else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack while at least one Academy card is on the field.'); }
   else if (action?.id === 'ip-field' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'ip-field', action); render(); playFieldActivationFx('ip-field'); announceEffect('Island Paradise is now the shared field. Its fighters on both sides cannot be targeted, but do not defend their Life Zones.'); }
   else if (action?.id === 'toy-store' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'toy-store', action); render(); playFieldActivationFx('toy-store'); announceEffect('Toy Store is now the shared field. All 1-cost Fighters and Creatures on both sides gain +1 attack.'); }
   else if (action?.id === 'cactus-creek' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'cactus-creek', action); render(); playFieldActivationFx('cactus-creek'); announceEffect('Cactus Creek is now the shared field. Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.'); }
@@ -1231,6 +1243,8 @@ function resolveDharmaRevives(owner) {
     match.eventActor = owner; match.eventSource = 'Dharma';
     render();
     logBattleEvent(`${battleSideName(owner)} Dharma revived ${revived.name} from the Pandemonium Zone.`, owner === match.player ? 'player' : 'enemy');
+    playSpecialFx(owner, openLane, 'dharma-revival', 'DHARMA · REVIVAL', { silent: true });
+    playSfx('special', 'Terra');
     animateSummon(owner, openLane, revived).then(() => triggerOnSummon(revived, owner, openLane));
   }
 }
@@ -1609,15 +1623,37 @@ function endMatch(won) {
   match.over = true;
   document.getElementById('result-title').textContent = won ? 'Victory!' : 'The rival wins';
   document.getElementById('result-copy').textContent = won ? 'You broke through the rival’s last life card.' : 'Your main life was broken. Give it another try.';
+  renderBattleRewards(settleCollectionBattle(won));
   document.getElementById('result-dialog').showModal();
+}
+function settleCollectionBattle(won) {
+  if (!match.collectionOnly || !window.peppermintCollection) { renderBattleRewards(null); return null; }
+  const remainingLifeCards = match.player.life.middle.filter(Boolean).length + Number(Boolean(match.player.life.main));
+  return { ...window.peppermintCollection.awardBattle({ won, opponentDeckId: match.opponentDeckId, remainingLifeCards, avatarGemUses: match.avatarGemUses || 0 }), won, remainingLifeCards };
+}
+function renderBattleRewards(reward) {
+  const list = document.getElementById('result-rewards');
+  const note = document.getElementById('result-unlock-note');
+  if (!list || !note) return;
+  const rows = reward ? [
+    { label: reward.won ? 'Victory' : 'Loss', value: reward.base },
+    { label: 'Avatar Gem used', value: reward.avatarGem },
+    { label: `Life cards remaining (${reward.remainingLifeCards})`, value: reward.life },
+  ].filter((row) => row.value > 0) : [];
+  list.innerHTML = rows.map((row) => `<li><img src="assets/ui-icons/diamond-currency.png" alt=""/><span>${row.label}</span><strong>+${row.value}</strong></li>`).join('');
+  list.classList.toggle('hidden', !rows.length);
+  note.textContent = reward?.unlocked ? `${deckNames[match.opponentDeckId]} booster display unlocked!` : '';
+  note.classList.toggle('hidden', !note.textContent);
 }
 function giveUp() {
   if (!match.player || match.over || match.attackResolving) return;
   match.over = true;
   match.attackMode = false;
   match.attackerLane = null;
+  const reward = settleCollectionBattle(false);
   document.getElementById('result-title').textContent = 'Battle abandoned';
   document.getElementById('result-copy').textContent = 'You gave up. Choose Play Again to start a fresh battle.';
+  renderBattleRewards(reward);
   document.getElementById('result-dialog').showModal();
 }
 function launchPlayerAttack(target) {
@@ -1939,7 +1975,12 @@ document.getElementById('element-guide-button').addEventListener('click', () => 
 document.getElementById('close-element-guide').addEventListener('click', () => document.getElementById('element-guide-dialog').close());
 document.querySelectorAll('[data-player-deck]').forEach((button) => button.addEventListener('click', () => { selectedPlayerDeck = button.dataset.playerDeck; syncDeckPicker(); }));
 document.querySelectorAll('[data-rival-deck]').forEach((button) => button.addEventListener('click', () => { selectedRivalDeck = button.dataset.rivalDeck; syncDeckPicker(); }));
-document.getElementById('start-battle').addEventListener('click', () => { document.getElementById('deck-select-dialog').close(); beginMatch(selectedPlayerDeck, selectedRivalDeck); });
+document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEventListener('click', () => {
+  selectedBattleMode = button.dataset.battleMode;
+  document.querySelectorAll('[data-battle-mode]').forEach((option) => { const selected = option === button; option.classList.toggle('selected', selected); option.setAttribute('aria-pressed', String(selected)); });
+  document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'collection');
+}));
+document.getElementById('start-battle').addEventListener('click', () => { document.getElementById('deck-select-dialog').close(); beginMatch(selectedPlayerDeck, selectedRivalDeck, selectedBattleMode === 'collection'); });
 document.getElementById('deck-select-dialog').addEventListener('cancel', (event) => event.preventDefault());
 document.getElementById('restart').addEventListener('click', () => { document.getElementById('result-dialog').close(); showDeckSelect(); });
 function applyGameTerminology(root = document.body) {
@@ -1960,4 +2001,3 @@ function applyGameTerminology(root = document.body) {
 }
 applyGameTerminology();
 new MutationObserver(() => applyGameTerminology()).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['title', 'aria-label', 'alt'] });
-showDeckSelect();
