@@ -520,6 +520,10 @@ function cardOwner(card) {
 }
 function isTouchInput() { return window.matchMedia('(hover: none) and (pointer: coarse)').matches; }
 let touchCardDetailsArmed = null;
+function findCardPreview(instance) {
+  const battleCard = [match.player, match.opponent].filter(Boolean).flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).concat(match.fieldCard?.card || []).find((item) => item?.instance === instance);
+  return battleCard || window.PB_CARD_PREVIEW_REGISTRY?.get(instance) || null;
+}
 function showCardTooltip(card, event) {
   if (!card) return;
   const tooltip = document.getElementById('card-tooltip'); const owner = cardOwner(card);
@@ -528,7 +532,9 @@ function showCardTooltip(card, event) {
   const laneIndex = owner?.lanes.indexOf(card) ?? -1;
   const typeLabel = displayedCardType(card);
   const details = card.type === 'Action' ? `<div class="tooltip-action-note">${escapeHTML(typeLabel)} card · ${card.cost} Mana · no attack points</div>` : (() => {
-    const breakdown = attackBreakdown(card, owner, { attacking: !!card.attacking, targetIndex: card.attackTargetIndex ?? null });
+    const breakdown = owner
+      ? attackBreakdown(card, owner, { attacking: !!card.attacking, targetIndex: card.attackTargetIndex ?? null })
+      : { total: (card.attack || 0) + (card.attackBonus || 0), modifiers: [] };
     const modifier = breakdown.modifiers.length ? `<div class="tooltip-modifier-list">${breakdown.modifiers.map(({ amount, source }) => `<span class="tooltip-modifier ${amount > 0 ? 'modifier-up' : 'modifier-down'}">${amount > 0 ? '+' : '−'}${Math.abs(amount)} ${source}</span>`).join('')}</div>` : '';
     return `<div class="tooltip-stats"><span>⚔ <b>${breakdown.total}</b> attack</span><span>✧ <b>${card.cost}</b> energy</span></div>${modifier}`;
   })();
@@ -1773,7 +1779,7 @@ document.addEventListener('click', (event) => {
         hideCardTooltip();
       } else if (!tooltip.classList.contains('visible') || tooltip.dataset.previewCard !== preview.dataset.cardPreview) {
         touchCardDetailsArmed = null;
-        const card = [match.player, match.opponent].filter(Boolean).flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).concat(match.fieldCard?.card || []).find((item) => item?.instance === preview.dataset.cardPreview);
+        const card = findCardPreview(preview.dataset.cardPreview);
         showCardTooltip(card, event);
         return;
       } else {
@@ -1982,7 +1988,7 @@ document.addEventListener('pointerover', (event) => {
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (event.relatedTarget?.closest?.('[data-card-preview]') === preview) return;
-  const card = [match.player, match.opponent].flatMap((owner) => [...owner.hand, ...owner.lanes, ...owner.destroyed]).concat(match.fieldCard?.card || []).find((item) => item?.instance === preview.dataset.cardPreview);
+  const card = findCardPreview(preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
 document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
