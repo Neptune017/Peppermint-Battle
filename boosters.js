@@ -98,14 +98,36 @@
     try { const saved = localStorage.getItem(STORAGE_KEY); const normalized = saved ? normalizeSave(JSON.parse(saved)) : freshSave(); localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)); return normalized; }
     catch { return freshSave(); }
   }
+  function mergeSaves(localValue, cloudValue) {
+    const local = normalizeSave(localValue);
+    const cloud = normalizeSave(cloudValue);
+    const cards = { ...cloud.cards };
+    Object.entries(local.cards).forEach(([id, count]) => { cards[id] = Math.max(cards[id] || 0, count); });
+    const deckSlots = cloud.deckSlots.map((slot) => ({ ...slot, cards: [...slot.cards], ascendance: [...slot.ascendance] }));
+    for (const localSlot of local.deckSlots) {
+      const existing = deckSlots.find((slot) => slot.id === localSlot.id);
+      if (!existing) { if (deckSlots.length < 20) deckSlots.push({ ...localSlot, cards: [...localSlot.cards], ascendance: [...localSlot.ascendance] }); continue; }
+      const same = existing.name === localSlot.name && JSON.stringify(existing.cards) === JSON.stringify(localSlot.cards) && JSON.stringify(existing.ascendance) === JSON.stringify(localSlot.ascendance);
+      if (same || deckSlots.length >= 20) continue;
+      let suffix = 1, id = `${localSlot.id}-local-${suffix}`;
+      while (deckSlots.some((slot) => slot.id === id)) { suffix += 1; id = `${localSlot.id}-local-${suffix}`; }
+      deckSlots.push({ ...localSlot, id, name: `${localSlot.name} (Local)`.slice(0, 28), cards: [...localSlot.cards], ascendance: [...localSlot.ascendance] });
+    }
+    const displays = { ...local.displays, ...cloud.displays };
+    for (const [deckId, localStock] of Object.entries(local.displays)) {
+      const cloudStock = cloud.displays[deckId];
+      if (!cloudStock) { displays[deckId] = { ...localStock }; continue; }
+      displays[deckId] = { ...localStock, ...cloudStock };
+      for (const [cardId, count] of Object.entries(localStock)) if (Number.isFinite(cloudStock[cardId])) displays[deckId][cardId] = Math.min(count, cloudStock[cardId]);
+    }
+    return normalizeSave({ ...cloud, cards, deckSlots: deckSlots.slice(0, 20), displays, unlockedBoosters: { ...local.unlockedBoosters, ...cloud.unlockedBoosters }, defeatedDecks: { ...local.defeatedDecks, ...cloud.defeatedDecks } });
+  }
   function storeSave() {
     const activeSlot = player.deckSlots?.find((slot) => slot.id === player.activeDeckId);
     if (activeSlot) activeSlot.cards = [...player.deckList];
     if (activeSlot) activeSlot.ascendance = [...(player.ascendanceDeck || [])];
     player.ascendanceDeck = [...(activeSlot?.ascendance || player.ascendanceDeck || [])];
-    if (!cloudUserId) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(player)); } catch { setMessage('This browser could not save local collection data.', 'error'); }
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(player)); } catch { if (!cloudUserId) setMessage('This browser could not save local collection data.', 'error'); }
     if (cloudUserId && window.peppermintPlayerSave) {
       const base = cloudSaveData && typeof cloudSaveData === 'object' ? cloudSaveData : {};
       cloudSaveData = { ...base, boosters: player };
@@ -248,8 +270,9 @@
     if (!window.peppermintPlayerSave) { setMessage('Account save is unavailable; collection stays on this device.', 'error'); render(); return; }
     window.peppermintPlayerSave.load().then((data) => {
       cloudSaveData = data && typeof data === 'object' ? data : {};
-      if (cloudSaveData.boosters) player = normalizeSave(cloudSaveData.boosters);
-      else player = freshSave();
+      const localSave = loadLocalSave();
+      if (cloudSaveData.boosters) player = mergeSaves(localSave, cloudSaveData.boosters);
+      else player = localSave;
       storeSave();
       render();
     }).catch(() => { cloudUserId = null; setMessage('Could not load the account collection. Local collection remains available.', 'error'); render(); });

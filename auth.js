@@ -42,10 +42,12 @@
   function updateAccountUI(session) {
     currentSession = session || null;
     const user = currentSession?.user;
+    window.peppermintCurrentUser = user ? { id: user.id, email: user.email } : null;
     button.textContent = user ? 'ACCOUNT' : 'SIGN IN';
     form.classList.toggle('hidden', Boolean(user));
     modeToggle.classList.toggle('hidden', Boolean(user));
     signedInPanel.classList.toggle('hidden', !user);
+    profileForm.classList.toggle('hidden', !user);
     emailLabel.textContent = user?.email || '';
     document.getElementById('account-title').textContent = user ? 'Your profile' : (isSignUp ? 'Create account' : 'Sign in');
     document.getElementById('account-description').textContent = user
@@ -119,12 +121,14 @@
       profileSave.disabled = false;
     }
   });
-  signOut.addEventListener('click', async () => {
+  async function performSignOut() {
     if (!supabaseClient) return;
     const { error } = await supabaseClient.auth.signOut();
     if (error) setStatus(error.message, 'error');
     else { updateAccountUI(null); setMode(false); setStatus('You are signed out.'); }
-  });
+  }
+  window.peppermintAccount = { signOut: performSignOut };
+  signOut.addEventListener('click', performSignOut);
 
   setMode(false);
   if (!config.url || !config.anonKey) {

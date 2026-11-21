@@ -330,7 +330,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
     const filename = cleanArt.split('/').pop();
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261121-wide-crops`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261121-purrnip-blake-crops`;
     const size = compact ? 'battle' : 'hand';
     return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" alt="${card.name}" /></picture>`;
   })() : `<div class="card-art-fallback">${card.name}</div>`;
@@ -432,8 +432,10 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
   const opponent = owner === match.player ? match.opponent : match.player;
   if (opponent?.lanes[enemyIndex]?.role === 'Trickster') { attack--; reasons.push('Trickster −1'); addModifier(-1, opponent.lanes[enemyIndex].name); }
   if (card.id === 'ip-kokocrab' && opponent?.lanes[enemyIndex]?.role === 'Brawler') { attack--; reasons.push('Kokocrab vs Brawler −1'); addModifier(-1, card.name); }
-  // Element advantage remains tied to the Fighter's own column.
-  const facingOpponent = index >= 0 ? opponent?.lanes[index] : null;
+  // During an attack, check the defender in the lane being targeted. Otherwise,
+  // preview the matchup against the fighter directly across from this one.
+  const matchupIndex = attacking ? enemyIndex : index;
+  const facingOpponent = matchupIndex >= 0 ? opponent?.lanes[matchupIndex] : null;
   if (facingOpponent && elementBeats[card.element] === facingOpponent.element) { attack++; reasons.push('Element advantage +1'); addModifier(1, 'Element Advantage'); }
   return { total: Math.max(0, attack), change: attack - card.attack, reasons, sources: [...new Set(sources)], modifiers };
 }
@@ -537,7 +539,10 @@ function showCardTooltip(card, event) {
   const controls = isTouchInput() && canUseFromHand && card.type === 'Action'
     ? `<div class="tooltip-card-controls"><button type="button" data-tooltip-use="${card.instance}">USE ACTION</button></div>`
     : openLanes ? `<div class="tooltip-card-controls">${openLanes}</div>` : '';
-  const artwork = card.art ? `<img src="${card.art}" alt="" />` : '<div class="tooltip-art-fallback">✦</div>';
+  const previewArt = ['ww-blake', 'ww-purrnip'].includes(card.id)
+    ? `assets/cards/crops/battle/${card.art.split('/').pop().replace(/\.[^.]+$/, '.jpg')}?v=20261121-purrnip-blake-crops`
+    : card.art;
+  const artwork = previewArt ? `<img src="${previewArt}" alt="" />` : '<div class="tooltip-art-fallback">✦</div>';
   const classAbility = hasCardClass(card) && classAbilities[card.role] ? `<div class="tooltip-class-ability"><b>${card.role} class ability</b><span>${classAbilities[card.role]}</span></div>` : '';
   const tooltipIcon = elementIcons[card.element] ? `<img class="element-icon" src="assets/icons/${elementIcons[card.element]}.png" alt="" />` : '';
   const elementLabel = card.element === 'None' ? 'Neutral' : card.element;
@@ -1594,7 +1599,6 @@ function rivalTurn() {
   activateIslandTurnEffects(match.opponent);
   runNpcRepositioning(match.opponent);
   maybeUseZoya(match.opponent);
-  const open = match.opponent.lanes.map((card, i) => card ? -1 : i).filter((i) => i >= 0);
   let summoned = null; let summonedLane = -1;
   const toyStore = match.opponent.hand.find((card) => card.id === 'toy-store' && card.cost <= match.energy);
   const islandField = match.opponent.hand.find((card) => card.id === 'ip-field' && card.cost <= match.energy);
@@ -1617,7 +1621,18 @@ function rivalTurn() {
   if (medusaIndex >= 0 && match.energy >= 1 && match.opponent.deck.length) activateMedusa(match.opponent, medusaIndex);
   const availableEnergy = match.energy;
   const unitPlayable = match.opponent.hand.filter((card) => card.type !== 'Action' && playCost(match.opponent, card) <= availableEnergy && canSummonCard(match.opponent, card)).sort((a, b) => playCost(match.opponent, a) - playCost(match.opponent, b));
-  if (open.length && unitPlayable.length) { summoned = unitPlayable[unitPlayable.length - 1]; match.opponent.hand.splice(match.opponent.hand.indexOf(summoned), 1); match.energy -= playCost(match.opponent, summoned); summonedLane = open[Math.floor(Math.random() * open.length)]; match.opponent.lanes[summonedLane] = summoned; }
+  const openLanes = match.opponent.lanes.map((card, lane) => card ? -1 : lane).filter((lane) => lane >= 0);
+  if (openLanes.length && unitPlayable.length) {
+    summoned = unitPlayable[unitPlayable.length - 1];
+    const handIndex = match.opponent.hand.indexOf(summoned);
+    const cost = playCost(match.opponent, summoned);
+    summonedLane = openLanes[Math.floor(Math.random() * openLanes.length)];
+    if (handIndex >= 0 && !match.opponent.lanes[summonedLane] && match.energy >= cost) {
+      match.opponent.hand.splice(handIndex, 1);
+      match.energy -= cost;
+      match.opponent.lanes[summonedLane] = summoned;
+    } else { summoned = null; summonedLane = -1; }
+  }
   render();
   if (summoned) animateSummon(match.opponent, summonedLane, summoned).then(() => triggerOnSummon(summoned, match.opponent, summonedLane));
   if (!match.over) window.setTimeout(() => { runNpcRepositioning(match.opponent); runNpcAttacks(); }, summoned ? 1100 : 250);

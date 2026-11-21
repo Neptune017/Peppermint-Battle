@@ -40,6 +40,11 @@
   });
   document.getElementById('menu-rules').addEventListener('click', () => openChild(document.getElementById('rules-dialog')));
   document.getElementById('menu-account').addEventListener('click', () => openChild(document.getElementById('account-dialog')));
+  document.getElementById('menu-logout').addEventListener('click', () => window.peppermintAccount?.signOut());
+  document.getElementById('menu-logout').classList.toggle('hidden', !window.peppermintCurrentUser);
+  window.addEventListener('peppermint-auth-state', (event) => {
+    document.getElementById('menu-logout').classList.toggle('hidden', !event.detail?.user);
+  });
   document.getElementById('quick-menu-button').addEventListener('click', () => { returnToMenu = false; if (!menu.open) menu.showModal(); });
   document.querySelectorAll('[data-return-menu]').forEach((button) => button.addEventListener('click', () => returnHome(document.getElementById(button.dataset.returnMenu))));
   document.getElementById('close-deck-editor').addEventListener('click', () => document.getElementById('deck-editor-dialog').close());
