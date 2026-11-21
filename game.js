@@ -61,6 +61,7 @@ const islandParadiseLibrary = [
   { id: 'ip-sabrina', title: 'Island Paradise', name: 'Sabrina', cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/IslandParadiseSabrina.png', ability: 'Gains 1 attack for each adjacent Brawler.' },
   { id: 'ip-coyote', title: 'Island Paradise', name: 'Coyote', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.png', ability: 'Can make 2 attacks each turn, except the turn it is summoned.' },
   { id: 'ip-chase', title: 'Island Paradise', name: 'Chase', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseChase.png', ability: 'Each turn, give 1 attack to an adjacent Brawler. Choose one if there are several.' },
+  { ...cardLibrary.find((card) => card.id === 'academy-coyote') },
   { id: 'ip-banaphin', title: 'Island Paradise', name: 'Banaphin', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadiseBanaphin.png', ability: 'When destroyed, draw an Island Paradise Creature.' },
   { id: 'ip-kokocrab', title: 'Island Paradise', name: 'Kokocrab', type: 'Creature', cost: 1, attack: 2, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseKokocrab.png', ability: 'Loses 1 attack while facing a Brawler.' },
   { id: 'ip-pinebeak', title: 'Island Paradise', name: 'Pinebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadisePinebeak.png', ability: 'On summon, draw an Island Paradise Creature.' },
@@ -168,16 +169,22 @@ function shuffleDeck(cards) {
 function newPlayer(isAI = false, deckId = 'academy') {
   const sourceCards = deckId === 'fun' ? allCardCatalog() : deckId === 'wild-west' ? wildWestLibrary : deckId === 'island-paradise' ? islandParadiseLibrary : deckId === 'living-toy' ? livingToyLibrary : deckId === 'winter-ball' ? winterBallLibrary : cardLibrary.filter((card) => card.id !== 'locker-room');
   const baseCards = sourceCards.filter((card) => card.type !== 'Transformation');
-  const deckLimit = card => card.deckCopies ?? card.maxCopies ?? (card.type === 'Creature' || card.type === 'Action' ? 3 : 1);
   let deckPool;
   if (deckId === 'fun') deckPool = baseCards.map(cloneCard);
-  else if (['island-paradise', 'living-toy', 'winter-ball'].includes(deckId)) deckPool = baseCards.flatMap((card) => Array.from({ length: deckLimit(card) }, () => cloneCard(card)));
   else {
-    const firstCopies = baseCards.slice(0, 24);
-    deckPool = firstCopies.map(cloneCard);
-    const copyCounts = new Map(firstCopies.map(card => [card.id, 1]));
-    while (deckPool.length < 24) {
-      const repeatable = firstCopies.filter(card => ['Creature', 'Action'].includes(card.type) && (copyCounts.get(card.id) || 0) < deckLimit(card));
+    const copyCounts = new Map();
+    deckPool = baseCards.flatMap((card) => {
+      const copies = Math.max(1, card.deckCopies ?? 1);
+      copyCounts.set(card.id, copies);
+      return Array.from({ length: copies }, () => cloneCard(card));
+    });
+    const targetSize = Math.max(24, deckPool.length);
+    while (deckPool.length < targetSize) {
+      const repeatable = baseCards.filter((card) => {
+        if (card.deckCopies != null) return false;
+        const copyLimit = card.maxCopies ?? (card.type === 'Creature' || card.type === 'Action' ? 3 : 1);
+        return (copyCounts.get(card.id) || 0) < copyLimit;
+      });
       if (!repeatable.length) break;
       const card = repeatable[Math.floor(Math.random() * repeatable.length)];
       deckPool.push(cloneCard(card));
@@ -185,21 +192,7 @@ function newPlayer(isAI = false, deckId = 'academy') {
     }
   }
   const shuffledPool = shuffleDeck(deckPool);
-  const deck = deckId === 'fun' ? [...shuffledPool] : shuffledPool.slice(0, 24);
-  const avatarGem = baseCards.find((card) => card.id === 'avatar-gem');
-  const guaranteedIds = new Set(avatarGem ? ['avatar-gem'] : []);
-  if (['wild-west','island-paradise','living-toy','winter-ball'].includes(deckId)) ['mana-potion','health-potion'].forEach((id) => guaranteedIds.add(id));
-  if (deckId === 'island-paradise') guaranteedIds.add('locker-room');
-  if (deckId === 'winter-ball') ['drinking-tea','christmas-mall'].forEach((id) => guaranteedIds.add(id));
-  for (const id of guaranteedIds) {
-    if (deck.some((card) => card.id === id)) continue;
-    const replacement = shuffledPool.find((card) => card.id === id && !deck.includes(card));
-    if (!replacement) continue;
-    let slot = deck.length - 1;
-    while (slot >= 0 && guaranteedIds.has(deck[slot].id)) slot--;
-    if (slot >= 0) deck[slot] = replacement;
-    else if (deck.length < 24) deck.push(replacement);
-  }
+  const deck = [...shuffledPool];
   shuffleDeck(deck);
   const transformationDeck = allCardCatalog().filter((card) => card.type === 'Transformation').map(cloneCard);
   const lifeCards = deck.splice(0, 4);

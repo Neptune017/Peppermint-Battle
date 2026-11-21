@@ -414,3 +414,4 @@ body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient
 .enemy-life-row .life-card::before{background:#bd8cff;box-shadow:0 0 8px #bd8cff88}
 .enemy-life-row .life-card.main-life{background:linear-gradient(110deg,#392650,#282039);border-color:#bd8cff;box-shadow:0 0 15px #bd8cff35}
 .field-zone[data-card-preview]{cursor:help}
+.deck-option{position:relative}
