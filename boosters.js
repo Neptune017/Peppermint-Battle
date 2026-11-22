@@ -2,6 +2,7 @@
   const STARTING_DIAMONDS = 100;
   const DISPLAY_SIZE = { Common: 150, Uncommon: 60, Rare: 30, 'Super Rare': 3, 'Ultra Rare': 1 };
   const DUPLICATE_DIAMONDS = { Common: 1, Uncommon: 1, Rare: 1, 'Super Rare': 2, 'Ultra Rare': 3 };
+  const BUNDLE_PACK_COUNT = 3;
   const DECKS = [
     { id: 'wild-west', name: 'Wild West', logo: 'assets/deck-logos/wild-west.png', pack: 'assets/booster-packs/wild-west-booster-pack-cutout.png' },
     { id: 'island-paradise', name: 'Island Paradise', logo: 'assets/deck-logos/island-paradise.png', pack: 'assets/booster-packs/island-paradise-coyote-chase-booster-pack-cutout.png' },
@@ -168,8 +169,8 @@
     const rarityOrder = Object.keys(DISPLAY_SIZE);
     const cards = [...cardsByDeck[activeDeck]].sort((a, b) => rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity) || (a.title + ' ' + a.name).localeCompare(b.title + ' ' + b.name));
     const left = remainingCards(activeDeck);
-    const guaranteedReady = left >= 100 && (rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare') > 0);
-    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">SEALED BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div></article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 25 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>25 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 250 || !guaranteedReady ? 'disabled' : ''}>OPEN 10 PACKS <span>250 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
+    const guaranteedReady = left >= 30 && (rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare') > 0);
+    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">SEALED BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div></article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
     document.getElementById('buy-one')?.addEventListener('click', () => openPack(false));
     document.getElementById('buy-ten')?.addEventListener('click', () => openPack(true));
   }
@@ -184,7 +185,7 @@
     }).join('');
   }
   function renderResults(items, bundle) {
-    const title = bundle ? '10-PACK DISPLAY OPENED' : 'BOOSTER PACK OPENED';
+    const title = bundle ? '3-PACK DISPLAY OPENED' : 'BOOSTER PACK OPENED';
     const count = items.filter((item) => item.converted).length;
     const rarityOrder = Object.keys(DISPLAY_SIZE);
     const sorted = [...items].sort((a, b) => rarityOrder.indexOf(b.card.rarity) - rarityOrder.indexOf(a.card.rarity));
@@ -205,11 +206,11 @@
     flying.innerHTML = '<img src="' + item.card.art.split('?')[0] + '" alt="' + item.card.title + ' ' + item.card.name + '"/>' + (item.wasNew ? '<span class="booster-new-badge">NEW</span>' : '');
     stage.appendChild(flying); window.setTimeout(() => flying.remove(), 700);
     const packNumber = Math.floor(revealIndex / 10) + 1, cardNumber = (revealIndex % 10) + 1;
-    document.getElementById('booster-opening-progress').textContent = revealBundle ? 'Pack ' + packNumber + ' of 10 · Card ' + cardNumber + ' of 10' : 'Card ' + cardNumber + ' of 10';
+    document.getElementById('booster-opening-progress').textContent = revealBundle ? 'Pack ' + packNumber + ' of ' + BUNDLE_PACK_COUNT + ' · Card ' + cardNumber + ' of 10' : 'Card ' + cardNumber + ' of 10';
     appendRevealCard(item); revealIndex += 1;
     if (revealBundle && revealIndex % 10 === 0) {
       const next = document.getElementById('next-booster-pack'); next.hidden = false;
-      next.textContent = revealIndex >= revealItems.length ? 'VIEW ALL PULLS' : 'NEXT PACK · ' + (Math.floor(revealIndex / 10) + 1) + ' OF 10'; return;
+      next.textContent = revealIndex >= revealItems.length ? 'VIEW ALL PULLS' : 'NEXT PACK · ' + (Math.floor(revealIndex / 10) + 1) + ' OF ' + BUNDLE_PACK_COUNT; return;
     }
     if (revealIndex >= revealItems.length) { finishPackReveal(); return; }
     revealTimer = window.setTimeout(revealNextCard, 380);
@@ -217,12 +218,12 @@
   function finishPackReveal() {
     if (revealTimer) window.clearTimeout(revealTimer); revealTimer = null; opening = false;
     document.getElementById('booster-opening').classList.add('hidden'); document.getElementById('booster-flight-stage').replaceChildren(); document.getElementById('next-booster-pack').hidden = true;
-    renderDisplay(); renderResults(revealItems, revealBundle); setMessage(revealBundle ? 'All 10 packs are open. The bundle included a guaranteed Super Rare or Ultra Rare card.' : 'Cards were pulled from this display and will not be replaced.', 'success'); revealItems = [];
+    renderDisplay(); renderResults(revealItems, revealBundle); setMessage(revealBundle ? 'All 3 packs are open. The bundle included a guaranteed Super Rare or Ultra Rare card.' : 'Cards were pulled from this display and will not be replaced.', 'success'); revealItems = [];
   }
   function startPackReveal(items, bundle) {
     revealItems = items; revealIndex = 0; revealBundle = bundle; opening = true;
     const overlay = document.getElementById('booster-opening'); document.getElementById('booster-results').replaceChildren(); document.getElementById('booster-pack-revealed').replaceChildren(); document.getElementById('next-booster-pack').hidden = true; overlay.classList.remove('hidden');
-    document.getElementById('booster-opening-pack').src = getDeck().pack; document.getElementById('booster-opening-progress').textContent = bundle ? 'Pack 1 of 10 · Card 1 of 10' : 'Opening booster pack · Card 1 of 10';
+    document.getElementById('booster-opening-pack').src = getDeck().pack; document.getElementById('booster-opening-progress').textContent = bundle ? 'Pack 1 of ' + BUNDLE_PACK_COUNT + ' · Card 1 of 10' : 'Opening booster pack · Card 1 of 10';
     renderDisplay(); requestAnimationFrame(() => overlay.scrollIntoView({ block: 'start', behavior: 'smooth' })); revealTimer = window.setTimeout(revealNextCard, 400);
   }
   function drawOne(deckId, guaranteed = false) {
@@ -252,7 +253,7 @@
   }
   function openPack(bundle) {
     if (opening) return;
-    const price = bundle ? 250 : 25, pulls = bundle ? 100 : 10, available = remainingCards(activeDeck);
+    const price = bundle ? 150 : 50, pulls = bundle ? 30 : 10, available = remainingCards(activeDeck);
     const guaranteedAvailable = rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare');
     if (player.diamonds < price) return setMessage(`You need ${price} Diamonds for this purchase.`, 'error');
     if (available < pulls) return setMessage(`Only ${available} cards remain in this display.`, 'error');
