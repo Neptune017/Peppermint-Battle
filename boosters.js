@@ -287,7 +287,7 @@
   }
   window.peppermintCollection = {
     renderBoosterDisplay() { render(); },
-    openBoosterDisplay() { render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
+    openBoosterDisplay(deckId) { if (DECKS.some((deck) => deck.id === deckId)) activeDeck = deckId; render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
     count(cardId) { return collectionCount({ id: cardId }); },
     deckList() { return [...player.deckList]; },
     setDeckList(ids) {
@@ -427,3 +427,4 @@
   window.addEventListener('peppermint-auth-state', (event) => handleAuthChange(event.detail?.user || null));
   render();
 })();
+

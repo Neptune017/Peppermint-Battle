@@ -30,7 +30,7 @@
     window.peppermintCollection?.renderDeckEditor();
     openChild(document.getElementById('deck-editor-dialog'));
   });
-  document.getElementById('menu-boosters').addEventListener('click', () => {
+  document.getElementById('menu-featured-booster').addEventListener('click', () => { returnToMenu = true; menu.close(); window.peppermintCollection?.openBoosterDisplay('winter-ball'); });   document.getElementById('menu-boosters').addEventListener('click', () => {
     window.peppermintCollection?.renderBoosterDisplay();
     openChild(document.getElementById('booster-dialog'));
   });
@@ -45,7 +45,7 @@
   window.addEventListener('peppermint-auth-state', (event) => {
     document.getElementById('menu-logout').classList.toggle('hidden', !event.detail?.user);
   });
-  document.getElementById('quick-menu-button').addEventListener('click', () => { returnToMenu = false; if (!menu.open) menu.showModal(); });
+  const topbar = document.querySelector('.topbar'); const mobileMenuToggle = document.getElementById('mobile-menu-toggle'); const topbarActions = document.getElementById('topbar-actions'); const setMobileMenuOpen = (open) => { topbar.classList.toggle('mobile-menu-open', open); mobileMenuToggle.setAttribute('aria-expanded', String(open)); mobileMenuToggle.setAttribute('aria-label', open ? 'Close battle menu' : 'Open battle menu'); }; mobileMenuToggle.addEventListener('click', () => setMobileMenuOpen(!topbar.classList.contains('mobile-menu-open'))); document.addEventListener('pointerdown', (event) => { if (topbar.classList.contains('mobile-menu-open') && !mobileMenuToggle.contains(event.target) && !topbarActions.contains(event.target)) setMobileMenuOpen(false); }); topbarActions.addEventListener('click', (event) => { if (event.target.closest('button')) setMobileMenuOpen(false); }); window.addEventListener('resize', () => { if (window.innerWidth > 780) setMobileMenuOpen(false); });   document.getElementById('quick-menu-button').addEventListener('click', () => { returnToMenu = false; if (!menu.open) menu.showModal(); });
   document.querySelectorAll('[data-return-menu]').forEach((button) => button.addEventListener('click', () => returnHome(document.getElementById(button.dataset.returnMenu))));
   document.getElementById('close-deck-editor').addEventListener('click', () => document.getElementById('deck-editor-dialog').close());
   document.getElementById('close-boosters').addEventListener('click', () => document.getElementById('booster-dialog').close());
@@ -68,3 +68,5 @@
   menu.addEventListener('cancel', (event) => { event.preventDefault(); });
   menu.showModal();
 })();
+
+

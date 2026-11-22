@@ -546,17 +546,15 @@ function showCardTooltip(card, event) {
   const controls = isTouchInput() && canUseFromHand && card.type === 'Action'
     ? `<div class="tooltip-card-controls"><button type="button" data-tooltip-use="${card.instance}">USE ACTION</button></div>`
     : openLanes ? `<div class="tooltip-card-controls">${openLanes}</div>` : '';
-  const previewArt = ['ww-blake', 'ww-purrnip'].includes(card.id)
-    ? `assets/cards/crops/battle/${card.art.split('/').pop().replace(/\.[^.]+$/, '.jpg')}?v=20261121-purrnip-blake-crops`
-    : card.art;
-  const artwork = previewArt ? `<img src="${previewArt}" alt="" />` : '<div class="tooltip-art-fallback">✦</div>';
+  
+  const artwork = card.art ? '<img src="' + card.art + '" alt="" />' : '<div class="tooltip-art-fallback">✦</div>';
   const classAbility = hasCardClass(card) && classAbilities[card.role] ? `<div class="tooltip-class-ability"><b>${card.role} class ability</b><span>${classAbilities[card.role]}</span></div>` : '';
   const tooltipIcon = elementIcons[card.element] ? `<img class="element-icon" src="assets/icons/${elementIcons[card.element]}.png" alt="" />` : '';
   const elementLabel = card.element === 'None' ? 'Neutral' : card.element;
   const typeIcon = cardTypeIcon(card, 'tooltip-field-type-icon');
   const tooltipClass = hasCardClass(card) ? `<span class="tooltip-class-chip">${classIconMarkup(card.role, card.element, 'tooltip-class-icon')}<span>${escapeHTML(card.role)}</span></span>` : '';
   tooltip.innerHTML = `<button class="tooltip-dismiss" type="button" aria-label="Close card details">×</button><div class="tooltip-art">${artwork}</div><div class="tooltip-body"><div class="tooltip-kicker"><span>${card.title}</span><span class="tooltip-element-chip">${tooltipIcon}${escapeHTML(elementLabel)}</span>${tooltipClass}</div><strong class="tooltip-name">${card.name}</strong><div class="tooltip-type-row">${typeIcon}<span>${escapeHTML(typeLabel)}</span></div>${details}${classAbility}<div class="tooltip-card-ability"><b>CARD EFFECT</b><span>${card.ability}</span></div>${card.skipAttackThisTurn ? '<div class="tooltip-modifier frozen-note">Frozen: cannot attack this turn</div>' : ''}${laneIndex >= 0 ? `<div class="tooltip-status">FIELD · LANE ${laneIndex + 1}</div>` : ''}</div>${controls}`;
-  tooltip.dataset.previewCard = card.instance; tooltip._anchorElement = event?.target?.closest?.('[data-card-preview]') || document.querySelector(`[data-card-preview="${CSS.escape(card.instance)}"]`); tooltip.classList.toggle('mobile-open', isTouchInput());
+  if (typeof tooltip.showPopover === 'function' && !tooltip.matches(':popover-open')) tooltip.showPopover();   tooltip.dataset.previewCard = card.instance; tooltip._anchorElement = event?.target?.closest?.('[data-card-preview]') || document.querySelector(`[data-card-preview="${CSS.escape(card.instance)}"]`); tooltip.classList.toggle('mobile-open', isTouchInput());
   tooltip.classList.add('visible'); tooltip.setAttribute('aria-hidden', 'false'); positionCardTooltip(event);
 }
 function positionCardTooltip(event) {
@@ -601,7 +599,7 @@ function positionCardTooltip(event) {
   tooltip.style.setProperty('--tooltip-width', `${Math.max(1, width)}px`);
   tooltip.style.setProperty('--tooltip-height', `${Math.max(1, height)}px`);
 }
-function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); } }
+function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); if (typeof tooltip.hidePopover === 'function' && tooltip.matches(':popover-open')) tooltip.hidePopover(); } }
 function showZoneCards(side, zoneKind) {
   const owner = side === 'player' ? match.player : match.opponent;
   const cards = zoneKind === 'transform' ? owner.transformationDeck : owner.destroyed;
@@ -1997,7 +1995,7 @@ document.addEventListener('keydown', (event) => {
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.inspect-zone')) { event.preventDefault(); showZoneCards(event.target.dataset.zoneSide, event.target.dataset.zoneKind); }
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.battle-card[role="button"]')) { event.preventDefault(); selectAttackerFromClick(Number(event.target.dataset.lane)); }
 });
-document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
+document.querySelectorAll('dialog').forEach((dialog) => dialog.addEventListener('close', hideCardTooltip)); document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
 document.addEventListener('pointerover', (event) => {
   if (isTouchInput() || activeCardDrag || handDragCandidate || activeAttackDrag || attackDragCandidate) { if (activeCardDrag || activeAttackDrag) hideCardTooltip(); return; }
   const preview = event.target.closest('[data-card-preview]');
@@ -2060,3 +2058,4 @@ function applyGameTerminology(root = document.body) {
 }
 applyGameTerminology();
 new MutationObserver(() => applyGameTerminology()).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['title', 'aria-label', 'alt'] });
+
