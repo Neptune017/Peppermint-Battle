@@ -330,6 +330,8 @@ function cardMarkup(card, enemy = false, compact = false) {
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
     const filename = cleanArt.split('/').pop();
+    const naturalArtClass = { 'ww-hopkin': 'natural-art-hopkin', 'ww-blake': 'natural-art-blake', 'ww-purrnip': 'natural-art-purrnip' }[card.id];
+    if (naturalArtClass) return `<img class="card-art ${naturalArtClass}${handArtClass}" src="${cleanArt}?v=20261122-natural-card-art" alt="${card.name}" />`;
     const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261121-purrnip-blake-crops`;
     const size = compact ? 'battle' : 'hand';
     return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" alt="${card.name}" /></picture>`;
@@ -349,7 +351,7 @@ function lifeCount(player) { return player.life.middle.filter(Boolean).length + 
 function lifeMarkup(player, side) {
   const attacker = match.player?.lanes[match.attackerLane];
   const middle = player.life.middle.map((card, index) => {
-    const direct = side === 'opponent' && match.attackMode && match.attackerLane === index && Boolean(card) && canTargetLane(attacker, index, player, index);
+    const direct = side === 'opponent' && match.attackMode && match.attackerLane === index && Boolean(card) && canTargetLifeZone(attacker, index, player, index);
     const familiar = player.life.familiars?.[index];
     return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}"><span class="target-mark" aria-hidden="true">⌖</span>${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
   }).join('');
@@ -371,6 +373,10 @@ function canAttackLane(attacker, laneIndex, defender) {
   return Boolean(defender.lanes[laneIndex] || hasLifeTarget(defender, laneIndex, attacker));
 }
 function canCardAttack(card) { return Boolean(card?.ready && !card.skipAttackThisTurn && (card.id === 'ip-coyote' ? (card.attacksThisTurn || 0) < 2 : !card.attacked)); }
+function canTargetLifeZone(attacker, sourceIndex, defender, targetIndex) {
+  if (!attacker || sourceIndex !== targetIndex || !defender.life.middle[targetIndex]) return false;
+  return attacker.role === 'Shooter' || !defender.lanes[targetIndex];
+}
 function canTargetLane(attacker, sourceIndex, defender, targetIndex) {
   if (!attacker || targetIndex < 0 || targetIndex > 2) return false;
   if (attacker.role === 'Shooter') return Math.abs(sourceIndex - targetIndex) === 1 ? Boolean(defender.lanes[targetIndex]) : (sourceIndex === targetIndex && !defender.lanes[targetIndex] && hasLifeTarget(defender, targetIndex, attacker));
@@ -1834,7 +1840,7 @@ document.addEventListener('click', (event) => {
   if (directLife && match.active === 'player' && match.attackMode && !match.attackResolving && match.attackerLane !== null) {
     const attacker = match.player.lanes[match.attackerLane];
     const index = Number(directLife.dataset.lifeIndex);
-    if (index === match.attackerLane && match.opponent.life.middle[index] && canTargetLane(attacker, match.attackerLane, match.opponent, index)) {
+    if (canTargetLifeZone(attacker, match.attackerLane, match.opponent, index)) {
       requestPlayerAttack({ type: 'life', index });
     }
     return;
@@ -1888,7 +1894,7 @@ function getAttackDropAt(x, y, attacker, sourceIndex) {
   const lifeCard = under?.closest('.life-card[data-life-side="opponent"][data-life-index]');
   if (lifeCard) {
     const index = Number(lifeCard.dataset.lifeIndex);
-    const valid = index === sourceIndex && Boolean(match.opponent.life.middle[index]) && canTargetLane(attacker, sourceIndex, match.opponent, index);
+    const valid = canTargetLifeZone(attacker, sourceIndex, match.opponent, index);
     return valid ? { target: { type: 'life', index }, element: lifeCard, valid: true } : { element: lifeCard, valid: false };
   }
   return null;
@@ -1898,7 +1904,7 @@ function showAttackTargetHints(attacker, sourceIndex) {
   match.opponent.lanes.forEach((_, index) => {
     if (canTargetLane(attacker, sourceIndex, match.opponent, index)) document.querySelector(`.lane[data-side="opponent"][data-lane="${index}"]`)?.classList.add('attack-target-hint');
   });
-  if (match.opponent.life.middle[sourceIndex] && canTargetLane(attacker, sourceIndex, match.opponent, sourceIndex)) {
+  if (canTargetLifeZone(attacker, sourceIndex, match.opponent, sourceIndex)) {
     document.querySelector(`.life-card[data-life-side="opponent"][data-life-index="${sourceIndex}"]`)?.classList.add('attack-target-hint');
   }
   if (canAttackMainLife(attacker, sourceIndex, match.opponent)) {
@@ -2052,6 +2058,7 @@ document.getElementById('effect-options').addEventListener('click', (event) => {
 });
 document.getElementById('close-effect').addEventListener('click', () => { pendingEffectChoice = null; document.getElementById('effect-dialog').close(); });
 document.getElementById('rules-button').addEventListener('click', () => document.getElementById('rules-dialog').showModal());
+document.getElementById('mobile-rules-button').addEventListener('click', () => document.getElementById('rules-dialog').showModal());
 document.getElementById('card-library-button').addEventListener('click', () => showCardLibrary());
 document.getElementById('close-card-library').addEventListener('click', () => document.getElementById('card-library-dialog').close());
 document.getElementById('close-rules').addEventListener('click', () => document.getElementById('rules-dialog').close());
