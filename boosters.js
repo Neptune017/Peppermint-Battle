@@ -28,6 +28,35 @@
     return `data-card-preview="${key}"`;
   }
 
+  function cardReviewButton(card) {
+    const key = `collection:${card.id}`;
+    window.PB_CARD_PREVIEW_REGISTRY.set(key, { ...card, instance: key });
+    return `<button type="button" class="card-review-button" data-card-preview="${key}" aria-label="View card details: ${card.name}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg></button>`;
+  }
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('.card-review-button');
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const card = window.PB_CARD_PREVIEW_REGISTRY.get(button.dataset.cardPreview);
+    if (!card) return;
+    const dialog = document.getElementById('card-review-dialog');
+    document.getElementById('card-review-art').src = card.art || '';
+    document.getElementById('card-review-art').alt = card.name || 'Card art';
+    document.getElementById('card-review-kicker').textContent = `${card.title || ''} · ${card.element || 'Neutral'}`;
+    document.getElementById('card-review-name').textContent = card.name || 'Card';
+    document.getElementById('card-review-type').textContent = `${card.role ? `${card.role} · ` : ''}${card.type || 'Fighter'}`;
+    document.getElementById('card-review-attack').textContent = `${card.attack ?? 0} ATK`;
+    document.getElementById('card-review-mana').textContent = `${card.cost ?? 0} Mana`;
+    document.getElementById('card-review-ability').textContent = card.ability || 'No special effect.';
+    const classSection = document.getElementById('card-review-class-section');
+    classSection.hidden = !card.role || !card.classAbility;
+    document.getElementById('card-review-class-title').textContent = `${card.role || ''} class ability`;
+    document.getElementById('card-review-class-ability').textContent = card.classAbility || '';
+    if (!dialog.open) dialog.showModal();
+  }, true);
+  document.getElementById('card-review-close').addEventListener('click', () => document.getElementById('card-review-dialog').close());
+  document.getElementById('card-review-dialog').addEventListener('click', (event) => { if (event.target === event.currentTarget) event.currentTarget.close(); });
   function mainCards(deckId) {
     const source = deckId === 'wild-west' ? wildWestLibrary
       : deckId === 'island-paradise' ? islandParadiseLibrary
@@ -170,7 +199,7 @@
     const cards = [...cardsByDeck[activeDeck]].sort((a, b) => rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity) || (a.title + ' ' + a.name).localeCompare(b.title + ' ' + b.name));
     const left = remainingCards(activeDeck);
     const guaranteedReady = left >= 30 && (rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare') > 0);
-    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">SEALED BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div></article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
+    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">CARD SHOP · BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div>${cardReviewButton(card)}</article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
     document.getElementById('buy-one')?.addEventListener('click', () => openPack(false));
     document.getElementById('buy-ten')?.addEventListener('click', () => openPack(true));
   }
@@ -181,7 +210,7 @@
     document.getElementById('collection-summary').textContent = `${owned} cards collected · ${allCards.length} unique cards`;
     document.getElementById('booster-collection').innerHTML = allCards.map((card) => {
       const count = collectionCount(card), max = collectionLimit(card), missing = count === 0;
-      return `<article class="collection-card ${missing ? 'not-owned' : ''}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="collection-card-info"><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${count} / ${max}</span></div></article>`;
+      return `<article class="collection-card ${missing ? 'not-owned' : ''}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="collection-card-info"><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${count} / ${max}</span></div>${cardReviewButton(card)}</article>`;
     }).join('');
   }
   function renderResults(items, bundle) {
@@ -189,7 +218,7 @@
     const count = items.filter((item) => item.converted).length;
     const rarityOrder = Object.keys(DISPLAY_SIZE);
     const sorted = [...items].sort((a, b) => rarityOrder.indexOf(b.card.rarity) - rarityOrder.indexOf(a.card.rarity));
-    document.getElementById('booster-results').innerHTML = `<div class="booster-results-heading"><div><span class="eyebrow">${title}</span><h3>${items.length} cards revealed</h3></div><span>${count} duplicates converted</span></div><div class="booster-pulls">${sorted.map((item, index) => `<article class="booster-pull ${item.converted ? 'converted' : ''} ${item.wasNew ? 'newly-collected' : ''}" ${cardPreviewAttrs(item.card)} style="--reveal-delay:${Math.min(index, 24) * 35}ms">${item.wasNew ? '<span class="booster-new-badge">NEW</span>' : ''}<img class="${item.converted ? 'duplicate-art' : ''}" src="${item.converted ? 'assets/ui-icons/diamond-currency.png' : item.card.art.split('?')[0]}" alt="${item.converted ? 'Diamond currency' : ''}" loading="lazy"/><div class="booster-pull-info"><small class="${rarityClass(item.card.rarity)}">${item.card.rarity} · ${item.card.title}</small><strong>${item.card.name}</strong><span>${item.converted ? `Duplicate · +${item.reward}` : `Collected · ${item.count} / ${item.limit}`}</span></div></article>`).join('')}</div>`;
+    document.getElementById('booster-results').innerHTML = `<div class="booster-results-heading"><div><span class="eyebrow">${title}</span><h3>${items.length} cards revealed</h3></div><span>${count} duplicates converted</span></div><div class="booster-pulls">${sorted.map((item, index) => `<article class="booster-pull ${item.converted ? 'converted' : ''} ${item.wasNew ? 'newly-collected' : ''}" ${cardPreviewAttrs(item.card)} style="--reveal-delay:${Math.min(index, 24) * 35}ms">${item.wasNew ? '<span class="booster-new-badge">NEW</span>' : ''}<img class="${item.converted ? 'duplicate-art' : ''}" src="${item.converted ? 'assets/ui-icons/diamond-currency.png' : item.card.art.split('?')[0]}" alt="${item.converted ? 'Diamond currency' : ''}" loading="lazy"/><div class="booster-pull-info"><small class="${rarityClass(item.card.rarity)}">${item.card.rarity} · ${item.card.title}</small><strong>${item.card.name}</strong><span>${item.converted ? `Duplicate · +${item.reward}` : `Collected · ${item.count} / ${item.limit}`}</span></div>${cardReviewButton(item.card)}</article>`).join('')}</div>`;
     document.getElementById('booster-results').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   function appendRevealCard(item) {
@@ -374,11 +403,11 @@
     document.getElementById('deck-editor-count').textContent = `${deck.length} / 40 cards`;
     document.getElementById('deck-editor-list').innerHTML = deck.length ? deck.map((id) => {
       const card = cards.find((entry) => entry.id === canonicalId(id)) || collectionCards().find((entry) => entry.id === canonicalId(id));
-      return card ? `<div class="editor-deck-row" draggable="true" data-editor-drag-remove="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt=""/><span><small>${card.title}</small><strong>${card.name}</strong></span><button type="button" data-editor-card="${card.id}" data-editor-delta="-1" aria-label="Remove ${card.name}">−</button></div>` : '';
+      return card ? `<div class="editor-deck-row" draggable="true" data-editor-drag-remove="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt=""/><span><small>${card.title}</small><strong>${card.name}</strong></span>${cardReviewButton(card)}<button type="button" data-editor-card="${card.id}" data-editor-delta="-1" aria-label="Remove ${card.name}">−</button></div>` : '';
     }).join('') : '<p class="editor-empty">Your deck is empty. Drag cards here or add them from the list.</p>';
     document.getElementById('deck-editor-cards').innerHTML = shown.map((card) => {
       const unavailable = !card.owned || deck.length >= 40 || card.inDeck >= card.deckLimit;
-      return `<article class="editor-card ${unavailable ? 'cannot-add' : ''}" draggable="${!unavailable}" data-editor-drag-add="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="editor-card-info"><small>${card.title} · ${card.type || 'Fighter'} · ${card.cost} Mana</small><strong>${card.name}</strong><span>Owned ${card.owned} · In deck ${card.inDeck} / ${card.deckLimit}</span><button type="button" data-editor-card="${card.id}" data-editor-delta="1" ${unavailable ? 'disabled' : ''}>ADD CARD</button></div></article>`;
+      return `<article class="editor-card ${unavailable ? 'cannot-add' : ''}" draggable="${!unavailable}" data-editor-drag-add="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="editor-card-info"><small>${card.title} · ${card.type || 'Fighter'} · ${card.attack ?? 0} ATK · ${card.cost} Mana</small><strong>${card.name}</strong><span>Owned ${card.owned} · In deck ${card.inDeck} / ${card.deckLimit}</span><button type="button" data-editor-card="${card.id}" data-editor-delta="1" ${unavailable ? 'disabled' : ''}>ADD CARD</button>${cardReviewButton(card)}</div></article>`;
     }).join('') || '<p class="editor-empty">No cards match this search.</p>';
     const ascCards = window.peppermintCollection.listOwnedAscendance();
     const ascDeck = window.peppermintCollection.ascendanceDeck();

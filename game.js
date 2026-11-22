@@ -30,7 +30,7 @@ const cardLibrary = [
   { id: 'zodiac-guardian-rick', title: 'Zodiac Guardian', name: 'Rick', type: 'Transformation', cost: 0, attack: 6, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacGuardianRick.png', ability: '+1 attack for each Terra card in your Pandemonium Zone.' },
   { id: 'zodiac-guardian-kage', title: 'Zodiac Guardian', name: 'Kage', type: 'Transformation', cost: 0, attack: 5, element: 'Dark', role: 'Blader', art: 'assets/cards/ZodiacGuardianKage.png', ability: '+1 attack for each Dark card in your Pandemonium Zone.' },
   { id: 'zodiac-guardian-ryota', title: 'Zodiac Guardian', name: 'Ryota', type: 'Transformation', cost: 0, attack: 5, element: 'Solar', role: 'Shooter', art: 'assets/cards/ZodiacGuardianRyota.png', ability: 'Discard a card to destroy an opposing fighter in a Solar explosion.' },
-  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.png', ability: 'On summon, choose one of your fighters. If your Ascendance Deck has a same-named Zodiac Guardian, send Egg to your Pandemonium Zone to replace that fighter with a Zodiac creature matching its element.' },
+  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.png', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace Egg with a Zodiac creature from your deck matching that fighter’s element.' },
 ];
 const wildWestLibrary = [
   { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.png', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty fighter zone on both fields.' },
@@ -599,7 +599,7 @@ function positionCardTooltip(event) {
   tooltip.style.setProperty('--tooltip-width', `${Math.max(1, width)}px`);
   tooltip.style.setProperty('--tooltip-height', `${Math.max(1, height)}px`);
 }
-function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); if (typeof tooltip.hidePopover === 'function' && tooltip.matches(':popover-open')) tooltip.hidePopover(); } }
+function hideCardTooltip() { const tooltip = document.getElementById('card-tooltip'); if (tooltip) { tooltip.classList.remove('visible', 'mobile-open', 'pinned'); delete tooltip.dataset.previewCard; tooltip.setAttribute('aria-hidden', 'true'); if (typeof tooltip.hidePopover === 'function' && tooltip.matches(':popover-open')) tooltip.hidePopover(); } }
 function showZoneCards(side, zoneKind) {
   const owner = side === 'player' ? match.player : match.opponent;
   const cards = zoneKind === 'transform' ? owner.transformationDeck : owner.destroyed;
@@ -848,10 +848,21 @@ function activateAction(owner, actionInstance) {
     chooseEffect(owner, 'Doll Chorus · choose a Living Toy', 'Give a Living Toy fighter +1 attack.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; addPermanentAttack(target, 1, 'Doll Chorus'); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); playSpecialFx(owner, Number(lane), 'doll-chorus', 'DOLL CHORUS · AWAKEN', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained 1 attack.`); });
   }
   else if (action?.id === 'lt-wind-up-toy' && match.energy >= action.cost) {
-    const choices = owner.destroyed.filter((card) => card.title === 'Living Toy').map((card) => ({ value: card.instance, label: card.name, detail: 'Living Toy · return to hand' }));
-    chooseEffect(owner, 'Wind-Up Toy · choose a Living Toy', 'Return a Living Toy card from your Pandemonium Zone to your hand.', choices, (instance) => { const index = owner.destroyed.findIndex((card) => card.instance === instance && card.title === 'Living Toy'); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [returned] = owner.destroyed.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(returned); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'wind-up-toy', 'WIND-UP TOY · REWOUND', { generatedOnly: true, silent: true }); announceEffect(`${returned.name} returned to your hand.`); });
-  }
-  else if (action?.id === 'lt-toy-capsule' && match.energy >= action.cost) {
+    const choices = owner.destroyed.filter((card) => card.title === 'Living Toy' && !owner.hand.some((held) => held.instance === card.instance)).map((card) => ({ value: card.instance, label: card.name, detail: 'Living Toy · return to hand' }));
+    chooseEffect(owner, 'Wind-Up Toy · choose a Living Toy', 'Return a Living Toy card from your Pandemonium Zone to your hand.', choices, (instance) => {
+      const destroyedIndex = owner.destroyed.findIndex((held) => held.instance === instance && held.title === 'Living Toy');
+      const actionIndex = owner.hand.findIndex((held) => held.instance === action?.instance && held.id === 'lt-wind-up-toy');
+      if (destroyedIndex < 0 || actionIndex < 0 || match.energy < action.cost) return;
+      const [returned] = owner.destroyed.splice(destroyedIndex, 1);
+      owner.hand.splice(actionIndex, 1);
+      owner.destroyed.push(action);
+      owner.hand.push(returned);
+      match.energy -= action.cost;
+      render();
+      playSpecialFx(owner, -1, 'wind-up-toy', 'WIND-UP TOY · REWOUND', { generatedOnly: true, silent: true });
+      announceEffect(`${returned.name} returned from the Pandemonium Zone to your hand.`);
+    });
+  }  else if (action?.id === 'lt-toy-capsule' && match.energy >= action.cost) {
     const choices = owner.deck.filter((card) => card.title === 'Living Toy').map((card) => ({ value: card.instance, label: card.name, detail: `${card.title} · ${card.element}` }));
     chooseEffect(owner, 'Toy Capsule · choose a Living Toy', 'Search your deck for a Living Toy card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance && card.title === 'Living Toy'); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'toy-capsule', 'TOY CAPSULE · PRIZE FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
   }
@@ -1149,16 +1160,16 @@ function triggerOnSummon(card, owner, laneIndex) {
     chooseEffect(owner, 'Dimitri: draw an Academy card', 'Choose an Academy card that costs 3 or 4 from your deck.', choices, (index) => { const [drawn] = owner.deck.splice(Number(index), 1); if (drawn) { owner.hand.push(drawn); render(); announceEffect(`${drawn.name} drawn by Dimitri.`); } });
   }
   if (card.id === 'zodiac-egg') {
-    const choices = owner.lanes.flatMap((unit, lane) => unit && owner.transformationDeck.some((guardian) => guardian.title === 'Zodiac Guardian' && guardian.name === unit.name) && owner.deck.some((candidate) => candidate.title === 'Zodiac' && candidate.id !== 'zodiac-egg' && candidate.element === unit.element)
-      ? [{ value: lane, label: unit.name, detail: `Transform to a Zodiac creature matching ${unit.element}` }] : []);
-    chooseEffect(owner, 'Zodiac Egg · awaken a creature', 'Choose a fighter whose Zodiac Guardian is in your Ascendance Deck and a matching Zodiac creature is in your deck.', choices, (lane) => {
-      const target = owner.lanes[Number(lane)]; const guardian = owner.transformationDeck.find((item) => item.title === 'Zodiac Guardian' && item.name === target?.name);
-      const zodiacIndex = owner.deck.findIndex((item) => item.title === 'Zodiac' && item.id !== 'zodiac-egg' && item.element === target?.element);
-      if (!target || !guardian || zodiacIndex < 0) return;
-      const [creature] = owner.deck.splice(zodiacIndex, 1); owner.destroyed.push(target); owner.destroyed.push(card); owner.lanes[Number(lane)] = creature; creature.ready = false; render(); playSpecialFx(owner, Number(lane), 'avatar-gem', 'ZODIAC EGG · AWAKEN', { generatedOnly: true, silent: true }); animateSummon(owner, Number(lane), creature).then(() => triggerOnSummon(creature, owner, Number(lane))); announceEffect(`${creature.name} replaced ${target.name}.`);
+    const eggIsStillInLane = owner.lanes[laneIndex] === card;
+    const choices = eggIsStillInLane ? owner.lanes.flatMap((unit, lane) => unit && lane !== laneIndex && owner.transformationDeck.some((guardian) => guardian.title === 'Zodiac Guardian' && guardian.name === unit.name) && owner.deck.some((candidate) => candidate.title === 'Zodiac' && candidate.id !== 'zodiac-egg' && candidate.element === unit.element)
+      ? [{ value: lane, label: unit.name, detail: `${unit.element} · Egg becomes a matching Zodiac creature` }] : []) : [];
+    chooseEffect(owner, 'Zodiac Egg · awaken a creature', 'Choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Egg will transform into a Zodiac creature matching that fighter’s element.', choices, (lane) => {
+      const guide = owner.lanes[Number(lane)]; const guardian = owner.transformationDeck.find((item) => item.title === 'Zodiac Guardian' && item.name === guide?.name);
+      const zodiacIndex = owner.deck.findIndex((item) => item.title === 'Zodiac' && item.id !== 'zodiac-egg' && item.element === guide?.element);
+      if (!guide || !guardian || zodiacIndex < 0 || owner.lanes[laneIndex] !== card) return;
+      const [creature] = owner.deck.splice(zodiacIndex, 1); owner.destroyed.push(card); owner.lanes[laneIndex] = creature; creature.ready = false; render(); playSpecialFx(owner, laneIndex, 'avatar-gem', 'ZODIAC EGG · AWAKEN', { generatedOnly: true, silent: true }); animateSummon(owner, laneIndex, creature).then(() => triggerOnSummon(creature, owner, laneIndex)); announceEffect(`Zodiac Egg transformed into ${creature.name}; ${guide.name} remains in play.`);
     });
-  }
-  if (card.id === 'zodiac-swordtiger' && [...match.player.lanes, ...match.opponent.lanes].some((unit) => unit?.name === 'Dimitri')) drawMatching(owner, (unit) => unit.id === 'avatar-gem', 'Avatar Gem');
+  }  if (card.id === 'zodiac-swordtiger' && [...match.player.lanes, ...match.opponent.lanes].some((unit) => unit?.name === 'Dimitri')) drawMatching(owner, (unit) => unit.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'dharma') {
     const choices = owner.destroyed.map((held) => ['Fighter', 'Creature'].includes(held.type) ? { value: held.instance, label: held.name, detail: `${held.title} · ${held.element} · returns next turn` } : null).filter(Boolean);
     chooseEffect(owner, 'Dharma: choose a card to revive', 'Choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, it returns to an open Fighter Zone if Dharma is still on the field.', choices, (instance) => {
@@ -1759,6 +1770,21 @@ document.addEventListener('click', (event) => {
   if (tooltipUse) { const id = tooltipUse.dataset.tooltipUse; hideCardTooltip(); match.attackMode = false; match.attackerLane = null; match.selected = null; activateAction(match.player, id); return; }
   const tooltipSummon = event.target.closest('[data-tooltip-summon]');
   if (tooltipSummon) { const id = tooltipSummon.dataset.tooltipSummon; const lane = Number(tooltipSummon.dataset.lane); hideCardTooltip(); playCard(id, lane); return; }
+  const tooltip = document.getElementById('card-tooltip');
+  if (!isTouchInput()) {
+    if (event.target.closest('.tooltip-dismiss') && tooltip.classList.contains('pinned')) { hideCardTooltip(); return; }
+    const preview = event.target.closest('[data-card-preview]');
+    const reviewCard = preview?.classList.contains('card-review-button') || preview?.matches('.editor-card, .editor-deck-row, .ascendance-editor-card, .display-card, .collection-card, .booster-pull, .booster-reveal-card');
+    if (reviewCard && (!event.target.closest('button') || event.target.closest('.card-review-button'))) {
+      if (tooltip.classList.contains('pinned') && tooltip.dataset.previewCard === preview.dataset.cardPreview) hideCardTooltip();
+      else {
+        const card = findCardPreview(preview.dataset.cardPreview);
+        if (card) { showCardTooltip(card, event); tooltip.classList.add('pinned'); }
+      }
+      return;
+    }
+    if (tooltip.classList.contains('pinned') && !event.target.closest('#card-tooltip')) hideCardTooltip();
+  }
   if (event.target.closest('#card-tooltip') && !event.target.closest('.tooltip-dismiss')) return;
   if (isTouchInput()) {
     const tooltip = document.getElementById('card-tooltip');
@@ -1772,7 +1798,7 @@ document.addEventListener('click', (event) => {
       return;
     }
     const preview = event.target.closest('[data-card-preview]');
-    if (preview && !event.target.closest('button')) {
+    if (preview && (!event.target.closest('button') || event.target.closest('.card-review-button'))) {
       if (touchCardDetailsArmed === preview.dataset.cardPreview) {
         touchCardDetailsArmed = null;
         hideCardTooltip();
@@ -1997,18 +2023,19 @@ document.addEventListener('keydown', (event) => {
 });
 document.querySelectorAll('dialog').forEach((dialog) => dialog.addEventListener('close', hideCardTooltip)); document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
 document.addEventListener('pointerover', (event) => {
-  if (isTouchInput() || activeCardDrag || handDragCandidate || activeAttackDrag || attackDragCandidate) { if (activeCardDrag || activeAttackDrag) hideCardTooltip(); return; }
+  if (isTouchInput() || activeCardDrag || handDragCandidate || activeAttackDrag || attackDragCandidate || document.getElementById('card-tooltip')?.classList.contains('pinned')) { if (activeCardDrag || activeAttackDrag) hideCardTooltip(); return; }
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (event.relatedTarget?.closest?.('[data-card-preview]') === preview) return;
   const card = findCardPreview(preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
-document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
+document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !document.getElementById('card-tooltip')?.classList.contains('pinned') && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
 document.addEventListener('pointerout', (event) => {
   if (isTouchInput()) return;
   const preview = event.target.closest('[data-card-preview]');
   const tooltip = document.getElementById('card-tooltip');
+  if (tooltip.classList.contains('pinned')) return;
   const related = event.relatedTarget;
   if (event.target.closest('#card-tooltip')) {
     if (related?.closest?.('#card-tooltip')) return;
