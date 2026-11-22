@@ -507,8 +507,8 @@ function canTargetLifeZone(attacker, sourceIndex, defender, targetIndex) {
 }
 function canTargetLane(attacker, sourceIndex, defender, targetIndex) {
   if (!attacker || targetIndex < 0 || targetIndex > 2) return false;
-  if (attacker.role === 'Shooter') return Math.abs(sourceIndex - targetIndex) === 1 ? Boolean(defender.lanes[targetIndex]) : (sourceIndex === targetIndex && !defender.lanes[targetIndex] && hasLifeTarget(defender, targetIndex, attacker));
-  return sourceIndex === targetIndex && Boolean(defender.lanes[targetIndex] || hasLifeTarget(defender, targetIndex, attacker));
+  if (attacker.role === 'Shooter') return Math.abs(sourceIndex - targetIndex) === 1 && Boolean(defender.lanes[targetIndex]);
+  return sourceIndex === targetIndex && Boolean(defender.lanes[targetIndex]);
 }
 function resolveAttackTarget(defender, target, sourceIndex = -1) {
   const protectedLane = target.type === 'life' ? (target.main ? sourceIndex : target.index) : target.index;
@@ -974,8 +974,8 @@ function activateAction(owner, actionInstance) {
     chooseEffect(owner, 'Merry Christmas! · choose a Glacial card', 'Search your deck for a Glacial card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); queueDrawAnimation(owner,card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'merry-christmas', 'MERRY CHRISTMAS · GIFT FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
   }
   else if (action?.id === 'wb-wedding-proposal' && match.energy >= action.cost) {
-    const pairs = [[0,1],[1,2]].filter(([a,b]) => owner.lanes[a] && owner.lanes[b]);
-    chooseEffect(owner, 'Wedding Proposal · choose a pair', 'Choose two adjacent fighters to each gain +1 attack.', pairs.map(([a,b]) => ({ value: `${a}:${b}`, label: `${owner.lanes[a].name} + ${owner.lanes[b].name}`, detail: `Adjacent lanes ${a + 1} and ${b + 1}` })), (value) => { const [a,b] = String(value).split(':').map(Number); if (!owner.lanes[a] || !owner.lanes[b] || !owner.hand.includes(action) || match.energy < action.cost) return; addPermanentAttack(owner.lanes[a], 1, 'Wedding Proposal'); addPermanentAttack(owner.lanes[b], 1, 'Wedding Proposal'); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'wedding-proposal', 'WEDDING PROPOSAL · DOUBLE BLESSING', { generatedOnly: true, silent: true }); announceEffect(`${owner.lanes[a].name} and ${owner.lanes[b].name} gained 1 attack.`); });
+    const pairs = [[0,1],[1,2]].filter(([a,b]) => owner.lanes[a]?.type === 'Fighter' && owner.lanes[b]?.type === 'Fighter');
+    chooseEffect(owner, 'Wedding Proposal · choose a pair', 'Choose two adjacent fighters to each gain +1 attack.', pairs.map(([a,b]) => ({ value: `${a}:${b}`, label: `${owner.lanes[a].name} + ${owner.lanes[b].name}`, detail: `Adjacent lanes ${a + 1} and ${b + 1}` })), (value) => { const [a,b] = String(value).split(':').map(Number); if (owner.lanes[a]?.type !== 'Fighter' || owner.lanes[b]?.type !== 'Fighter' || !owner.hand.includes(action) || match.energy < action.cost) return; addPermanentAttack(owner.lanes[a], 1, 'Wedding Proposal'); addPermanentAttack(owner.lanes[b], 1, 'Wedding Proposal'); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'wedding-proposal', 'WEDDING PROPOSAL · DOUBLE BLESSING', { generatedOnly: true, silent: true }); announceEffect(`${owner.lanes[a].name} and ${owner.lanes[b].name} gained 1 attack.`); });
   }
   else if (action?.id === 'ip-ride-the-wave' && match.energy >= action.cost) {
     if (owner.isAI) {
@@ -1553,7 +1553,7 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   const islandProtected = match.fieldCard?.id === 'ip-field' && possibleTarget?.title === 'Island Paradise' && !possibleTarget?.ignoresIslandField;
   const opposing = natsukiProtected || islandProtected ? null : possibleTarget;
   if (target.type === 'life' && target.main && !canAttackMainLife(attacker, index, defender)) return;
-  if (target.type === 'life' && !target.main && (attacker.role !== 'Shooter' || target.index !== index || !defender.life.middle[target.index])) return;
+  if (target.type === 'life' && !target.main && !canTargetLifeZone(attacker, index, defender, target.index)) return;
   match.eventActor = from; match.eventSource = attacker.name;
   const targetName = target.type === 'life' ? `${battleSideName(defender)}'s ${target.main ? 'Main Life' : `Life Zone ${target.index + 1}`}` : defender.lanes[targetLane]?.name || `${battleSideName(defender)}'s lane ${targetLane + 1}`;
   logBattleEvent(`${battleSideName(from)} ${attacker.name} attacked ${targetName}.`, from === match.player ? 'player' : 'enemy');
@@ -1732,7 +1732,7 @@ function npcAttackTarget(card, index, defender) {
     [index - 1, index + 1].filter((lane) => lane >= 0 && lane < 3 && defender.lanes[lane]).forEach((lane) => candidates.push({ type: 'lane', index: lane }));
     if (!defender.lanes[index] && hasLifeTarget(defender, index, card)) candidates.push({ type: 'life', index, main: canAttackMainLife(card, index, defender) });
   } else if (defender.lanes[index]) candidates.push({ type: 'lane', index });
-  else if (hasLifeTarget(defender, index, card)) candidates.push({ type: 'lane', index });
+  else if (hasLifeTarget(defender, index, card)) candidates.push({ type: 'life', index, main: canAttackMainLife(card, index, defender) });
   let best = null; let bestValue = -Infinity;
   candidates.forEach((target) => {
     const value = npcAttackValue(card, index, defender, target);
