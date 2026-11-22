@@ -271,7 +271,7 @@ let tutorialPhase = '';
 let tutorialBubbleDismissed = false;
 function tutorialCard(id) { const source=allCardCatalog().find((card)=>card.id===id); return source ? cloneCard(source) : null; }
 function tutorialCardForRole(role) { const source=allCardCatalog().find((card)=>card.role===role && card.type!=='Transformation' && card.type!=='Action'); return source ? cloneCard(source) : null; }
-function tutorialPracticeFighter({role='Trickster',element='Terra',attack=1,name='Practice Fighter'}={}) { const card=tutorialCardForRole(role) || tutorialCard('ww-bandito'); card.name=name; card.attack=attack; card.element=element; card.role=role; card.ability='Tutorial practice card.'; card.ready=true; return card; }
+function tutorialPracticeFighter({role='Trickster',element='Terra',attack=1}={}) { const card=tutorialCardForRole(role) || tutorialCard('ww-bandito'); card.attack=attack; card.element=element; card.role=role; card.ability='Tutorial practice card.'; card.ready=true; return card; }
 function setupTutorialScene(stage) {
   tutorialLessonIndex=stage; tutorialPhase=stage===3?'summon':stage===7?'field-play':''; tutorialBubbleDismissed=false; match.selected=null; match.attackMode=false; match.attackerLane=null; match.attackResolving=false; match.active='player'; match.turn=Math.max(1,match.turn); match.maxEnergy=10; match.energy=10; match.turnEnergyCap=10; match.secondPlayerBonusPending=false; match.fieldCard=null;
   const p=match.player, e=match.opponent; p.lanes=[null,null,null]; e.lanes=[null,null,null]; p.life.familiars=[null,null,null]; e.life.familiars=[null,null,null]; p.life.middle=[0,1,2].map(()=>tutorialCard('academy-fritz')); e.life.middle=[0,1,2].map(()=>tutorialCard('ww-bandito')); p.life.main=tutorialCard('academy-coyote'); e.life.main=tutorialCard('ww-rick'); p.destroyed=[]; e.destroyed=[]; p.hand=[]; e.hand=[tutorialCard('ww-bandito'),tutorialCard('ww-sunnythorn')].filter(Boolean); p.deck=p.deck.filter(Boolean);
@@ -279,23 +279,24 @@ function setupTutorialScene(stage) {
   const cardByRole=(role)=>tutorialCardForRole(role);
   if(stage===0){ match.maxEnergy=match.energy=match.turnEnergyCap=1; p.hand=[tutorialCard('ww-hopkin')].filter(Boolean); }
   else if(stage===1){ match.maxEnergy=match.energy=match.turnEnergyCap=0; if(!p.lanes[0]) place(p,0,tutorialCard('ww-hopkin'),false); }
-  else if(stage===2){ place(p,0,tutorialCard('ww-hopkin'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Fighter'}),true); }
+  else if(stage===2){ place(p,0,tutorialCard('ww-hopkin'),true); place(e,0,tutorialCard('gummy'),true); }
   else if(stage===3){ p.hand=[tutorialCard('ip-croaktail')].filter(Boolean); place(e,0,tutorialCard('gummy'),true); }
   else if(stage===4){ place(p,0,tutorialCard('aemi'),true); }
-  else if(stage===5){ p.hand=[tutorialCard('ryota'),tutorialCard('academy-fritz')].filter(Boolean); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Target'}),true); match.maxEnergy=match.energy=match.turnEnergyCap=3; }
+  else if(stage===5){ p.hand=[tutorialCard('ryota'),tutorialCard('academy-fritz')].filter(Boolean); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1}),true); match.maxEnergy=match.energy=match.turnEnergyCap=3; }
   else if(stage===6){ p.hand=[tutorialCard('wb-shopping')].filter(Boolean); match.maxEnergy=match.energy=match.turnEnergyCap=4; }
   else if(stage===7){ p.hand=[tutorialCard('academy-grounds')].filter(Boolean); place(p,0,tutorialCard('academy-fritz'),true); place(e,0,tutorialCard('ww-bandito'),true); match.maxEnergy=match.energy=match.turnEnergyCap=4; }
-  else if(stage===8){ place(p,0,tutorialCard('academy-fritz'),true); place(p,1,cardByRole('Shielder'),true); place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1,name:'Rival Attacker'}),true); }
-  else if(stage===9){ place(p,0,cardByRole('Shooter'),true); place(e,1,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Adjacent Target'}),true); }
+  else if(stage===8){ place(p,0,tutorialCard('academy-fritz'),true); place(p,1,cardByRole('Shielder'),true); place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1}),true); }
+  else if(stage===9){ place(p,0,cardByRole('Shooter'),true); place(e,1,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0}),true); }
   else if(stage===10){ const unit=cardByRole('Summoner'); if(unit){ p.life.middle[0]=null; p.hand=[unit]; const familiar=allCardCatalog().find((card)=>card.type==='Creature' && card.element===unit.element && card.id!==unit.id); if(familiar)p.hand.push(cloneCard(familiar)); } }
-  else if(stage===11){ place(p,0,tutorialPracticeFighter({role:'Summoner',element:'Terra',attack:1,name:'Adjacent Ally'}),true); const unit=cardByRole('Enchanter'); if(unit)p.hand=[unit]; }
-  else if(stage===12){ place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1,name:'Opposing Fighter'}),true); const unit=cardByRole('Trickster'); if(unit)p.hand=[unit]; }
+  else if(stage===11){ place(p,0,tutorialPracticeFighter({role:'Summoner',element:'Terra',attack:1}),true); const unit=cardByRole('Enchanter'); if(unit)p.hand=[unit]; }
+  else if(stage===12){ place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1}),true); const unit=cardByRole('Trickster'); if(unit)p.hand=[unit]; }
   else if(stage===13){ p.life.middle[0]=null; const unit=cardByRole('Healer'); if(unit)p.hand=[unit]; }
   else if(stage===14){ place(p,0,cardByRole('Blader'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Practice Target'}),true); }
   else if(stage===15){ place(p,0,tutorialCard('academy-coyote'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Practice Target'}),true); }
-  else if(stage===16){ place(p,1,tutorialPracticeFighter({role:'Shooter',element:'Aer',attack:2,name:'Final Shooter'}),true); e.life.middle=[null,null,null]; }
+  else if(stage===16){ place(p,1,tutorialPracticeFighter({role:'Shooter',element:'Aer',attack:2}),true); e.life.middle=[null,null,null]; }
   const lesson=tutorialLessons[stage]; tutorialPromptCopy=lesson?.copy || ''; if(stage===8)tutorialPromptCopy='Click DO THE ACTION, then End Turn. Watch the rival attack your Fritz in Lane 1; your Shielder in Lane 2 intercepts and takes the attack.';
-  if(lesson?.role){ const card=allCardCatalog().find((entry)=>entry.role===lesson.role && entry.type!=='Transformation'); const situation=lesson.situation || ''; const action=({Shielder:'End your turn now to trigger the interception.',Shooter:'Select the Shooter in Lane 1, start an attack, then target Lane 2.',Summoner:'Summon the Summoner into Lane 1, then choose the matching Creature.',Enchanter:'Summon the Enchanter into Lane 2.',Trickster:'Summon the Trickster into Lane 1.',Healer:'Summon the Healer into Lane 1.',Blader:'Select the Blader in Lane 1, attack, then target Lane 1.',Brawler:'Select the Brawler in Lane 1, attack, then target Lane 1.'})[lesson.role]; tutorialPromptCopy=`${action} ${classAbilities[lesson.role]} ${situation} ${card ? `Example card: ${card.name}.` : ''}`; }
+  if(lesson?.role){ const card=allCardCatalog().find((entry)=>entry.role===lesson.role && entry.type!=='Transformation'); let situation=lesson.situation || ''; const enemyName=e.lanes.find(Boolean)?.name || ''; const allyName=p.lanes.find(Boolean)?.name || ''; if(lesson.role==='Shooter'&&enemyName)situation=`Your Shooter is in Lane 1 and ${enemyName} is in the adjacent Lane 2. Attack ${enemyName}.`; if(lesson.role==='Enchanter'&&allyName)situation=`${allyName} is already in Lane 1. Summon the Enchanter beside ${allyName} in Lane 2; ${allyName} gains +1 ATK.`; if(lesson.role==='Trickster'&&enemyName)situation=`${enemyName} faces your Trickster in Lane 1. Summon the Trickster there; ${enemyName} loses 1 ATK.`; if(lesson.role==='Blader'&&enemyName)situation=`Your Blader is ready in Lane 1. Attack ${enemyName} to see its +1 ATK while attacking.`; if(lesson.role==='Brawler'&&enemyName)situation=`Your Brawler is ready in Lane 1 and the adjacent lanes are empty. Attack ${enemyName} with its +1 ATK bonus.`; const action=({Shielder:'End your turn now to trigger the interception.',Shooter:'Select the Shooter in Lane 1, start an attack, then target Lane 2.',Summoner:'Summon the Summoner into Lane 1, then choose the matching Creature.',Enchanter:'Summon the Enchanter into Lane 2.',Trickster:'Summon the Trickster into Lane 1.',Healer:'Summon the Healer into Lane 1.',Blader:'Select the Blader in Lane 1, attack, then target Lane 1.',Brawler:'Select the Brawler in Lane 1, attack, then target Lane 1.'})[lesson.role]; tutorialPromptCopy=`${action} ${classAbilities[lesson.role]} ${situation} ${card ? `Example card: ${card.name}.` : ''}`; }
+  if(stage===5&&e.lanes[0])tutorialPromptCopy=`Summon Ryota into Lane 1. Discard the extra card from your hand, then choose ${e.lanes[0].name} in Lane 1 for Ryota’s Solar explosion.`;
   if(stage===8)tutorialPromptCopy='Click DO THE ACTION, then End Turn. Watch the rival attack your Fritz in Lane 1; your Shielder in Lane 2 intercepts and takes the attack.';
   if(stage===15)tutorialPromptCopy='Brawlers gain attack when they have empty lane besides them. Coyote here gains one attack for the empty lane 2. Attack with him to continue.';
   render(); renderTutorialLesson();
@@ -356,7 +357,7 @@ function tutorialEndTurn() {
   const stage=tutorialLessonIndex;
   match.active='transition'; match.attackMode=false; match.attackerLane=null; match.selected=null; render();
   if(stage===3&&tutorialPhase==='wait'){ window.setTimeout(()=>{ startPlayerTurn(); if(match.player.lanes[0])match.player.lanes[0].ready=true; tutorialPhase='attack'; tutorialPromptCopy='Croaktail is ready and softly pulsing. Click it, then click Gummy in the opposing Lane 1, or drag Croaktail onto Gummy. Both started at 1 ATK; Aqua beats Ignis, giving Croaktail +1 ATK for this attack.'; render(); renderTutorialLesson(); },350); return true; }
-  if(stage===1){ const foe=tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Fighter'}); foe.ready=false; match.opponent.lanes[0]=foe; window.setTimeout(()=>{startPlayerTurn(); setupTutorialScene(2);},450); return true; }
+  if(stage===1){ const foe=tutorialCard('gummy'); foe.ready=false; match.opponent.lanes[0]=foe; window.setTimeout(()=>{startPlayerTurn(); setupTutorialScene(2);},450); return true; }
   if(stage===8){ const attacker=match.opponent.lanes[0]; if(attacker){attacker.ready=true; tutorialBubbleDismissed=true; renderTutorialLesson(); animateAttack(match.opponent,0,(target)=>battle(attacker,0,match.opponent,target),{type:'lane',index:0}); window.setTimeout(()=>setupTutorialScene(9),1450);} return true; }
   match.active='player'; render(); tutorialWrongAction('End your turn only when the tutorial asks you to.'); return true;
 }
@@ -453,7 +454,10 @@ function cardMarkup(card, enemy = false, compact = false) {
   const attackBadge = attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
   const actionButton = compact && !enemy && ['zoya','ww-medusa','ww-blake','ip-croaktail','wb-steepod','wb-topaz-diamond'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Use ${card.name}’s once-per-turn effect">USE</button>` : '';
   const handAbilityButton = !compact && card.id === 'wb-sageape' ? '<button class="hand-ability-trigger" data-hand-ability="wb-sageape" title="Discard Sageape to move a Glacial fighter">MOVE</button>' : '';
-  const freezeBadge = compact && card.skipAttackThisTurn ? '<span class="freeze-mark" title="Cannot attack this turn">❄</span>' : '';
+  const frozen = compact && Boolean(card.skipAttackThisTurn || card.skipAttackNext);
+  const rooted = compact && Boolean(card.cannotMoveUntilTurn && match.turn < card.cannotMoveUntilTurn);
+  const statusClass = `${frozen ? ' status-frozen' : ''}${rooted ? ' status-rooted' : ''}`;
+  const freezeBadge = frozen ? `<span class="freeze-mark" title="${card.skipAttackNext && !card.skipAttackThisTurn ? 'Cannot attack next turn' : 'Cannot attack this turn'}">❄</span>` : '';
   const handArtClass = !compact && ['ww-academy-rick'].includes(card.id) ? ' hand-art-rick' : !compact && ['academy-lynda', 'ww-academy-lynda'].includes(card.id) ? ' hand-art-lynda' : '';
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
@@ -471,7 +475,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const classIcon = classIconMarkup(card.type === 'Action' ? 'Action' : card.role, card.element, 'card-class-icon');
   const details = compact ? `<div class="card-bottom"><span class="card-element"></span><span class="card-stats" title="Base ${card.attack}${attackInfo.sources.length ? ` · ${attackInfo.sources.join(' · ')}` : ''}">${attackValueMarkup}${attackBadge} ATK</span></div>` : card.type === 'Action' ? `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${card.cost} MANA</span></div>` : `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${attackValueMarkup}${attackBadge} ATK</span></div>`;
   const summonLocked = !compact && card.id === 'vishnu' && !owner?.lanes.some((unit) => unit?.name === 'Peppermint');
-  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${card.name}, ${card.ready && !card.attacked ? 'click to attack' : 'fighter'}" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Fighter Zone' : ''}"`}>
+  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${card.name}, ${card.ready && !card.attacked ? 'click to attack' : 'fighter'}" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Fighter Zone' : ''}"`}>
     ${art}<span class="art-shade"></span>${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${card.name}</div></div>
     ${actionButton}${handAbilityButton}${freezeBadge}${details}</div>`;
 }
@@ -758,7 +762,7 @@ function playCard(cardId, laneIndex) {
   match.attackMode = false; match.attackerLane = null;
   match.energy -= cost; match.player.hand.splice(match.player.hand.indexOf(card), 1); card.ready = false; match.player.lanes[laneIndex] = card; match.selected = null; render(); animateSummon(match.player, laneIndex, card).then(() => { triggerOnSummon(card, match.player, laneIndex); tutorialAdvanceAfterSummon(card,laneIndex); });
 }
-function playCost(owner, card) { if (!card) return Infinity; if (card.id === 'academy-diamond' && owner.lanes.some((unit) => ['academy-topaz','wb-topaz-diamond'].includes(unit?.id))) return 0; if (card.id === 'academy-topaz' && owner.lanes.some((unit) => ['academy-diamond','wb-topaz-diamond'].includes(unit?.id))) return 0; return card.cost; }
+function playCost(owner, card) { if (!card) return Infinity; const fieldLanes = [...(owner?.lanes || []), ...((owner === match?.player ? match?.opponent : match?.player)?.lanes || [])]; if (card.id === 'academy-diamond' && fieldLanes.some((unit) => ['academy-topaz','wb-topaz-diamond'].includes(unit?.id))) return 0; if (card.id === 'academy-topaz' && fieldLanes.some((unit) => ['academy-diamond','wb-topaz-diamond'].includes(unit?.id))) return 0; return card.cost; }
 function canSummonCard(owner, card) { return card?.id !== 'vishnu' || Boolean(owner?.lanes.some((unit) => unit?.name === 'Peppermint')); }
 function queueDrawAnimation(owner, card) { if(owner&&card) pendingDrawAnimations.push({side:owner===match.player?'player':'opponent',instance:card.instance}); }
 function drawCard(player, count = 1) {
@@ -2159,7 +2163,7 @@ document.addEventListener('pointermove', (event) => {
   } else {
     const lane = under?.closest('.lane[data-side="player"]');
     const index = lane ? Number(lane.dataset.lane) : -1;
-    if (lane && index >= 0 && !match.player.lanes[index] && canSummonCard(match.player, activeCardDrag.card)) lane.classList.add('drag-drop-target');
+    if (lane && index >= 0 && !match.player.lanes[index] && canSummonCard(match.player, activeCardDrag.card) && playCost(match.player, activeCardDrag.card) <= match.energy) lane.classList.add('drag-drop-target');
   }
 }, { passive: false });
 document.addEventListener('pointerup', (event) => {
