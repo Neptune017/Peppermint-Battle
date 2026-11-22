@@ -260,7 +260,7 @@ body.card-dragging{cursor:grabbing;user-select:none}
 /* Responsive storybook arena art: grass by default, field artwork as a soft scene layer. */
 body{position:relative;isolation:isolate;min-height:100svh;background:#111b25}
 body::before,body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
-body::before{background-image:linear-gradient(180deg,#11132355 0%,#10182330 42%,#07120ecc 100%),url("assets/backgrounds/city-night.png");background-size:cover,cover;background-position:center;background-repeat:no-repeat;filter:saturate(.94);transform:scale(1.015);transition:filter .5s ease,background-image .45s ease}
+body::before{background-image:linear-gradient(180deg,#11132355 0%,#10182330 42%,#07120ecc 100%),url("assets/backgrounds/city-night-tree-sway.gif");background-size:cover,cover;background-position:center;background-repeat:no-repeat;filter:saturate(.94);transform:scale(1.015);transition:filter .5s ease,background-image .45s ease}
 body::after{background:radial-gradient(ellipse at 50% 38%,transparent 8%,#0b102344 72%,#090d16a8 100%);}
 .app-shell{position:relative;z-index:0;min-height:100svh;background:linear-gradient(180deg,#15142628 0%,#10172230 55%,#0d141d48 100%)}
 .topbar{border-bottom-color:#d5c6ff2a;text-shadow:0 2px 12px #100817}
@@ -269,11 +269,11 @@ body::after{background:radial-gradient(ellipse at 50% 38%,transparent 8%,#0b1023
 .lane[data-side="opponent"]{border-color:#dc8bff6e;box-shadow:inset 0 0 24px #d275ff18,0 8px 22px #07121a55}
 .lane-label{color:#d8caff;text-shadow:0 1px 5px #080610}
 .world-status,.hand-panel,.history-panel,.side-rail>.deck-stack,.side-rail>.discard-count{backdrop-filter:blur(10px);box-shadow:0 12px 30px #07101855}
-body[data-field-theme="academy-grounds"]::before{background-image:linear-gradient(180deg,#11132338,#121b2c55 50%,#0b1320bd),url("assets/backgrounds/academy-grounds.png")}
-body[data-field-theme="ip-field"]::before{background-image:linear-gradient(180deg,#102f4a38,#0d263566 56%,#06131faa),url("assets/backgrounds/island-paradise.png");filter:saturate(1.12)}
-body[data-field-theme="toy-store"]::before{background-image:linear-gradient(180deg,#30214c40,#25203966 56%,#10111dbb),url("assets/backgrounds/toy-store.png");filter:saturate(1.13)}
-body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient(180deg,#1d234238,#12223562 56%,#10121dbb),url("assets/backgrounds/christmas-mall.png");filter:saturate(1.1)}
-body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(180deg,#351c1733,#321d1b55 56%,#1b1110bb),url("assets/backgrounds/cactus-creek.png");filter:saturate(1.08)}
+body[data-field-theme="academy-grounds"]::before{background-image:linear-gradient(180deg,#11132338,#121b2c55 50%,#0b1320bd),url("assets/backgrounds/academy-grounds.webp")}
+body[data-field-theme="ip-field"]::before{background-image:linear-gradient(180deg,#102f4a38,#0d263566 56%,#06131faa),url("assets/backgrounds/island-paradise.webp");filter:saturate(1.12)}
+body[data-field-theme="toy-store"]::before{background-image:linear-gradient(180deg,#30214c40,#25203966 56%,#10111dbb),url("assets/backgrounds/toy-store.webp");filter:saturate(1.13)}
+body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient(180deg,#1d234238,#12223562 56%,#10121dbb),url("assets/backgrounds/christmas-mall.webp");filter:saturate(1.1)}
+body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(180deg,#351c1733,#321d1b55 56%,#1b1110bb),url("assets/backgrounds/cactus-creek.webp");filter:saturate(1.08)}
 @media(max-width:780px){body::before{background-position:center;background-attachment:scroll}.app-shell{background:linear-gradient(180deg,#15142635,#0c1420a0)}}
 @media(max-width:520px){body::before{background-position:center;background-size:auto 100svh,auto 100svh,auto 100svh}.app-shell{background:#0c142055}}
 
@@ -370,7 +370,7 @@ body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(1
 .card-tooltip.mobile-open{position:fixed!important;left:var(--tooltip-left,8px)!important;right:auto!important;top:var(--tooltip-top,8px)!important;bottom:auto!important;width:var(--tooltip-width,calc(100vw - 16px))!important;height:var(--tooltip-height,calc(100dvh - 16px))!important;max-height:none!important;min-height:0!important;grid-template-columns:minmax(64px,22%) minmax(0,1fr);padding:9px;overflow:auto;transform:none!important}
 .card-tooltip.mobile-open .tooltip-art{width:100%;height:auto;min-height:0}
 .topbar-actions{gap:clamp(3px,.55vw,8px)}
-.topbar-actions #quick-menu-button,.topbar-actions #booster-button,.topbar-actions #account-button,.topbar-actions #card-library-button,.topbar-actions #element-guide-button,.topbar-actions #rules-button,.battle-buttons #give-up,.battle-buttons #attack-button,.battle-buttons #end-turn{width:clamp(82px,7.5vw,118px);height:42px;min-height:42px;flex:0 0 clamp(82px,7.5vw,118px);padding:0 5px;border:0!important;border-radius:8px;background:transparent url("assets/ui-icons/control-button.png") center/100% 100% no-repeat!important;box-shadow:none!important;color:#f7f0ff;text-shadow:0 1px 4px #090713;font:700 8px 'DM Mono',monospace;letter-spacing:.025em;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;filter:drop-shadow(0 3px 5px #0805117a);transition:filter .15s,transform .15s}
+.topbar-actions #quick-menu-button,.topbar-actions #booster-button,.topbar-actions #account-button,.topbar-actions #card-library-button,.topbar-actions #element-guide-button,.topbar-actions #rules-button,.battle-buttons #give-up,.battle-buttons #attack-button,.battle-buttons #end-turn{width:clamp(82px,7.5vw,118px);height:42px;min-height:42px;flex:0 0 clamp(82px,7.5vw,118px);padding:0 5px;border:0!important;border-radius:8px;background:transparent url("assets/ui-icons/control-button.webp") center/100% 100% no-repeat!important;box-shadow:none!important;color:#f7f0ff;text-shadow:0 1px 4px #090713;font:700 8px 'DM Mono',monospace;letter-spacing:.025em;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;filter:drop-shadow(0 3px 5px #0805117a);transition:filter .15s,transform .15s}
 .topbar-actions #quick-menu-button:hover,.topbar-actions #booster-button:hover,.topbar-actions #account-button:hover,.topbar-actions #card-library-button:hover,.topbar-actions #element-guide-button:hover,.topbar-actions #rules-button:hover,.battle-buttons #give-up:hover:not(:disabled),.battle-buttons #attack-button:hover:not(:disabled),.battle-buttons #end-turn:hover:not(:disabled){filter:brightness(1.2) drop-shadow(0 4px 7px #08051199);transform:translateY(-1px)}
 .battle-buttons{gap:clamp(3px,.55vw,8px)}
 .battle-buttons #end-turn span{margin-left:3px}

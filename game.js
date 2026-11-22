@@ -1,64 +1,64 @@
 const cardLibrary = [
-  { id: 'academy-coyote', title: 'Academy', name: 'Coyote', cost: 3, attack: 3, element: 'Mind', role: 'Brawler', art: 'assets/cards/AcademyCoyote.png', ability: 'On summon, draw an Academy Brawler from your deck.' },
-  { id: 'peppermint', title: 'Academy', name: 'Peppermint', cost: 5, attack: 5, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyPeppermint.png?v=20261120bm', ability: '+1 attack for each adjacent ally Academy card.' },
-  { id: 'aemi', title: 'Academy', name: 'Aemi', cost: 2, attack: 2, element: 'Dark', role: 'Shooter', art: 'assets/cards/AcademyAemi.png', ability: 'Draw an Academy card with a different element.' },
-  { id: 'kage', title: 'Academy', name: 'Kage', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/AcademyKage.png', ability: 'Draw a Zoya card when destroyed.' },
-  { id: 'ryota', title: 'Academy', name: 'Ryota', cost: 3, attack: 2, element: 'Solar', role: 'Shooter', art: 'assets/cards/AcademyRyota.png', ability: 'Discard a card to destroy a fighter.' },
-  { id: 'zoya', title: 'Academy', name: 'Zoya', cost: 5, attack: 4, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyZoya.png', ability: 'Return an Academy card on the field to its owner’s hand.' },
-  { id: 'berry', title: 'Candy Goblin', name: 'Berry', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Brawler', art: 'assets/cards/CandyGoblinBerry.png', ability: 'Return one of your fighters to your hand.' },
-  { id: 'frosty', title: 'Candy Goblin', name: 'Frosty', type: 'Creature', cost: 1, attack: 1, element: 'Glacial', role: 'Shielder', art: 'assets/cards/CandyGoblinFrosty.png', ability: 'The opposing fighter cannot attack next turn.' },
-  { id: 'gummy', title: 'Candy Goblin', name: 'Gummy', type: 'Creature', cost: 1, attack: 1, element: 'Ignis', role: 'Enchanter', art: 'assets/cards/CandyGoblinGummy.png', ability: 'Draw a Cooking action card.' },
-  { id: 'runny', title: 'Candy Goblin', name: 'Runny', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Brawler', art: 'assets/cards/CandyGoblinRunny.png', ability: 'Choose an Academy card costing 4 or less from your deck and add it to your hand.' },
-  { id: 'amethyst', title: 'Academy', name: 'Amethyst', cost: 4, attack: 4, element: 'Dark', role: 'Shielder', art: 'assets/cards/AcademyAmethyst.png', ability: 'Destroy the opposing fighter.' },
-  { id: 'den', title: 'Academy', name: 'Den', cost: 4, attack: 2, element: 'Mind', role: 'Enchanter', art: 'assets/cards/AcademyDen.png?v=20261120bm', ability: 'Let a fighter attack on its first turn.' },
-  { id: 'peppermint-ally', title: 'Academy', name: 'Cotton', cost: 4, attack: 4, element: 'Mind', role: 'Blader', art: 'assets/cards/AcademyCotton.png', ability: 'Discard this card to draw Academy Hall from your deck into your hand.' },
-  { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.png', ability: 'Academy cards gain +1 attack while at least one Academy card is on the field.' },
-  { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.png', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
-  { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.png', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
-  { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.png', ability: 'Replace a card in a fighter zone with a card from the Ascendance Deck that has the same name.' },
-  { id: 'academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.png?v=20261120a', ability: 'Draw an Academy card with a different element.' },
-  { id: 'academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.png', ability: 'Draw an Academy card with a different element.' },
-  { id: 'dharma', title: 'Academy', name: 'Dharma', cost: 5, attack: 4, element: 'Terra', role: 'Healer', art: 'assets/cards/AcademyDharma.png', ability: 'On summon, choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, summon it to an open Fighter Zone if Dharma is still on the field.' },
-  { id: 'horatio', title: 'Academy', name: 'Horatio', cost: 5, attack: 4, element: 'Terra', role: 'Enchanter', art: 'assets/cards/AcademyHoratio.png', ability: 'On summon, draw a Terra Action card.' },
-  { id: 'vishnu', title: 'Djinn', name: 'Vishnu', cost: 5, attack: 5, element: 'Dark', role: 'Shooter', art: 'assets/cards/DjinnVishnu.png', ability: 'Can only be summoned if Peppermint is in one of your Fighter Zones. On summon, draw Avatar Gem.' },
-  { id: 'brewy', title: 'Candy Goblin', name: 'Brewy', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/CandyGoblinBrewy.png', ability: 'On summon, draw a Potion card.' },
-  { id: 'mana-potion', title: 'General', name: 'Mana Potion', type: 'Action', cost: 0, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/ManaPotion.png', ability: 'Restore up to 2 spent Mana this turn.' },
-  { id: 'health-potion', title: 'General', name: 'Health Potion', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/HealthPotion.png', ability: 'Restore an empty Life Zone with the top card of your deck.' },
-  { id: 'patchy', title: 'Candy Goblin', name: 'Patchy', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Healer', art: 'assets/cards/CandyGoblinPatchy.png', ability: 'When destroyed, draw a Dharma card.' },
-  { id: 'zesty', title: 'Candy Goblin', name: 'Zesty', type: 'Creature', cost: 1, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/CandyGoblinZesty.png', ability: 'On summon, return an Action card from your Pandemonium Zone to your hand.' },
-  { id: 'zomby', title: 'Candy Goblin', name: 'Zomby', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Trickster', art: 'assets/cards/CandyGoblinZomby.png', ability: 'When destroyed, return this card to your hand and increase its cost by 1.' },
-  { id: 'zodiac-guardian-rick', title: 'Zodiac Guardian', name: 'Rick', type: 'Transformation', cost: 0, attack: 6, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacGuardianRick.png', ability: '+1 attack for each Terra card in your Pandemonium Zone.' },
-  { id: 'zodiac-guardian-kage', title: 'Zodiac Guardian', name: 'Kage', type: 'Transformation', cost: 0, attack: 5, element: 'Dark', role: 'Blader', art: 'assets/cards/ZodiacGuardianKage.png', ability: '+1 attack for each Dark card in your Pandemonium Zone.' },
-  { id: 'zodiac-guardian-ryota', title: 'Zodiac Guardian', name: 'Ryota', type: 'Transformation', cost: 0, attack: 5, element: 'Solar', role: 'Shooter', art: 'assets/cards/ZodiacGuardianRyota.png', ability: 'Discard a card to destroy an opposing fighter in a Solar explosion.' },
-  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.png', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace Egg with a Zodiac creature from your deck matching that fighter’s element.' },
+  { id: 'academy-coyote', title: 'Academy', name: 'Coyote', cost: 3, attack: 3, element: 'Mind', role: 'Brawler', art: 'assets/cards/AcademyCoyote.webp', ability: 'On summon, draw an Academy Brawler from your deck.' },
+  { id: 'peppermint', title: 'Academy', name: 'Peppermint', cost: 5, attack: 5, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyPeppermint.webp?v=20261120bm', ability: '+1 attack for each adjacent ally Academy card.' },
+  { id: 'aemi', title: 'Academy', name: 'Aemi', cost: 2, attack: 2, element: 'Dark', role: 'Shooter', art: 'assets/cards/AcademyAemi.webp', ability: 'Draw an Academy card with a different element.' },
+  { id: 'kage', title: 'Academy', name: 'Kage', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/AcademyKage.webp', ability: 'Draw a Zoya card when destroyed.' },
+  { id: 'ryota', title: 'Academy', name: 'Ryota', cost: 3, attack: 2, element: 'Solar', role: 'Shooter', art: 'assets/cards/AcademyRyota.webp', ability: 'Discard a card to destroy a fighter.' },
+  { id: 'zoya', title: 'Academy', name: 'Zoya', cost: 5, attack: 4, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyZoya.webp', ability: 'Return an Academy card on the field to its owner’s hand.' },
+  { id: 'berry', title: 'Candy Goblin', name: 'Berry', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Brawler', art: 'assets/cards/CandyGoblinBerry.webp', ability: 'Return one of your fighters to your hand.' },
+  { id: 'frosty', title: 'Candy Goblin', name: 'Frosty', type: 'Creature', cost: 1, attack: 1, element: 'Glacial', role: 'Shielder', art: 'assets/cards/CandyGoblinFrosty.webp', ability: 'The opposing fighter cannot attack next turn.' },
+  { id: 'gummy', title: 'Candy Goblin', name: 'Gummy', type: 'Creature', cost: 1, attack: 1, element: 'Ignis', role: 'Enchanter', art: 'assets/cards/CandyGoblinGummy.webp', ability: 'Draw a Cooking action card.' },
+  { id: 'runny', title: 'Candy Goblin', name: 'Runny', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Brawler', art: 'assets/cards/CandyGoblinRunny.webp', ability: 'Choose an Academy card costing 4 or less from your deck and add it to your hand.' },
+  { id: 'amethyst', title: 'Academy', name: 'Amethyst', cost: 4, attack: 4, element: 'Dark', role: 'Shielder', art: 'assets/cards/AcademyAmethyst.webp', ability: 'Destroy the opposing fighter.' },
+  { id: 'den', title: 'Academy', name: 'Den', cost: 4, attack: 2, element: 'Mind', role: 'Enchanter', art: 'assets/cards/AcademyDen.webp?v=20261120bm', ability: 'Let a fighter attack on its first turn.' },
+  { id: 'peppermint-ally', title: 'Academy', name: 'Cotton', cost: 4, attack: 4, element: 'Mind', role: 'Blader', art: 'assets/cards/AcademyCotton.webp', ability: 'Discard this card to draw Academy Hall from your deck into your hand.' },
+  { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.webp', ability: 'Academy cards gain +1 attack while at least one Academy card is on the field.' },
+  { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.webp', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
+  { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.webp', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
+  { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.webp', ability: 'Replace a card in a fighter zone with a card from the Ascendance Deck that has the same name.' },
+  { id: 'academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261120a', ability: 'Draw an Academy card with a different element.' },
+  { id: 'academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.webp', ability: 'Draw an Academy card with a different element.' },
+  { id: 'dharma', title: 'Academy', name: 'Dharma', cost: 5, attack: 4, element: 'Terra', role: 'Healer', art: 'assets/cards/AcademyDharma.webp', ability: 'On summon, choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, summon it to an open Fighter Zone if Dharma is still on the field.' },
+  { id: 'horatio', title: 'Academy', name: 'Horatio', cost: 5, attack: 4, element: 'Terra', role: 'Enchanter', art: 'assets/cards/AcademyHoratio.webp', ability: 'On summon, draw a Terra Action card.' },
+  { id: 'vishnu', title: 'Djinn', name: 'Vishnu', cost: 5, attack: 5, element: 'Dark', role: 'Shooter', art: 'assets/cards/DjinnVishnu.webp', ability: 'Can only be summoned if Peppermint is in one of your Fighter Zones. On summon, draw Avatar Gem.' },
+  { id: 'brewy', title: 'Candy Goblin', name: 'Brewy', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/CandyGoblinBrewy.webp', ability: 'On summon, draw a Potion card.' },
+  { id: 'mana-potion', title: 'General', name: 'Mana Potion', type: 'Action', cost: 0, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/ManaPotion.webp', ability: 'Restore up to 2 spent Mana this turn.' },
+  { id: 'health-potion', title: 'General', name: 'Health Potion', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/HealthPotion.webp', ability: 'Restore an empty Life Zone with the top card of your deck.' },
+  { id: 'patchy', title: 'Candy Goblin', name: 'Patchy', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Healer', art: 'assets/cards/CandyGoblinPatchy.webp', ability: 'When destroyed, draw a Dharma card.' },
+  { id: 'zesty', title: 'Candy Goblin', name: 'Zesty', type: 'Creature', cost: 1, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/CandyGoblinZesty.webp', ability: 'On summon, return an Action card from your Pandemonium Zone to your hand.' },
+  { id: 'zomby', title: 'Candy Goblin', name: 'Zomby', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Trickster', art: 'assets/cards/CandyGoblinZomby.webp', ability: 'When destroyed, return this card to your hand and increase its cost by 1.' },
+  { id: 'zodiac-guardian-rick', title: 'Zodiac Guardian', name: 'Rick', type: 'Transformation', cost: 0, attack: 6, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacGuardianRick.webp', ability: '+1 attack for each Terra card in your Pandemonium Zone.' },
+  { id: 'zodiac-guardian-kage', title: 'Zodiac Guardian', name: 'Kage', type: 'Transformation', cost: 0, attack: 5, element: 'Dark', role: 'Blader', art: 'assets/cards/ZodiacGuardianKage.webp', ability: '+1 attack for each Dark card in your Pandemonium Zone.' },
+  { id: 'zodiac-guardian-ryota', title: 'Zodiac Guardian', name: 'Ryota', type: 'Transformation', cost: 0, attack: 5, element: 'Solar', role: 'Shooter', art: 'assets/cards/ZodiacGuardianRyota.webp', ability: 'Discard a card to destroy an opposing fighter in a Solar explosion.' },
+  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.webp', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace Egg with a Zodiac creature from your deck matching that fighter’s element.' },
 ];
 const wildWestLibrary = [
-  { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.png', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty fighter zone on both fields.' },
-  { id: 'ww-wade', title: 'Wild West', name: 'Wade', cost: 5, attack: 4, element: 'Terra', role: 'Shooter', art: 'assets/cards/WildWestWade.png', ability: '+2 attack for each empty enemy fighter zone.' },
-  { id: 'ww-brian', title: 'Wild West', name: 'Brian', cost: 4, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/WildWestBrian.png', ability: 'On summon, return an enemy fighter to its hand.' },
-  { id: 'ww-blake', title: 'Wild West', name: 'Blake', cost: 3, attack: 3, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestBlake.png', ability: 'Activate on the field: return Blake and the opposing fighter in its lane to their owners’ hands.' },
-  { id: 'ww-fritz', title: 'Wild West', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Trickster', art: 'assets/cards/WIldWestFritz.png', ability: 'On summon, return an Eggscythe from your Pandemonium Zone to your hand.' },
-  { id: 'ww-academy-rick', title: 'Academy', name: 'Rick', cost: 4, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/AcademyRick.png', ability: 'Cannot be destroyed or returned by card effects, except Avatar Gem or Locker Room.' },
-  { id: 'ww-academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.png?v=20261120a', ability: 'Draw an Academy card with a different element.' },
-  { id: 'ww-academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.png', ability: 'Draw an Academy card with a different element.' },
-  { id: 'ww-medusa', title: 'Wild West', name: 'Medusa', cost: 2, attack: 2, element: 'Mind', role: 'Trickster', art: 'assets/cards/WildWestMedusa.png', ability: 'Once per turn, spend 1 Mana to look at the top card of your deck.' },
-  { id: 'ww-wild-ox', title: 'Zodiac', name: 'Wild Ox', type: 'Creature', cost: 2, attack: 2, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacWildOx.png', ability: 'If Rick is on your field, draw an Avatar Gem.' },
-  { id: 'ww-eggscythe', title: 'Vegcritter', name: 'Eggscythe', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/VegcritterEggyscythe.png', ability: 'When destroyed, return a different Dark card from your Pandemonium Zone to your hand.' },
-  { id: 'ww-hopkin', title: 'Vegcritter', name: 'Hopkin', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Brawler', art: 'assets/cards/VegcritterHopkin.png', ability: 'When an enemy targets your Life Zone, if your Fighter Zones are empty, summon Hopkin from your hand.' },
-  { id: 'ww-purrnip', title: 'Vegcritter', name: 'Purrnip', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Shooter', art: 'assets/cards/VegCritterPurrnip.png', ability: 'When Purrnip destroys a Life Zone, draw a card.' },
-  { id: 'ww-bandito', title: 'Wild West', name: 'Bandito', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Blader', art: 'assets/cards/WildWestBandito.png', ability: 'Can attack on the turn it is summoned, except on the first turn.' },
-  { id: 'ww-littlebeak', title: 'Wild West', name: 'Littlebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Shielder', art: 'assets/cards/WildWestLittlebeak.png', ability: 'Gets +1 attack during the enemy turn.' },
-  { id: 'ww-sunnythorn', title: 'Wild West', name: 'Sunnythorn', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Enchanter', art: 'assets/cards/WildWestSunnythorn.png', ability: 'A fighter that destroys this in battle loses 1 attack.' },
-  { id: 'ww-galacta', title: 'Wild West', name: 'GaLacta', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/WildWestGaLacta.png', ability: 'Wild West cards costing 3 or less return to your hand instead of the Pandemonium Zone when defeated in battle. (Except self.)' },
-  { id: 'ww-sangrizo', title: 'Wild West', name: 'Sangrizo', type: 'Creature', cost: 1, attack: 1, element: 'Ignis', role: 'Shooter', art: 'assets/cards/WildWestSangrizo.png', ability: 'On summon, spend 1 Mana to destroy a random card in your opponent’s hand.' },
-  { id: 'ww-rosaluna', title: 'Wild West', name: 'Rosaluna', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/WildWestRosaluna.png', ability: 'When destroyed, draw a Mind Wild West card.' },
-  { id: 'ww-quick-draw', title: 'Wild West', name: 'Quick Draw', type: 'Action', cost: 2, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/QuickDraw.png', ability: 'Summon a Wild West fighter from your hand immediately.' },
-  { id: 'ww-duelists-gambit', title: 'Wild West', name: "Duelist's Gambit", type: 'Action', cost: 3, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/DuelistsGambit.png', ability: 'Destroy one friendly and one enemy fighter. A random Wild West fighter you control gains permanent +1 attack.' },
-  { id: 'ww-bounty-raid', title: 'General', name: 'Bounty Raid', type: 'Action', cost: 3, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/BountyRaid.png', ability: 'Destroy every fighter in the selected lane on both fields.' },
-  { id: 'ww-root', title: 'General', name: 'Root', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Root.png', ability: 'Make an enemy fighter unable to move next turn.' },
-  { id: 'ww-wanted-poster', title: 'General', name: 'Wanted Poster', type: 'Action', cost: 2, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/WantedPoster.png', ability: 'Reduce an enemy fighter’s attack by 1 until your next turn.' },
-  { id: 'ww-planting', title: 'General', name: 'Planting', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Planting.png', ability: 'Summon a Vegcritter from your deck or Pandemonium Zone.' },
-  { id: 'cactus-creek', title: 'Pocket World', name: 'Cactus Creek', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/PocketWorldCactusCreek.png', ability: 'Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.' },
+  { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.webp', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty fighter zone on both fields.' },
+  { id: 'ww-wade', title: 'Wild West', name: 'Wade', cost: 5, attack: 4, element: 'Terra', role: 'Shooter', art: 'assets/cards/WildWestWade.webp', ability: '+2 attack for each empty enemy fighter zone.' },
+  { id: 'ww-brian', title: 'Wild West', name: 'Brian', cost: 4, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/WildWestBrian.webp', ability: 'On summon, return an enemy fighter to its hand.' },
+  { id: 'ww-blake', title: 'Wild West', name: 'Blake', cost: 3, attack: 3, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestBlake.webp', ability: 'Activate on the field: return Blake and the opposing fighter in its lane to their owners’ hands.' },
+  { id: 'ww-fritz', title: 'Wild West', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Trickster', art: 'assets/cards/WIldWestFritz.webp', ability: 'On summon, return an Eggscythe from your Pandemonium Zone to your hand.' },
+  { id: 'ww-academy-rick', title: 'Academy', name: 'Rick', cost: 4, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/AcademyRick.webp', ability: 'Cannot be destroyed or returned by card effects, except Avatar Gem or Locker Room.' },
+  { id: 'ww-academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261120a', ability: 'Draw an Academy card with a different element.' },
+  { id: 'ww-academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.webp', ability: 'Draw an Academy card with a different element.' },
+  { id: 'ww-medusa', title: 'Wild West', name: 'Medusa', cost: 2, attack: 2, element: 'Mind', role: 'Trickster', art: 'assets/cards/WildWestMedusa.webp', ability: 'Once per turn, spend 1 Mana to look at the top card of your deck.' },
+  { id: 'ww-wild-ox', title: 'Zodiac', name: 'Wild Ox', type: 'Creature', cost: 2, attack: 2, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacWildOx.webp', ability: 'If Rick is on your field, draw an Avatar Gem.' },
+  { id: 'ww-eggscythe', title: 'Vegcritter', name: 'Eggscythe', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/VegcritterEggyscythe.webp', ability: 'When destroyed, return a different Dark card from your Pandemonium Zone to your hand.' },
+  { id: 'ww-hopkin', title: 'Vegcritter', name: 'Hopkin', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Brawler', art: 'assets/cards/VegcritterHopkin.webp', ability: 'When an enemy targets your Life Zone, if your Fighter Zones are empty, summon Hopkin from your hand.' },
+  { id: 'ww-purrnip', title: 'Vegcritter', name: 'Purrnip', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Shooter', art: 'assets/cards/VegCritterPurrnip.webp', ability: 'When Purrnip destroys a Life Zone, draw a card.' },
+  { id: 'ww-bandito', title: 'Wild West', name: 'Bandito', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Blader', art: 'assets/cards/WildWestBandito.webp', ability: 'Can attack on the turn it is summoned, except on the first turn.' },
+  { id: 'ww-littlebeak', title: 'Wild West', name: 'Littlebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Shielder', art: 'assets/cards/WildWestLittlebeak.webp', ability: 'Gets +1 attack during the enemy turn.' },
+  { id: 'ww-sunnythorn', title: 'Wild West', name: 'Sunnythorn', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Enchanter', art: 'assets/cards/WildWestSunnythorn.webp', ability: 'A fighter that destroys this in battle loses 1 attack.' },
+  { id: 'ww-galacta', title: 'Wild West', name: 'GaLacta', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/WildWestGaLacta.webp', ability: 'Wild West cards costing 3 or less return to your hand instead of the Pandemonium Zone when defeated in battle. (Except self.)' },
+  { id: 'ww-sangrizo', title: 'Wild West', name: 'Sangrizo', type: 'Creature', cost: 1, attack: 1, element: 'Ignis', role: 'Shooter', art: 'assets/cards/WildWestSangrizo.webp', ability: 'On summon, spend 1 Mana to destroy a random card in your opponent’s hand.' },
+  { id: 'ww-rosaluna', title: 'Wild West', name: 'Rosaluna', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/WildWestRosaluna.webp', ability: 'When destroyed, draw a Mind Wild West card.' },
+  { id: 'ww-quick-draw', title: 'Wild West', name: 'Quick Draw', type: 'Action', cost: 2, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/QuickDraw.webp', ability: 'Summon a Wild West fighter from your hand immediately.' },
+  { id: 'ww-duelists-gambit', title: 'Wild West', name: "Duelist's Gambit", type: 'Action', cost: 3, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/DuelistsGambit.webp', ability: 'Destroy one friendly and one enemy fighter. A random Wild West fighter you control gains permanent +1 attack.' },
+  { id: 'ww-bounty-raid', title: 'General', name: 'Bounty Raid', type: 'Action', cost: 3, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/BountyRaid.webp', ability: 'Destroy every fighter in the selected lane on both fields.' },
+  { id: 'ww-root', title: 'General', name: 'Root', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Root.webp', ability: 'Make an enemy fighter unable to move next turn.' },
+  { id: 'ww-wanted-poster', title: 'General', name: 'Wanted Poster', type: 'Action', cost: 2, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/WantedPoster.webp', ability: 'Reduce an enemy fighter’s attack by 1 until your next turn.' },
+  { id: 'ww-planting', title: 'General', name: 'Planting', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Planting.webp', ability: 'Summon a Vegcritter from your deck or Pandemonium Zone.' },
+  { id: 'cactus-creek', title: 'Pocket World', name: 'Cactus Creek', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/PocketWorldCactusCreek.webp', ability: 'Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.' },
   cardLibrary.find((card) => card.id === 'avatar-gem'),
   cardLibrary.find((card) => card.id === 'cooking'),
   { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
@@ -66,79 +66,79 @@ const wildWestLibrary = [
   { ...cardLibrary.find((card) => card.id === 'health-potion'), deckCopies: 1 },
 ];
 const islandParadiseLibrary = [
-  { id: 'ip-brody', title: 'Island Paradise', name: 'Brody', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseBrody.png', ability: 'Gain 1 attack after each card destroyed by this card.' },
-  { id: 'ip-natsuki', title: 'Island Paradise', name: 'Natsuki', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseNatsuki.png', ability: 'On summon, protect an adjacent ally from attacks. It cannot defend its lane’s Life Zone while protected.' },
-  { id: 'ip-jet', title: 'Island Paradise', name: 'Jet', cost: 4, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/IslandParadiseJet.png', ability: 'Gains 1 attack at the beginning of each of your turns while in the Fighter Zone.' },
-  { id: 'ip-sabrina', title: 'Island Paradise', name: 'Sabrina', cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/IslandParadiseSabrina.png', ability: 'Gains 1 attack for each adjacent Brawler.' },
-  { id: 'ip-coyote', title: 'Island Paradise', name: 'Coyote', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.png', ability: 'Can make 2 attacks each turn, except the turn it is summoned.' },
-  { id: 'ip-chase', title: 'Island Paradise', name: 'Chase', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseChase.png', ability: 'Each turn, give 1 attack to an adjacent Brawler. Choose one if there are several.' },
+  { id: 'ip-brody', title: 'Island Paradise', name: 'Brody', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseBrody.webp', ability: 'Gain 1 attack after each card destroyed by this card.' },
+  { id: 'ip-natsuki', title: 'Island Paradise', name: 'Natsuki', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseNatsuki.webp', ability: 'On summon, protect an adjacent ally from attacks. It cannot defend its lane’s Life Zone while protected.' },
+  { id: 'ip-jet', title: 'Island Paradise', name: 'Jet', cost: 4, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/IslandParadiseJet.webp', ability: 'Gains 1 attack at the beginning of each of your turns while in the Fighter Zone.' },
+  { id: 'ip-sabrina', title: 'Island Paradise', name: 'Sabrina', cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/IslandParadiseSabrina.webp', ability: 'Gains 1 attack for each adjacent Brawler.' },
+  { id: 'ip-coyote', title: 'Island Paradise', name: 'Coyote', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.webp', ability: 'Can make 2 attacks each turn, except the turn it is summoned.' },
+  { id: 'ip-chase', title: 'Island Paradise', name: 'Chase', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseChase.webp', ability: 'Each turn, give 1 attack to an adjacent Brawler. Choose one if there are several.' },
   { ...cardLibrary.find((card) => card.id === 'academy-coyote') },
-  { id: 'ip-banaphin', title: 'Island Paradise', name: 'Banaphin', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadiseBanaphin.png', ability: 'When destroyed, draw an Island Paradise Creature.' },
-  { id: 'ip-kokocrab', title: 'Island Paradise', name: 'Kokocrab', type: 'Creature', cost: 1, attack: 2, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseKokocrab.png', ability: 'Loses 1 attack while facing a Brawler.' },
-  { id: 'ip-pinebeak', title: 'Island Paradise', name: 'Pinebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadisePinebeak.png', ability: 'On summon, draw an Island Paradise Creature.' },
-  { id: 'ip-croaktail', title: 'Island Paradise', name: 'Croaktail', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseCroaktail.png', ability: 'Destroy this card to give an adjacent Brawler +1 attack.' },
-  { id: 'ip-floatbite', title: 'Island Paradise', name: 'Floatbite', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Blader', art: 'assets/cards/IslandParadiseFloatbite.png', ability: 'When this destroys an opposing card, an adjacent Aqua Brawler may gain 1 attack.' },
-  { id: 'ip-octospray', title: 'Island Paradise', name: 'Octospray', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/IslandParadiseOctospray.png', ability: 'After this is attacked, the attacking enemy loses 1 attack.' },
-  { id: 'ip-field', title: 'Pocket World', name: 'Island Paradise', type: 'Action', cost: 2, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/IslandParadiseField.png', ability: 'Island Paradise fighters cannot be targeted by attacks, but do not defend their lane’s Life Zone.' },
-  { id: 'ip-coyote-zodiac', title: 'Zodiac Guardian', name: 'Coyote', type: 'Transformation', cost: 0, attack: 5, element: 'Mind', role: 'Brawler', art: 'assets/cards/ZodiacGuardianCoyote.png?v=20261120bm', ability: 'Gains 1 attack for each Brawler in your Pandemonium Zone.' },
-  { id: 'ip-chase-zodiac', title: 'Zodiac Guardian', name: 'Chase', type: 'Transformation', cost: 0, attack: 5, element: 'Aqua', role: 'Brawler', art: 'assets/cards/ZodiacGuardianChase.png?v=20261120bm', ability: 'Gains 1 attack for each Aqua card in your Pandemonium Zone.' },
+  { id: 'ip-banaphin', title: 'Island Paradise', name: 'Banaphin', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadiseBanaphin.webp', ability: 'When destroyed, draw an Island Paradise Creature.' },
+  { id: 'ip-kokocrab', title: 'Island Paradise', name: 'Kokocrab', type: 'Creature', cost: 1, attack: 2, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseKokocrab.webp', ability: 'Loses 1 attack while facing a Brawler.' },
+  { id: 'ip-pinebeak', title: 'Island Paradise', name: 'Pinebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadisePinebeak.webp', ability: 'On summon, draw an Island Paradise Creature.' },
+  { id: 'ip-croaktail', title: 'Island Paradise', name: 'Croaktail', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseCroaktail.webp', ability: 'Destroy this card to give an adjacent Brawler +1 attack.' },
+  { id: 'ip-floatbite', title: 'Island Paradise', name: 'Floatbite', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Blader', art: 'assets/cards/IslandParadiseFloatbite.webp', ability: 'When this destroys an opposing card, an adjacent Aqua Brawler may gain 1 attack.' },
+  { id: 'ip-octospray', title: 'Island Paradise', name: 'Octospray', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/IslandParadiseOctospray.webp', ability: 'After this is attacked, the attacking enemy loses 1 attack.' },
+  { id: 'ip-field', title: 'Pocket World', name: 'Island Paradise', type: 'Action', cost: 2, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/IslandParadiseField.webp', ability: 'Island Paradise fighters cannot be targeted by attacks, but do not defend their lane’s Life Zone.' },
+  { id: 'ip-coyote-zodiac', title: 'Zodiac Guardian', name: 'Coyote', type: 'Transformation', cost: 0, attack: 5, element: 'Mind', role: 'Brawler', art: 'assets/cards/ZodiacGuardianCoyote.webp?v=20261120bm', ability: 'Gains 1 attack for each Brawler in your Pandemonium Zone.' },
+  { id: 'ip-chase-zodiac', title: 'Zodiac Guardian', name: 'Chase', type: 'Transformation', cost: 0, attack: 5, element: 'Aqua', role: 'Brawler', art: 'assets/cards/ZodiacGuardianChase.webp?v=20261120bm', ability: 'Gains 1 attack for each Aqua card in your Pandemonium Zone.' },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 3, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'locker-room'), maxCopies: 3, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'mana-potion'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'health-potion'), deckCopies: 1 },
-  { id: 'ip-ride-the-wave', title: 'General', name: 'Ride the Wave', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/RideTheWave.png', ability: 'Move one of your fighters to an adjacent empty Fighter Zone.' },
-  { id: 'ip-no-pain-no-gain', title: 'General', name: 'No Pain, No Gain', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/NoPainNoGain.png', ability: 'Discard a card to give one of your fighters +1 attack.' },
-  { id: 'ip-swim-dont-sink', title: 'General', name: "Swim, Don't Sink", type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/SwimDontSink.png', ability: 'Choose an Aqua Island Paradise fighter to become immune to Island Paradise field effects.' },
+  { id: 'ip-ride-the-wave', title: 'General', name: 'Ride the Wave', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/RideTheWave.webp', ability: 'Move one of your fighters to an adjacent empty Fighter Zone.' },
+  { id: 'ip-no-pain-no-gain', title: 'General', name: 'No Pain, No Gain', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/NoPainNoGain.webp', ability: 'Discard a card to give one of your fighters +1 attack.' },
+  { id: 'ip-swim-dont-sink', title: 'General', name: "Swim, Don't Sink", type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/SwimDontSink.webp', ability: 'Choose an Aqua Island Paradise fighter to become immune to Island Paradise field effects.' },
 ];
 const livingToyLibrary = [
-  { id: 'lt-scribble', title: 'Living Toy', name: 'Scribble', type: 'Creature', maxCopies: 1, cost: 2, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/LivingToyScribble.png', ability: 'On summon, draw an Avatar Gem.' },
-  { id: 'lt-clary', title: 'Dollmaster', name: 'Clary', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/DollmasterClary.png', ability: 'Gains +1 attack for each adjacent Living Toy or Dollmaster card.' },
-  { id: 'lt-fritz', title: 'Dollmaster', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterFritz.png', ability: 'Give 1 attack point to each 1-cost Dark card in the Fighter Zone for each Living Toy card in your hand.' },
-  { id: 'lt-rat-king', title: 'Dollmaster', name: 'Rat King', cost: 5, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterRatKing.png', ability: 'Gains +1 attack for each Dark card with a different name in your Pandemonium Zone.' },
-  { id: 'lt-boxy', title: 'Tsukumogami', name: 'Boxy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Enchanter', art: 'assets/cards/TsukumogamiBoxy.png', ability: 'On summon, send a Dark card from your deck to the Pandemonium Zone.' },
-  { id: 'lt-teddy', title: 'Tsukumogami', name: 'Teddy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/TsukumogamiTeddy.png', ability: 'On summon, discard a card to gain 1 attack.' },
-  { id: 'lt-broomy', title: 'Tsukumogami', name: 'Broomy', type: 'Creature', deckCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/TsukumogamiBroomy.png', ability: 'On summon, return a card from your Fighter Zone to your hand and gain Mana equal to its cost.' },
-  { id: 'lt-melodoll', title: 'Living Toy', name: 'Melodoll', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/LivingToyMelodoll.png', ability: 'On summon, return a Dark card from your Pandemonium Zone to your hand.' },
-  { id: 'lt-clapster', title: 'Living Toy', name: 'Clapster', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Shooter', art: 'assets/cards/LivingToyClapster.png', ability: 'On summon, send the top card of your deck to the Pandemonium Zone to randomly discard a card from the enemy’s hand.' },
-  { id: 'lt-beatcracker', title: 'Living Toy', name: 'Beatcracker', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Brawler', art: 'assets/cards/LivingToyBeatCracker.png', ability: 'If sent to the Pandemonium Zone from your hand or deck, summon this card.' },
-  { id: 'lt-zodiac-fritz', title: 'Zodiac Guardian', name: 'Fritz', type: 'Transformation', cost: 0, attack: 3, element: 'Dark', role: 'Trickster', art: 'assets/cards/ZodiacGuardianFritz.png', ability: 'Gains +1 attack for each Dark Fighter or Creature in your Pandemonium Zone.' },
+  { id: 'lt-scribble', title: 'Living Toy', name: 'Scribble', type: 'Creature', maxCopies: 1, cost: 2, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/LivingToyScribble.webp', ability: 'On summon, draw an Avatar Gem.' },
+  { id: 'lt-clary', title: 'Dollmaster', name: 'Clary', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/DollmasterClary.webp', ability: 'Gains +1 attack for each adjacent Living Toy or Dollmaster card.' },
+  { id: 'lt-fritz', title: 'Dollmaster', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterFritz.webp', ability: 'Give 1 attack point to each 1-cost Dark card in the Fighter Zone for each Living Toy card in your hand.' },
+  { id: 'lt-rat-king', title: 'Dollmaster', name: 'Rat King', cost: 5, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterRatKing.webp', ability: 'Gains +1 attack for each Dark card with a different name in your Pandemonium Zone.' },
+  { id: 'lt-boxy', title: 'Tsukumogami', name: 'Boxy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Enchanter', art: 'assets/cards/TsukumogamiBoxy.webp', ability: 'On summon, send a Dark card from your deck to the Pandemonium Zone.' },
+  { id: 'lt-teddy', title: 'Tsukumogami', name: 'Teddy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/TsukumogamiTeddy.webp', ability: 'On summon, discard a card to gain 1 attack.' },
+  { id: 'lt-broomy', title: 'Tsukumogami', name: 'Broomy', type: 'Creature', deckCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/TsukumogamiBroomy.webp', ability: 'On summon, return a card from your Fighter Zone to your hand and gain Mana equal to its cost.' },
+  { id: 'lt-melodoll', title: 'Living Toy', name: 'Melodoll', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/LivingToyMelodoll.webp', ability: 'On summon, return a Dark card from your Pandemonium Zone to your hand.' },
+  { id: 'lt-clapster', title: 'Living Toy', name: 'Clapster', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Shooter', art: 'assets/cards/LivingToyClapster.webp', ability: 'On summon, send the top card of your deck to the Pandemonium Zone to randomly discard a card from the enemy’s hand.' },
+  { id: 'lt-beatcracker', title: 'Living Toy', name: 'Beatcracker', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Brawler', art: 'assets/cards/LivingToyBeatCracker.webp', ability: 'If sent to the Pandemonium Zone from your hand or deck, summon this card.' },
+  { id: 'lt-zodiac-fritz', title: 'Zodiac Guardian', name: 'Fritz', type: 'Transformation', cost: 0, attack: 3, element: 'Dark', role: 'Trickster', art: 'assets/cards/ZodiacGuardianFritz.webp', ability: 'Gains +1 attack for each Dark Fighter or Creature in your Pandemonium Zone.' },
   { ...cardLibrary.find((card) => card.id === 'academy-fritz'), maxCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 3, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
-  { id: 'lt-raterrot', title: 'Zodiac', name: 'Raterrot', type: 'Creature', maxCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/ZodiacRaterrot.png', ability: "On summon, if Fritz is on the field, draw an Avatar Gem." },
-  { id: 'toy-store', title: 'Pocket World', name: 'Toy Store', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/PocketWorldToyStore.png', ability: 'While on the field, all 1-cost Fighters and Creatures gain +1 attack.' },
+  { id: 'lt-raterrot', title: 'Zodiac', name: 'Raterrot', type: 'Creature', maxCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/ZodiacRaterrot.webp', ability: "On summon, if Fritz is on the field, draw an Avatar Gem." },
+  { id: 'toy-store', title: 'Pocket World', name: 'Toy Store', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/PocketWorldToyStore.webp', ability: 'While on the field, all 1-cost Fighters and Creatures gain +1 attack.' },
   { ...cardLibrary.find((card) => card.id === 'mana-potion'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'health-potion'), deckCopies: 1 },
-  { id: 'lt-doll-chorus', title: 'General', name: 'Doll Chorus', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/DollChorus.png', ability: 'If you control a Living Toy Creature, give a Living Toy fighter +1 attack.' },
-  { id: 'lt-wind-up-toy', title: 'General', name: 'Wind-Up Toy', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/WindUpToy.png', ability: 'Return a Living Toy card from your Pandemonium Zone to your hand.' },
-  { id: 'lt-toy-capsule', title: 'General', name: 'Toy Capsule', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/ToyCapsule.png', ability: 'Search your deck for a Living Toy card and add it to your hand.' },
+  { id: 'lt-doll-chorus', title: 'General', name: 'Doll Chorus', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/DollChorus.webp', ability: 'If you control a Living Toy Creature, give a Living Toy fighter +1 attack.' },
+  { id: 'lt-wind-up-toy', title: 'General', name: 'Wind-Up Toy', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/WindUpToy.webp', ability: 'Return a Living Toy card from your Pandemonium Zone to your hand.' },
+  { id: 'lt-toy-capsule', title: 'General', name: 'Toy Capsule', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Dark', role: 'Action', art: 'assets/cards/ToyCapsule.webp', ability: 'Search your deck for a Living Toy card and add it to your hand.' },
 ];
 const winterBallLibrary = [
-  { id: 'drinking-tea', title: 'Winter Ball', name: 'Drinking Tea', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/DrinkingTea.png', ability: 'Allow one of your Glacial cards to act on its first turn.' },
-  { id: 'christmas-mall', title: 'Pocket World', name: 'Christmas Mall', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/PocketWorldChristmasMall.png', ability: 'Once per turn, swap the position of two cards if at least one is Glacial.' },
-  { id: 'academy-diamond', title: 'Academy', name: 'Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Aer', role: 'Healer', art: 'assets/cards/AcademyDiamond.png', ability: 'If Topaz is on the field, summon this card with no Mana cost.' },
-  { id: 'academy-topaz', title: 'Academy', name: 'Topaz', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/AcademyTopaz.png', ability: 'If Diamond is on the field, summon this card with no Mana cost.' },
-  { id: 'academy-dimitri', title: 'Academy', name: 'Dimitri', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Glacial', role: 'Blader', art: 'assets/cards/AcademyDimitri.png', ability: 'On summon, draw an Academy card that costs 3 or 4.' },
-  { id: 'wb-topaz-diamond', title: 'Winter Ball', name: 'Topaz & Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/WinterBallTopazDiamond.png', ability: 'Once per turn, move one of your fighters to any empty Fighter Zone. Counts as both Topaz and Diamond.' },
-  { id: 'wb-bearnardo', title: 'Winter Ball', name: 'Bearnardo', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Brawler', art: 'assets/cards/WinterBallBearnardo.png', ability: 'On summon, reduce the cost of a Glacial card in your hand by 1.' },
-  { id: 'wb-dimitri', title: 'Winter Ball', name: 'Dimitri', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallDimitri.png', ability: 'Gains +1 attack whenever it moves to another lane.' },
-  { id: 'wb-gillusion', title: 'Winter Ball', name: 'Gillusion', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Aqua', role: 'Shielder', art: 'assets/cards/WinterBallGillusion.png', ability: 'On summon, move a non-adjacent card to a free Fighter Zone adjacent to its current lane.' },
-  { id: 'wb-ladyfeather', title: 'Winter Ball', name: 'Ladyfeather', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Aer', role: 'Shooter', art: 'assets/cards/WinterBallLeadyfeather.png', ability: 'On summon, move the opposing card to a free adjacent Fighter Zone.' },
-  { id: 'wb-merryhound', title: 'Winter Ball', name: 'Merryhound', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallMerryhound.png', ability: 'On summon, move an adjacent ally to another free Fighter Zone.' },
-  { id: 'wb-rebeccah', title: 'Winter Ball', name: 'Rebeccah', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallRebeccah.png', ability: 'Once per turn, move Dimitri to a free adjacent Fighter Zone.' },
-  { id: 'wb-magnus', title: 'Winter Ball', name: 'Magnus', maxCopies: 1, deckCopies: 1, cost: 5, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallMagnus.png', ability: 'Gains +1 attack whenever any card moves on the field.' },
-  { id: 'wb-sageape', title: 'Winter Ball', name: 'Sageape', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallSageape.png', ability: 'Discard this card from your hand to move a Glacial card to another Fighter Zone.' },
-  { id: 'wb-steepod', title: 'Winter Ball', name: 'Steepod', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Healer', art: 'assets/cards/WinterBallSteepod.png', ability: 'Once per turn, move this card to an adjacent Fighter Zone.' },
-  { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.png', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
-  { id: 'wb-zodiac-topaz', title: 'Zodiac Guardian', name: 'Topaz', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacGuardianTopaz.png', ability: 'Gains +1 attack for each Aer card on the field or in your hand.' },
-  { id: 'wb-zodiac-dimitri', title: 'Zodiac Guardian', name: 'Dimitri', type: 'Transformation', cost: 0, attack: 5, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacGuardianDimitri.png', ability: 'Gains +1 attack for each Glacial card on the field or in your hand.' },
+  { id: 'drinking-tea', title: 'Winter Ball', name: 'Drinking Tea', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/DrinkingTea.webp', ability: 'Allow one of your Glacial cards to act on its first turn.' },
+  { id: 'christmas-mall', title: 'Pocket World', name: 'Christmas Mall', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/PocketWorldChristmasMall.webp', ability: 'Once per turn, swap the position of two cards if at least one is Glacial.' },
+  { id: 'academy-diamond', title: 'Academy', name: 'Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Aer', role: 'Healer', art: 'assets/cards/AcademyDiamond.webp', ability: 'If Topaz is on the field, summon this card with no Mana cost.' },
+  { id: 'academy-topaz', title: 'Academy', name: 'Topaz', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/AcademyTopaz.webp', ability: 'If Diamond is on the field, summon this card with no Mana cost.' },
+  { id: 'academy-dimitri', title: 'Academy', name: 'Dimitri', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Glacial', role: 'Blader', art: 'assets/cards/AcademyDimitri.webp', ability: 'On summon, draw an Academy card that costs 3 or 4.' },
+  { id: 'wb-topaz-diamond', title: 'Winter Ball', name: 'Topaz & Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/WinterBallTopazDiamond.webp', ability: 'Once per turn, move one of your fighters to any empty Fighter Zone. Counts as both Topaz and Diamond.' },
+  { id: 'wb-bearnardo', title: 'Winter Ball', name: 'Bearnardo', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Brawler', art: 'assets/cards/WinterBallBearnardo.webp', ability: 'On summon, reduce the cost of a Glacial card in your hand by 1.' },
+  { id: 'wb-dimitri', title: 'Winter Ball', name: 'Dimitri', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallDimitri.webp', ability: 'Gains +1 attack whenever it moves to another lane.' },
+  { id: 'wb-gillusion', title: 'Winter Ball', name: 'Gillusion', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Aqua', role: 'Shielder', art: 'assets/cards/WinterBallGillusion.webp', ability: 'On summon, move a non-adjacent card to a free Fighter Zone adjacent to its current lane.' },
+  { id: 'wb-ladyfeather', title: 'Winter Ball', name: 'Ladyfeather', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Aer', role: 'Shooter', art: 'assets/cards/WinterBallLeadyfeather.webp', ability: 'On summon, move the opposing card to a free adjacent Fighter Zone.' },
+  { id: 'wb-merryhound', title: 'Winter Ball', name: 'Merryhound', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallMerryhound.webp', ability: 'On summon, move an adjacent ally to another free Fighter Zone.' },
+  { id: 'wb-rebeccah', title: 'Winter Ball', name: 'Rebeccah', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallRebeccah.webp', ability: 'Once per turn, move Dimitri to a free adjacent Fighter Zone.' },
+  { id: 'wb-magnus', title: 'Winter Ball', name: 'Magnus', maxCopies: 1, deckCopies: 1, cost: 5, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallMagnus.webp', ability: 'Gains +1 attack whenever any card moves on the field.' },
+  { id: 'wb-sageape', title: 'Winter Ball', name: 'Sageape', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallSageape.webp', ability: 'Discard this card from your hand to move a Glacial card to another Fighter Zone.' },
+  { id: 'wb-steepod', title: 'Winter Ball', name: 'Steepod', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Healer', art: 'assets/cards/WinterBallSteepod.webp', ability: 'Once per turn, move this card to an adjacent Fighter Zone.' },
+  { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.webp', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
+  { id: 'wb-zodiac-topaz', title: 'Zodiac Guardian', name: 'Topaz', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacGuardianTopaz.webp', ability: 'Gains +1 attack for each Aer card on the field or in your hand.' },
+  { id: 'wb-zodiac-dimitri', title: 'Zodiac Guardian', name: 'Dimitri', type: 'Transformation', cost: 0, attack: 5, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacGuardianDimitri.webp', ability: 'Gains +1 attack for each Glacial card on the field or in your hand.' },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 1, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'mana-potion'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'health-potion'), deckCopies: 1 },
-  { id: 'wb-wedding-proposal', title: 'General', name: 'Wedding Proposal', type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/WeddingProposal.png', ability: 'If you control two adjacent fighters, give each +1 attack.' },
-  { id: 'wb-shopping', title: 'General', name: 'Shopping', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/Shopping.png', ability: 'Draw 2 cards.' },
-  { id: 'wb-merry-christmas', title: 'General', name: 'Merry Christmas!', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Glacial', role: 'Action', art: 'assets/cards/MerryChristmas.png', ability: 'Search your deck for a Glacial card and add it to your hand.' },
+  { id: 'wb-wedding-proposal', title: 'General', name: 'Wedding Proposal', type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/WeddingProposal.webp', ability: 'If you control two adjacent fighters, give each +1 attack.' },
+  { id: 'wb-shopping', title: 'General', name: 'Shopping', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/Shopping.webp', ability: 'Draw 2 cards.' },
+  { id: 'wb-merry-christmas', title: 'General', name: 'Merry Christmas!', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Glacial', role: 'Action', art: 'assets/cards/MerryChristmas.webp', ability: 'Search your deck for a Glacial card and add it to your hand.' },
 ];
 const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', fun: 'Fun Deck', collection: 'My Collection' };
 function allCardCatalog() { return [...new Map([...cardLibrary, ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary].map((card) => [card.id, card])).values()]; }
@@ -149,6 +149,9 @@ function transformationsForDeck(deckId) {
 let selectedPlayerDeck = 'academy';
 let selectedRivalDeck = 'wild-west';
 let selectedBattleMode = 'collection';
+let tutorialLessonIndex = 0;
+let pendingDrawAnimations = [];
+const animatingDrawInstances = new Set();
 const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
@@ -232,16 +235,137 @@ function newPlayer(isAI = false, deckId = 'academy', collectionOnly = false) {
   const lifeCards = deck.splice(0, 4);
   return { hand: deck.splice(0, 4), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
-function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', collectionOnly = false) {
+function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', collectionOnly = false, tutorialMode = false) {
   battleHistory.length = 0;
   const historyList = document.getElementById('battle-history-list'); if (historyList) historyList.replaceChildren();
   const historyCount = document.getElementById('history-count'); if (historyCount) historyCount.textContent = '0';
-  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.avatarGemUses = 0; match.battleDestroyedCards = 0;
-  match.playerDeckId = collectionOnly ? 'collection' : playerDeckId; match.opponentDeckId = opponentDeckId;
+  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.tutorialMode = tutorialMode; match.avatarGemUses = 0; match.battleDestroyedCards = 0;
+  match.playerDeckId = collectionOnly ? 'collection' : playerDeckId; match.opponentDeckId = opponentDeckId; document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.add('hidden');
   match.player = newPlayer(false, collectionOnly ? 'academy' : match.playerDeckId, collectionOnly); match.opponent = newPlayer(true, match.opponentDeckId);
+  if (tutorialMode) setupTutorialScene(0); else match.player.hand.forEach((card)=>queueDrawAnimation(match.player,card));
   if (collectionOnly) { const size = window.peppermintCollection?.deckList().length || 0; if (size < 20 || size > 40) { announceEffect('Standard decks must contain 20–40 gained cards.'); showDeckSelect(); return; } }
   render(); logBattleEvent(`Battle started · You: ${deckNames[playerDeckId]} · Enemy: ${deckNames[opponentDeckId]}${collectionOnly ? ' · Standard' : ''}.`);
 }
+const tutorialRoles = ['Shielder','Shooter','Summoner','Enchanter','Trickster','Healer','Blader','Brawler'];
+const tutorialLessons = [
+  { title:'Summon a Fighter or Creature', copy:'Summon Hopkin. Click his card in your hand, then click Lane 1, or drag him into Lane 1. He costs 1 Mana, and you have 1 Mana.' },
+  { title:'Wait a turn before attacking', copy:'Click DO THE ACTION to hide this message. End Turn is highlighted; click it to continue. Newly summoned fighters cannot attack on their first turn.' },
+  { title:'Destroy an enemy fighter', copy:'Fighters usually attack forward into the opposing lane. Ready fighters pulse softly. Click Hopkin, then click the enemy fighter, or drag Hopkin onto it.' },
+  { title:'Use element advantages', copy:'Croaktail and Gummy each have 1 ATK. Summon Croaktail into Lane 1 by clicking its card and then the lane, or dragging it there. Croaktail will be ready to attack immediately. Aqua beats Ignis, so Croaktail gets +1 ATK for this attack.' },
+  { title:'Break a Life Zone', copy:'The fighters are cleared. Attack the rival Life Zone in Lane 1 with Aemi in your Lane 1.' },
+  { title:'Use a special card effect', copy:'Summon Ryota into Lane 1. Discard the extra card from your hand, then choose the rival fighter in Lane 1 for Ryota’s Solar explosion.' },
+  { title:'Play an Action card', copy:'Play Shopping from your hand. It costs 2 Mana, draws two cards, then goes to the Pandemonium Zone.' },
+  { title:'Play a Field card', copy:'Play Academy Hall from your hand. It becomes the shared Field and boosts Academy cards while one is present.' },
+  { title:'Shielder class ability', role:'Shielder', situation:'Your Shielder is in the center lane; the rival will attack the neighboring Life Zone. The Shielder redirects the attack.' },
+  { title:'Shooter class ability', role:'Shooter', situation:'Your Shooter is in Lane 1 and an enemy Fighter is in the adjacent Lane 2. Attack that adjacent fighter.' },
+  { title:'Summoner class ability', role:'Summoner', situation:'Your Summoner’s Life Zone is empty. Summon it in Lane 1, then choose the matching-element Creature to become its Familiar.' },
+  { title:'Enchanter class ability', role:'Enchanter', situation:'An ally is already in Lane 1. Summon the Enchanter beside it in Lane 2; the ally gains +1 ATK.' },
+  { title:'Trickster class ability', role:'Trickster', situation:'An enemy Fighter faces your Trickster in Lane 1. Summon the Trickster there; the enemy loses 1 ATK.' },
+  { title:'Healer class ability', role:'Healer', situation:'Your Lane 1 Life Zone is empty. Summon the Healer there; its class ability restores that Life Zone.' },
+  { title:'Blader class ability', role:'Blader', situation:'Your Blader is ready in Lane 1. Attack the opposing Fighter to see its +1 ATK while attacking.' },
+  { title:'Brawler class ability', role:'Brawler', situation:'Your Brawler is ready in Lane 1 and the adjacent lanes are empty. Attack the opposing Fighter with its +1 ATK bonus.' },
+  { title:'Destroy the Main Life', copy:'All three middle Life Zones are empty. Attack the rival Main Life from your center-lane Shooter to finish the tutorial.' }
+];
+let tutorialPromptCopy = '';
+let tutorialPhase = '';
+let tutorialBubbleDismissed = false;
+function tutorialCard(id) { const source=allCardCatalog().find((card)=>card.id===id); return source ? cloneCard(source) : null; }
+function tutorialCardForRole(role) { const source=allCardCatalog().find((card)=>card.role===role && card.type!=='Transformation' && card.type!=='Action'); return source ? cloneCard(source) : null; }
+function tutorialPracticeFighter({role='Trickster',element='Terra',attack=1,name='Practice Fighter'}={}) { const card=tutorialCardForRole(role) || tutorialCard('ww-bandito'); card.name=name; card.attack=attack; card.element=element; card.role=role; card.ability='Tutorial practice card.'; card.ready=true; return card; }
+function setupTutorialScene(stage) {
+  tutorialLessonIndex=stage; tutorialPhase=stage===3?'summon':stage===7?'field-play':''; tutorialBubbleDismissed=false; match.selected=null; match.attackMode=false; match.attackerLane=null; match.attackResolving=false; match.active='player'; match.turn=Math.max(1,match.turn); match.maxEnergy=10; match.energy=10; match.turnEnergyCap=10; match.secondPlayerBonusPending=false; match.fieldCard=null;
+  const p=match.player, e=match.opponent; p.lanes=[null,null,null]; e.lanes=[null,null,null]; p.life.familiars=[null,null,null]; e.life.familiars=[null,null,null]; p.life.middle=[0,1,2].map(()=>tutorialCard('academy-fritz')); e.life.middle=[0,1,2].map(()=>tutorialCard('ww-bandito')); p.life.main=tutorialCard('academy-coyote'); e.life.main=tutorialCard('ww-rick'); p.destroyed=[]; e.destroyed=[]; p.hand=[]; e.hand=[tutorialCard('ww-bandito'),tutorialCard('ww-sunnythorn')].filter(Boolean); p.deck=p.deck.filter(Boolean);
+  const place=(owner,lane,card,ready=true)=>{ if(card){ card.ready=ready; card.attacked=false; owner.lanes[lane]=card; } };
+  const cardByRole=(role)=>tutorialCardForRole(role);
+  if(stage===0){ match.maxEnergy=match.energy=match.turnEnergyCap=1; p.hand=[tutorialCard('ww-hopkin')].filter(Boolean); }
+  else if(stage===1){ match.maxEnergy=match.energy=match.turnEnergyCap=0; if(!p.lanes[0]) place(p,0,tutorialCard('ww-hopkin'),false); }
+  else if(stage===2){ place(p,0,tutorialCard('ww-hopkin'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Fighter'}),true); }
+  else if(stage===3){ p.hand=[tutorialCard('ip-croaktail')].filter(Boolean); place(e,0,tutorialCard('gummy'),true); }
+  else if(stage===4){ place(p,0,tutorialCard('aemi'),true); }
+  else if(stage===5){ p.hand=[tutorialCard('ryota'),tutorialCard('academy-fritz')].filter(Boolean); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Target'}),true); match.maxEnergy=match.energy=match.turnEnergyCap=3; }
+  else if(stage===6){ p.hand=[tutorialCard('wb-shopping')].filter(Boolean); match.maxEnergy=match.energy=match.turnEnergyCap=4; }
+  else if(stage===7){ p.hand=[tutorialCard('academy-grounds')].filter(Boolean); place(p,0,tutorialCard('academy-fritz'),true); place(e,0,tutorialCard('ww-bandito'),true); match.maxEnergy=match.energy=match.turnEnergyCap=4; }
+  else if(stage===8){ place(p,0,tutorialCard('academy-fritz'),true); place(p,1,cardByRole('Shielder'),true); place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1,name:'Rival Attacker'}),true); }
+  else if(stage===9){ place(p,0,cardByRole('Shooter'),true); place(e,1,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Adjacent Target'}),true); }
+  else if(stage===10){ const unit=cardByRole('Summoner'); if(unit){ p.life.middle[0]=null; p.hand=[unit]; const familiar=allCardCatalog().find((card)=>card.type==='Creature' && card.element===unit.element && card.id!==unit.id); if(familiar)p.hand.push(cloneCard(familiar)); } }
+  else if(stage===11){ place(p,0,tutorialPracticeFighter({role:'Summoner',element:'Terra',attack:1,name:'Adjacent Ally'}),true); const unit=cardByRole('Enchanter'); if(unit)p.hand=[unit]; }
+  else if(stage===12){ place(e,0,tutorialPracticeFighter({role:'Brawler',element:'Terra',attack:1,name:'Opposing Fighter'}),true); const unit=cardByRole('Trickster'); if(unit)p.hand=[unit]; }
+  else if(stage===13){ p.life.middle[0]=null; const unit=cardByRole('Healer'); if(unit)p.hand=[unit]; }
+  else if(stage===14){ place(p,0,cardByRole('Blader'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Practice Target'}),true); }
+  else if(stage===15){ place(p,0,tutorialCard('academy-coyote'),true); place(e,0,tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:0,name:'Practice Target'}),true); }
+  else if(stage===16){ place(p,1,tutorialPracticeFighter({role:'Shooter',element:'Aer',attack:2,name:'Final Shooter'}),true); e.life.middle=[null,null,null]; }
+  const lesson=tutorialLessons[stage]; tutorialPromptCopy=lesson?.copy || ''; if(stage===8)tutorialPromptCopy='Click DO THE ACTION, then End Turn. Watch the rival attack your Fritz in Lane 1; your Shielder in Lane 2 intercepts and takes the attack.';
+  if(lesson?.role){ const card=allCardCatalog().find((entry)=>entry.role===lesson.role && entry.type!=='Transformation'); const situation=lesson.situation || ''; const action=({Shielder:'End your turn now to trigger the interception.',Shooter:'Select the Shooter in Lane 1, start an attack, then target Lane 2.',Summoner:'Summon the Summoner into Lane 1, then choose the matching Creature.',Enchanter:'Summon the Enchanter into Lane 2.',Trickster:'Summon the Trickster into Lane 1.',Healer:'Summon the Healer into Lane 1.',Blader:'Select the Blader in Lane 1, attack, then target Lane 1.',Brawler:'Select the Brawler in Lane 1, attack, then target Lane 1.'})[lesson.role]; tutorialPromptCopy=`${action} ${classAbilities[lesson.role]} ${situation} ${card ? `Example card: ${card.name}.` : ''}`; }
+  if(stage===8)tutorialPromptCopy='Click DO THE ACTION, then End Turn. Watch the rival attack your Fritz in Lane 1; your Shielder in Lane 2 intercepts and takes the attack.';
+  if(stage===15)tutorialPromptCopy='Brawlers gain attack when they have empty lane besides them. Coyote here gains one attack for the empty lane 2. Attack with him to continue.';
+  render(); renderTutorialLesson();
+}
+function completeTutorialObjective() { if(!match.tutorialMode || match.over)return; const next=tutorialLessonIndex+1; if(next>=tutorialLessons.length)return; setupTutorialScene(next); }
+function tutorialCompleteAfterEffect(stage,delay=1600) { tutorialBubbleDismissed=true; renderTutorialLesson(); window.setTimeout(()=>{if(match.tutorialMode&&!match.over&&tutorialLessonIndex===stage)completeTutorialObjective();},delay); }
+function renderTutorialLesson() {
+  if(!match.tutorialMode || match.over)return;
+  const lesson=tutorialLessons[tutorialLessonIndex]; if(!lesson)return;
+  const bubble=document.getElementById('tutorial-bubble'); bubble.classList.toggle('hidden',tutorialBubbleDismissed); const reopen=document.getElementById('tutorial-reopen'); reopen.textContent='VIEW TUTORIAL'; reopen.classList.toggle('hidden',!tutorialBubbleDismissed);
+  document.body.classList.toggle('tutorial-end-turn-focus',tutorialLessonIndex===1);
+  const focus=document.getElementById('tutorial-focus-overlay'); if(tutorialLessonIndex===1){ const button=document.getElementById('end-turn'); const rect=button.getBoundingClientRect(); focus.style.setProperty('--spot-x',String(rect.left+rect.width/2)+'px'); focus.style.setProperty('--spot-y',String(rect.top+rect.height/2)+'px'); focus.style.setProperty('--spot-rx',String(Math.max(72,rect.width*.88))+'px'); focus.style.setProperty('--spot-ry',String(Math.max(40,rect.height*1.8))+'px'); focus.classList.remove('hidden'); } else { focus.classList.add('hidden'); }
+  document.getElementById('tutorial-progress').textContent=`TUTORIAL FIGHT · LESSON ${tutorialLessonIndex+1} / ${tutorialLessons.length}`;
+  document.getElementById('tutorial-title').textContent=lesson.title;
+  document.getElementById('tutorial-copy').textContent=tutorialPromptCopy || lesson.copy || lesson.situation || '';
+  const example=document.getElementById('tutorial-example');
+  if(lesson.role){ const card=allCardCatalog().find((entry)=>entry.role===lesson.role && entry.type!=='Transformation'); if(card){example.classList.remove('hidden');document.getElementById('tutorial-card-art').src=card.art;document.getElementById('tutorial-card-art').alt=`${card.name} card art`;document.getElementById('tutorial-card-kicker').textContent=`${card.title} · ${card.role}`;document.getElementById('tutorial-card-name').textContent=card.name;document.getElementById('tutorial-card-ability').textContent=classAbilities[lesson.role];document.getElementById('tutorial-situation').textContent=lesson.situation||'';} }
+  else example.classList.add('hidden');
+  document.getElementById('tutorial-prev').classList.add('hidden');
+  const next=document.getElementById('tutorial-next'); next.disabled=false; next.textContent='DO THE ACTION'; next.setAttribute('aria-label','Hide tutorial message and do the required action');
+  document.getElementById('tutorial-hide').classList.add('hidden');
+  document.getElementById('tutorial-reopen').classList.toggle('hidden',!tutorialBubbleDismissed);
+}
+function tutorialWrongAction(message='Follow the instruction in the center bubble to continue.') { announceEffect(message); }
+function tutorialCanSummon(card,lane) {
+  if(!match.tutorialMode)return true;
+  const stage=tutorialLessonIndex;
+  if(stage===0)return card.id==='ww-hopkin'&&lane===0;
+  if(stage===3&&tutorialPhase==='summon')return card.id==='ip-croaktail'&&lane===0;
+  if(stage===5)return card.id==='ryota'&&lane===0;
+  if(stage===10)return card.role==='Summoner'&&lane===0;
+  if(stage===11)return card.role==='Enchanter'&&lane===1;
+  if(stage===12)return card.role==='Trickster'&&lane===0;
+  if(stage===13)return card.role==='Healer'&&lane===0;
+  return false;
+}
+function tutorialCanUseAction(action) { if(!match.tutorialMode)return true; return tutorialLessonIndex===6 ? action.id==='wb-shopping' : tutorialLessonIndex===7 ? action.id==='academy-grounds' : false; }
+function tutorialCanAttack(attacker,lane,target) {
+  if(!match.tutorialMode)return true;
+  const stage=tutorialLessonIndex;
+  if(stage===2)return lane===0&&target.type==='lane'&&target.index===0;
+  if(stage===3)return tutorialPhase==='attack'&&lane===0&&target.type==='lane'&&target.index===0;
+  if(stage===7)return tutorialPhase==='attack'&&lane===0&&target.type==='lane'&&target.index===0;
+  if(stage===4)return lane===0&&target.type==='life'&&!target.main&&target.index===0;
+  if(stage===9)return lane===0&&target.type==='lane'&&target.index===1;
+  if(stage===14||stage===15)return lane===0&&target.type==='lane'&&target.index===0;
+  if(stage===16)return lane===1&&target.type==='life'&&target.main===true;
+  return false;
+}
+function tutorialAdvanceAfterSummon(card,lane) {
+  if(!match.tutorialMode)return;
+  const stage=tutorialLessonIndex;
+  if(stage===3&&tutorialPhase==='summon'&&card.id==='ip-croaktail'&&lane===0){ tutorialPhase='attack'; card.ready=true; tutorialPromptCopy='Croaktail and Gummy each have 1 ATK. Croaktail is ready to attack now. Aqua beats Ignis, so Croaktail gets +1 ATK for this attack. Click Croaktail, then Gummy in Lane 1 (or drag Croaktail onto Gummy).'; render(); renderTutorialLesson(); return; }
+  if(stage===0&&card.id==='ww-hopkin'&&lane===0) completeTutorialObjective();
+  if((stage===11&&card.role==='Enchanter'&&lane===1)||(stage===12&&card.role==='Trickster'&&lane===0)||(stage===13&&card.role==='Healer'&&lane===0)) tutorialCompleteAfterEffect(stage);
+}
+function tutorialEndTurn() {
+  const stage=tutorialLessonIndex;
+  match.active='transition'; match.attackMode=false; match.attackerLane=null; match.selected=null; render();
+  if(stage===3&&tutorialPhase==='wait'){ window.setTimeout(()=>{ startPlayerTurn(); if(match.player.lanes[0])match.player.lanes[0].ready=true; tutorialPhase='attack'; tutorialPromptCopy='Croaktail is ready and softly pulsing. Click it, then click Gummy in the opposing Lane 1, or drag Croaktail onto Gummy. Both started at 1 ATK; Aqua beats Ignis, giving Croaktail +1 ATK for this attack.'; render(); renderTutorialLesson(); },350); return true; }
+  if(stage===1){ const foe=tutorialPracticeFighter({role:'Enchanter',element:'Terra',attack:1,name:'Practice Fighter'}); foe.ready=false; match.opponent.lanes[0]=foe; window.setTimeout(()=>{startPlayerTurn(); setupTutorialScene(2);},450); return true; }
+  if(stage===8){ const attacker=match.opponent.lanes[0]; if(attacker){attacker.ready=true; tutorialBubbleDismissed=true; renderTutorialLesson(); animateAttack(match.opponent,0,(target)=>battle(attacker,0,match.opponent,target),{type:'lane',index:0}); window.setTimeout(()=>setupTutorialScene(9),1450);} return true; }
+  match.active='player'; render(); tutorialWrongAction('End your turn only when the tutorial asks you to.'); return true;
+}
+document.getElementById('tutorial-hide').addEventListener('click',()=>{ tutorialBubbleDismissed=true; document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.remove('hidden'); });
+document.getElementById('tutorial-reopen').addEventListener('click',()=>{tutorialBubbleDismissed=false;renderTutorialLesson();});
+document.getElementById('tutorial-next').addEventListener('keydown',()=>{});
+window.addEventListener('resize',()=>{if(match.tutorialMode&&!match.over&&tutorialLessonIndex===1&&!tutorialBubbleDismissed)renderTutorialLesson();});
+document.getElementById('tutorial-prev').addEventListener('click',()=>{});
+document.getElementById('tutorial-next').addEventListener('click',()=>{ if(!match.tutorialMode||match.over)return; tutorialBubbleDismissed=true; document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.remove('hidden'); });
 function syncDeckPicker() {
   document.querySelectorAll('[data-player-deck]').forEach((button) => {
     const selected = button.dataset.playerDeck === selectedPlayerDeck;
@@ -261,6 +385,10 @@ function showDeckSelect() {
   });
   syncDeckPicker();
   document.getElementById('player-deck-picker-group').classList.add('hidden');
+  document.getElementById('rival-deck-picker-group').classList.remove('hidden');
+  document.getElementById('start-battle').innerHTML = 'START BATTLE <span>→</span>';
+  document.getElementById('tutorial-bubble').classList.add('hidden');
+  document.getElementById('tutorial-reopen').classList.add('hidden');
   document.getElementById('deck-select-dialog').showModal();
 }
 function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
@@ -272,7 +400,7 @@ function libraryCardMarkup(card) {
   const art = card.art ? `<img src="${escapeHTML(card.art)}" alt="${escapeHTML(card.name)} card art" loading="lazy" />` : `<div class="library-art-fallback">${escapeHTML(card.name)}</div>`;
   const typeLabel = displayedCardType(card);
   const classIcon = hasCardClass(card) ? classIconMarkup(card.role, element, 'library-class-icon') : '';
-  const elementIcon = elementIcons[element] ? `<img class="library-element-icon" src="assets/icons/${elementIcons[element]}.png" alt="${escapeHTML(element)}" title="${escapeHTML(element)}" />` : '';
+  const elementIcon = elementIcons[element] ? `<img class="library-element-icon" src="assets/icons/${elementIcons[element]}.webp" alt="${escapeHTML(element)}" title="${escapeHTML(element)}" />` : '';
   const elementLabel = element === 'None' ? 'Neutral' : escapeHTML(element);
   const attackText = card.type === 'Action' ? 'No attack' : `${Number(card.attack) || 0} ATK`;
   const copies = card.maxCopies ?? (card.type === 'Transformation' || !card.type ? 1 : card.type === 'Creature' || card.type === 'Action' ? 3 : 1);
@@ -336,7 +464,7 @@ function cardMarkup(card, enemy = false, compact = false) {
     const size = compact ? 'battle' : 'hand';
     return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" alt="${card.name}" /></picture>`;
   })() : `<div class="card-art-fallback">${card.name}</div>`;
-  const elementIcon = elementIcons[card.element] ? `<img class="element-icon card-element-icon" src="assets/icons/${elementIcons[card.element]}.png" alt="${escapeHTML(card.element)}" title="${escapeHTML(card.element)}" />` : '';
+  const elementIcon = elementIcons[card.element] ? `<img class="element-icon card-element-icon" src="assets/icons/${elementIcons[card.element]}.webp" alt="${escapeHTML(card.element)}" title="${escapeHTML(card.element)}" />` : '';
   const attackValueClass = attackInfo.change > 0 ? 'attack-value-raised' : attackInfo.change < 0 ? 'attack-value-lowered' : '';
   const attackValueStyle = attackInfo.change > 0 ? 'color:#ffdf70!important;text-shadow:0 0 8px #ffc64777' : attackInfo.change < 0 ? 'color:#ff817d!important;text-shadow:0 0 8px #f04d5c66' : '';
   const attackValueMarkup = `<strong class="${attackValueClass}" style="${attackValueStyle}">${attackInfo.total}</strong>`;
@@ -353,10 +481,10 @@ function lifeMarkup(player, side) {
   const middle = player.life.middle.map((card, index) => {
     const direct = side === 'opponent' && match.attackMode && match.attackerLane === index && Boolean(card) && canTargetLifeZone(attacker, index, player, index);
     const familiar = player.life.familiars?.[index];
-    return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}"><span class="target-mark" aria-hidden="true">⌖</span>${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
+    return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}"><span class="target-mark" aria-hidden="true">⌖</span>${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.webp" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
   }).join('');
   const mainDirect = side === 'opponent' && match.attackMode && match.attackerLane !== null && canAttackMainLife(attacker, match.attackerLane, player);
-  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone"><span class="target-mark" aria-hidden="true">⌖</span>${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.png" alt="" aria-hidden="true" />' : ''}</div>`;
+  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone"><span class="target-mark" aria-hidden="true">⌖</span>${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.webp" alt="" aria-hidden="true" />' : ''}</div>`;
   return `<div class="life-middle">${middle}</div><div class="main-life-back">${main}</div>`;
 }
 function allMiddleLifeGone(player) { return player.life.middle.every((card) => !card); }
@@ -466,6 +594,7 @@ function render() {
   document.getElementById('player-board').innerHTML = match.player.lanes.map((card, i) => laneMarkup(card, i, 'player', match.active === 'player')).join('');
   document.getElementById('opponent-board').innerHTML = match.opponent.lanes.map((card, i) => laneMarkup(card, i, 'opponent', false)).join('');
   document.getElementById('hand').innerHTML = match.player.hand.map((card) => cardMarkup(card)).join('') || '<div class="lane-hint">Your hand is empty</div>';
+  animatingDrawInstances.forEach((instance)=>document.querySelector('#hand .hand-card[data-id="'+instance+'"]')?.classList.add('draw-arriving'));
   document.getElementById('hand-count').textContent = `${match.player.hand.length} card${match.player.hand.length === 1 ? '' : 's'}`;
   document.getElementById('energy-value').textContent = match.energy;
   document.getElementById('max-energy').textContent = match.turnEnergyCap;
@@ -497,7 +626,7 @@ function render() {
     const mallUsed = match.fieldCard.usedTurnKeys?.includes(mallUseKey);
     const mallButton = match.fieldCard.id === 'christmas-mall' && match.active === 'player' && !match.over ? `<button class="field-zone-action" data-field-ability="christmas-mall" ${mallUsed ? 'disabled' : ''}>SWAP FIGHTERS</button>` : '';
     const activeCardArt = match.fieldCard.card?.art ? `<img class="field-zone-card-art" src="${match.fieldCard.card.art}" alt=""/>` : '';
-    fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.png')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>${mallButton}`;
+    fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.webp')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>${mallButton}`;
   } else {
     fieldZone.innerHTML = '';
     delete fieldZone.dataset.cardPreview;
@@ -518,6 +647,7 @@ function render() {
   });
   const selectedAttacker = match.attackerLane === null ? null : match.player.lanes[match.attackerLane];
   document.getElementById('board-message').textContent = match.attackResolving ? 'Attack resolving · click another ready fighter to queue its attack' : match.attackMode ? (match.attackerLane === null ? 'Select a ready fighter to attack' : selectedAttacker?.role === 'Shooter' ? allMiddleLifeGone(match.opponent) ? 'Choose an adjacent enemy fighter, the opposite Life Zone, or Main Life' : 'Choose an adjacent enemy fighter or the Life Zone directly opposite' : 'Choose the opposing lane in front or the exposed Main Life') : (match.selected ? `Place ${getSelected().name} in an open lane` : 'Play a card or start an attack');
+  playPendingDrawAnimations();
 }
 function getSelected() { return match.player.hand.find((c) => c.instance === match.selected); }
 function cardOwner(card) {
@@ -555,7 +685,7 @@ function showCardTooltip(card, event) {
   
   const artwork = card.art ? '<img src="' + card.art + '" alt="" />' : '<div class="tooltip-art-fallback">✦</div>';
   const classAbility = hasCardClass(card) && classAbilities[card.role] ? `<div class="tooltip-class-ability"><b>${card.role} class ability</b><span>${classAbilities[card.role]}</span></div>` : '';
-  const tooltipIcon = elementIcons[card.element] ? `<img class="element-icon" src="assets/icons/${elementIcons[card.element]}.png" alt="" />` : '';
+  const tooltipIcon = elementIcons[card.element] ? `<img class="element-icon" src="assets/icons/${elementIcons[card.element]}.webp" alt="" />` : '';
   const elementLabel = card.element === 'None' ? 'Neutral' : card.element;
   const typeIcon = cardTypeIcon(card, 'tooltip-field-type-icon');
   const tooltipClass = hasCardClass(card) ? `<span class="tooltip-class-chip">${classIconMarkup(card.role, card.element, 'tooltip-class-icon')}<span>${escapeHTML(card.role)}</span></span>` : '';
@@ -623,17 +753,34 @@ function playCard(cardId, laneIndex) {
   const card = match.player.hand.find((c) => c.instance === cardId);
   const cost = playCost(match.player, card);
   if (!card || card.type === 'Action' || match.active !== 'player' || match.player.lanes[laneIndex] || cost > match.energy) return;
+  if (match.tutorialMode && !tutorialCanSummon(card,laneIndex)) { tutorialWrongAction('Summon only the highlighted card into the lane named in the message.'); return; }
   if (!canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; }
   match.attackMode = false; match.attackerLane = null;
-  match.energy -= cost; match.player.hand.splice(match.player.hand.indexOf(card), 1); card.ready = false; match.player.lanes[laneIndex] = card; match.selected = null; render(); animateSummon(match.player, laneIndex, card).then(() => triggerOnSummon(card, match.player, laneIndex));
+  match.energy -= cost; match.player.hand.splice(match.player.hand.indexOf(card), 1); card.ready = false; match.player.lanes[laneIndex] = card; match.selected = null; render(); animateSummon(match.player, laneIndex, card).then(() => { triggerOnSummon(card, match.player, laneIndex); tutorialAdvanceAfterSummon(card,laneIndex); });
 }
 function playCost(owner, card) { if (!card) return Infinity; if (card.id === 'academy-diamond' && owner.lanes.some((unit) => ['academy-topaz','wb-topaz-diamond'].includes(unit?.id))) return 0; if (card.id === 'academy-topaz' && owner.lanes.some((unit) => ['academy-diamond','wb-topaz-diamond'].includes(unit?.id))) return 0; return card.cost; }
 function canSummonCard(owner, card) { return card?.id !== 'vishnu' || Boolean(owner?.lanes.some((unit) => unit?.name === 'Peppermint')); }
+function queueDrawAnimation(owner, card) { if(owner&&card) pendingDrawAnimations.push({side:owner===match.player?'player':'opponent',instance:card.instance}); }
 function drawCard(player, count = 1) {
-  for (let i = 0; i < count; i++) { if (player.deck.length) player.hand.push(player.deck.shift()); }
+  for (let i = 0; i < count; i++) { if (player.deck.length) { const card=player.deck.shift(); player.hand.push(card); queueDrawAnimation(player,card); } }
+}
+function playPendingDrawAnimations() {
+  const pending=pendingDrawAnimations.splice(0);
+  pending.forEach((draw)=>{if(draw.side==='player'){animatingDrawInstances.add(draw.instance);document.querySelector('#hand .hand-card[data-id="'+draw.instance+'"]')?.classList.add('draw-arriving');}});
+  pending.forEach((draw,index)=>window.setTimeout(()=>{
+    const target=draw.side==='player'?document.querySelector(`#hand .hand-card[data-id="${draw.instance}"]`):null;
+    if(!target){animatingDrawInstances.delete(draw.instance);return;}
+    const to=target.getBoundingClientRect();
+    const flight=target.cloneNode(true); flight.classList.remove('draw-arriving'); flight.classList.add('draw-flight'); flight.setAttribute('aria-hidden','true'); flight.removeAttribute('data-id'); flight.removeAttribute('data-card-preview');
+    flight.style.left=`${to.left}px`; flight.style.top=`${to.top}px`; flight.style.width=`${to.width}px`; flight.style.height=`${to.height}px`;
+    flight.style.transform=`translate(${window.innerWidth-to.left+24}px,0) scale(.36)`;
+    target.classList.add('draw-arriving'); document.body.appendChild(flight);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{flight.style.transform='translate(0,0) scale(1)';}));
+    window.setTimeout(()=>{animatingDrawInstances.delete(draw.instance);target.classList.remove('draw-arriving');flight.remove();},620);
+  },index*180));
 }
 let pendingEffectChoice = null;
-const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.png',runny:'30FPS_FA02_04_Impulse.png',berry:'30FPS_FA01_09_Barrier.png',frosty:'30FPS_FA01_08_Shield.png',den:'30FPS_FA01_04_Buff.png',ryota:'30FPS_FA01_01_Slash.png',healer:'30FPS_FA01_07_Cure.png',summoner:'30FPS_FA02_01_EnergyBurst.png',gummy:'30FPS_FA02_03_CrystalBlossom.png',zoya:'30FPS_FA02_02_Smokescreen.png',cooking:'30FPS_FA02_03_CrystalBlossom.png',cotton:'30FPS_FA02_03_CrystalBlossom.png',kage:'30FPS_FA02_02_Smokescreen.png',amethyst:'30FPS_FA01_10_Burst.png',shielder:'30FPS_FA01_08_Shield.png',shooter:'30FPS_FA01_02_Thrust.png',enchanter:'30FPS_FA01_04_Buff.png',trickster:'30FPS_FA01_05_Debuff.png',blader:'30FPS_FA01_01_Slash.png',brawler:'30FPS_FA01_03_Punch.png',peppermint:'30FPS_FA01_04_Buff.png','avatar-gem':'30FPS_FA02_07_HyperCharge.png','dharma-revival':'30FPS_FA02_03_CrystalBlossom.png' };
+const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.webp',runny:'30FPS_FA02_04_Impulse.webp',berry:'30FPS_FA01_09_Barrier.webp',frosty:'30FPS_FA01_08_Shield.webp',den:'30FPS_FA01_04_Buff.webp',ryota:'30FPS_FA01_01_Slash.webp',healer:'30FPS_FA01_07_Cure.webp',summoner:'30FPS_FA02_01_EnergyBurst.webp',gummy:'30FPS_FA02_03_CrystalBlossom.webp',zoya:'30FPS_FA02_02_Smokescreen.webp',cooking:'30FPS_FA02_03_CrystalBlossom.webp',cotton:'30FPS_FA02_03_CrystalBlossom.webp',kage:'30FPS_FA02_02_Smokescreen.webp',amethyst:'30FPS_FA01_10_Burst.webp',shielder:'30FPS_FA01_08_Shield.webp',shooter:'30FPS_FA01_02_Thrust.webp',enchanter:'30FPS_FA01_04_Buff.webp',trickster:'30FPS_FA01_05_Debuff.webp',blader:'30FPS_FA01_01_Slash.webp',brawler:'30FPS_FA01_03_Punch.webp',peppermint:'30FPS_FA01_04_Buff.webp','avatar-gem':'30FPS_FA02_07_HyperCharge.webp','dharma-revival':'30FPS_FA02_03_CrystalBlossom.webp' };
 function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, silent = false } = {}) {
   const side = owner === match.player ? 'player' : 'opponent';
   window.setTimeout(() => {
@@ -721,7 +868,7 @@ function cardForEffectChoice(choice) {
 function drawMatching(owner, predicate, label) {
   const index = owner.deck.findIndex(predicate);
   if (index < 0) { announceEffect(`No ${label} remains in the deck.`); return false; }
-  const [card] = owner.deck.splice(index, 1); owner.hand.push(card); render(); announceEffect(`${card.name} drawn by effect.`); return true;
+  const [card] = owner.deck.splice(index, 1); owner.hand.push(card); queueDrawAnimation(owner,card); render(); announceEffect(`${card.name} drawn by effect.`); return true;
 }
 function summonBeatcracker(owner, card) {
   const lane = owner.lanes.findIndex((unit) => !unit);
@@ -807,6 +954,7 @@ function setSharedField(owner, id, card = null) {
 }
 function activateAction(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
+  if (match.tutorialMode && owner===match.player && action && !tutorialCanUseAction(action)) { tutorialWrongAction('Play the Action or Field card named in the lesson.'); return; }
   if (action) { match.eventActor = owner; match.eventSource = action.name; logBattleEvent(`${battleSideName(owner)} activated ${action.name}.`, owner === match.player ? 'player' : 'enemy'); }
   if (action?.type === 'Action' && match.energy >= action.cost) playActionSfx(action);
   if (action?.id === 'avatar-gem') useAvatarGem(owner, actionInstance);
@@ -819,11 +967,11 @@ function activateAction(owner, actionInstance) {
     chooseEffect(owner, 'Drinking Tea: quicken a Glacial ally', 'Choose a Glacial fighter to attack on the turn it was summoned.', choices, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.ready = true; target.skipAttackThisTurn = false; render(); playSpecialFx(owner, Number(lane), 'frosty', 'DRINKING TEA · QUICKEN', { generatedOnly: true, silent: true }); announceEffect(`${target.name} can act on its first turn.`); });
   }
   else if (action?.id === 'wb-shopping' && match.energy >= action.cost) {
-    owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; drawCard(owner, 2); render(); playSpecialFx(owner, -1, 'shopping', 'SHOPPING · TWO FINDS', { generatedOnly: true, silent: true }); announceEffect('Shopping drew 2 cards.');
+    owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; drawCard(owner, 2); render(); playSpecialFx(owner, -1, 'shopping', 'SHOPPING · TWO FINDS', { generatedOnly: true, silent: true }); announceEffect('Shopping drew 2 cards.'); if (match.tutorialMode && owner===match.player && tutorialLessonIndex===6) { tutorialBubbleDismissed=true; renderTutorialLesson(); window.setTimeout(()=>{ if(match.tutorialMode&&tutorialLessonIndex===6){ tutorialPromptCopy='The two drawn cards have arrived in your hand. Shopping sends itself to the Pandemonium Zone.'; tutorialBubbleDismissed=false; renderTutorialLesson(); window.setTimeout(()=>{if(match.tutorialMode&&tutorialLessonIndex===6)completeTutorialObjective();},1200); } },1100); }
   }
   else if (action?.id === 'wb-merry-christmas' && match.energy >= action.cost) {
     const choices = owner.deck.filter((card) => card.element === 'Glacial').map((card) => ({ value: card.instance, label: card.name, detail: `${card.title} · Glacial` }));
-    chooseEffect(owner, 'Merry Christmas! · choose a Glacial card', 'Search your deck for a Glacial card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'merry-christmas', 'MERRY CHRISTMAS · GIFT FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
+    chooseEffect(owner, 'Merry Christmas! · choose a Glacial card', 'Search your deck for a Glacial card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); queueDrawAnimation(owner,card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'merry-christmas', 'MERRY CHRISTMAS · GIFT FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
   }
   else if (action?.id === 'wb-wedding-proposal' && match.energy >= action.cost) {
     const pairs = [[0,1],[1,2]].filter(([a,b]) => owner.lanes[a] && owner.lanes[b]);
@@ -870,7 +1018,7 @@ function activateAction(owner, actionInstance) {
     });
   }  else if (action?.id === 'lt-toy-capsule' && match.energy >= action.cost) {
     const choices = owner.deck.filter((card) => card.title === 'Living Toy').map((card) => ({ value: card.instance, label: card.name, detail: `${card.title} · ${card.element}` }));
-    chooseEffect(owner, 'Toy Capsule · choose a Living Toy', 'Search your deck for a Living Toy card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance && card.title === 'Living Toy'); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'toy-capsule', 'TOY CAPSULE · PRIZE FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
+    chooseEffect(owner, 'Toy Capsule · choose a Living Toy', 'Search your deck for a Living Toy card to add to your hand.', choices, (instance) => { const index = owner.deck.findIndex((card) => card.instance === instance && card.title === 'Living Toy'); if (index < 0 || !owner.hand.includes(action) || match.energy < action.cost) return; const [card] = owner.deck.splice(index, 1); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.push(card); queueDrawAnimation(owner,card); match.energy -= action.cost; render(); playSpecialFx(owner, -1, 'toy-capsule', 'TOY CAPSULE · PRIZE FOUND', { generatedOnly: true, silent: true }); announceEffect(`${card.name} was added to your hand.`); });
   }
   else if (action?.id === 'ww-planting') usePlanting(owner, actionInstance);
   else if (action?.id === 'ww-quick-draw' && match.energy >= action.cost) {
@@ -905,7 +1053,7 @@ function activateAction(owner, actionInstance) {
     const enemy = owner === match.player ? match.opponent : match.player; const targets = enemy.lanes.map((card, lane) => card ? { value: lane, label: card.name, detail: `Enemy lane ${lane + 1} · −1 attack until your next turn` } : null).filter(Boolean);
     chooseEffect(owner, 'Wanted Poster · mark a target', 'Choose an enemy fighter to lose 1 attack until your next turn.', targets, (lane) => { const target = enemy.lanes[lane]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; target.attackBonus = (target.attackBonus || 0) - 1; target.attackBonusSources = [...(target.attackBonusSources || []), 'Wanted Poster']; target.attackBonusModifiers = [...(target.attackBonusModifiers || []), { amount: -1, source: 'Wanted Poster', expiresTurn: match.turn + 1 }]; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); announceEffect(`${target.name} lost 1 attack until your next turn.`); });
   }
-  else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack while at least one Academy card is on the field.'); }
+  else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack while at least one Academy card is on the field.'); if (match.tutorialMode && owner===match.player && tutorialLessonIndex===7) { tutorialPhase='field-reveal'; tutorialBubbleDismissed=true; renderTutorialLesson(); window.setTimeout(()=>{ if(match.tutorialMode&&tutorialLessonIndex===7){ tutorialPhase='attack'; tutorialPromptCopy='Academy Hall is active. Fritz and Bandito each started at 1 ATK; the field raises Academy Fritz to 2 ATK. Click Fritz, then attack Bandito in Lane 1 (or drag Fritz onto it).'; tutorialBubbleDismissed=false; render(); renderTutorialLesson(); } },1600); } }
   else if (action?.id === 'ip-field' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'ip-field', action); render(); playFieldActivationFx('ip-field'); announceEffect('Island Paradise is now the shared field. Its fighters on both sides cannot be targeted, but do not defend their Life Zones.'); }
   else if (action?.id === 'toy-store' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'toy-store', action); render(); playFieldActivationFx('toy-store'); announceEffect('Toy Store is now the shared field. All 1-cost Fighters and Creatures on both sides gain +1 attack.'); }
   else if (action?.id === 'cactus-creek' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'cactus-creek', action); render(); playFieldActivationFx('cactus-creek'); announceEffect('Cactus Creek is now the shared field. Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.'); }
@@ -941,7 +1089,7 @@ function useCotton(owner, cardInstance) {
   const hallIndex = owner.deck.findIndex((card) => card.id === 'academy-grounds');
   if (hallIndex < 0) { announceEffect('Cotton could not find Academy Hall in your deck.'); return; }
   const [hall] = owner.deck.splice(hallIndex, 1);
-  owner.hand.splice(owner.hand.indexOf(cotton), 1); owner.destroyed.push(cotton); owner.hand.push(hall);
+  owner.hand.splice(owner.hand.indexOf(cotton), 1); owner.destroyed.push(cotton); owner.hand.push(hall); queueDrawAnimation(owner,hall);
   render(); playSpecialFx(owner, -1, 'cotton', 'COTTON · FIELD FOUND', { generatedOnly: true }); announceEffect('Cotton added Academy Hall to your hand.');
 }
 function isEffectProtected(card) { return card?.id === 'ww-academy-rick'; }
@@ -1163,7 +1311,7 @@ function triggerOnSummon(card, owner, laneIndex) {
   }
   if (card.id === 'academy-dimitri') {
     const choices = owner.deck.flatMap((unit, index) => unit.title === 'Academy' && [3, 4].includes(unit.cost) ? [{ value: index, label: unit.name, detail: `${unit.cost} Mana · ${unit.element}` }] : []);
-    chooseEffect(owner, 'Dimitri: draw an Academy card', 'Choose an Academy card that costs 3 or 4 from your deck.', choices, (index) => { const [drawn] = owner.deck.splice(Number(index), 1); if (drawn) { owner.hand.push(drawn); render(); announceEffect(`${drawn.name} drawn by Dimitri.`); } });
+    chooseEffect(owner, 'Dimitri: draw an Academy card', 'Choose an Academy card that costs 3 or 4 from your deck.', choices, (index) => { const [drawn] = owner.deck.splice(Number(index), 1); if (drawn) { owner.hand.push(drawn); queueDrawAnimation(owner,drawn); render(); announceEffect(`${drawn.name} drawn by Dimitri.`); } });
   }
   if (card.id === 'zodiac-egg') {
     const eggIsStillInLane = owner.lanes[laneIndex] === card;
@@ -1196,7 +1344,7 @@ function triggerOnSummon(card, owner, laneIndex) {
   if (card.id === 'lt-fritz') { const toyCount = owner.hand.filter((held) => held.title === 'Living Toy').length; const targets = owner.lanes.filter((unit) => unit && unit.cost === 1 && unit.element === 'Dark'); if (!toyCount || !targets.length) announceEffect(`${card.name} found no 1-cost Dark fighters to empower or Living Toy cards in hand.`); else { targets.forEach((target) => { target.attackBonus = (target.attackBonus || 0) + toyCount; target.attackBonusModifiers = [...(target.attackBonusModifiers || []), { amount: toyCount, source: card.name }]; target.attackBonusSources = [...(target.attackBonusSources || []), card.name]; }); render(); announceEffect(`${card.name} gave ${toyCount} attack to each 1-cost Dark fighter.`); } }
   if (card.id === 'runny') {
     const choices = owner.deck.map((candidate, deckIndex) => candidate.title === 'Academy' && candidate.cost <= 4 ? { value: deckIndex, label: candidate.name, detail: `${candidate.cost} energy · ${candidate.element}` } : null).filter(Boolean);
-    chooseEffect(owner, 'Runny: choose an Academy card', 'Choose an Academy card costing 4 or less from your deck to add to your hand.', choices, (deckIndex) => { const [chosen] = owner.deck.splice(deckIndex, 1); owner.hand.push(chosen); render(); announceEffect(`${chosen.name} drawn by Runny.`); });
+    chooseEffect(owner, 'Runny: choose an Academy card', 'Choose an Academy card costing 4 or less from your deck to add to your hand.', choices, (deckIndex) => { const [chosen] = owner.deck.splice(deckIndex, 1); owner.hand.push(chosen); queueDrawAnimation(owner,chosen); render(); announceEffect(`${chosen.name} drawn by Runny.`); });
   }
   if (card.id === 'frosty' && opponent.lanes[laneIndex]) { opponent.lanes[laneIndex].skipAttackNext = true; announceEffect('Frosty freezes the fighter opposite it for its next turn.'); render(); }
   if (card.id === 'berry') {
@@ -1218,7 +1366,7 @@ function triggerOnSummon(card, owner, laneIndex) {
       chooseEffect(owner, 'Choose an enemy fighter', 'Ryota unleashes a Solar explosion on the selected fighter.', liveTargets, (targetLane) => {
         if (!opponent.lanes[targetLane]) return;
         playSpecialFx(opponent, targetLane, 'solar-explosion', 'RYOTA · SOLAR EXPLOSION');
-        if (destroyUnit(opponent, targetLane)) { render(); announceEffect('Ryota destroys an enemy fighter with a Solar explosion.'); }
+        if (destroyUnit(opponent, targetLane)) { render(); announceEffect('Ryota destroys an enemy fighter with a Solar explosion.'); if(match.tutorialMode&&owner===match.player&&tutorialLessonIndex===5)tutorialCompleteAfterEffect(5,1700); }
       });
     });
   }
@@ -1247,7 +1395,7 @@ function triggerOnSummon(card, owner, laneIndex) {
     if (!owner.life.middle[laneIndex] && !owner.life.familiars[laneIndex]) {
       const choices = owner.hand.flatMap((held, handIndex) => held.type === 'Creature' && held.element === card.element ? [{ value: String(handIndex), label: held.name, detail: `${held.element} · Familiar for ${card.name}` }] : []);
       chooseEffect(owner, 'Summoner: choose a Familiar', 'This lane’s Life Zone is empty. Choose a same-element Creature to become this fighter’s Familiar.', choices, (handIndex) => {
-        const [familiar] = owner.hand.splice(Number(handIndex), 1); familiar.attachedTo = card.instance; familiar.familiarOwner = card.name; owner.life.familiars[laneIndex] = familiar; playSpecialFx(owner, laneIndex, 'summoner', 'FAMILIAR · BOND', { generatedOnly: true }); render(); announceEffect(`${familiar.name} became ${card.name}’s Familiar.`);
+        const [familiar] = owner.hand.splice(Number(handIndex), 1); familiar.attachedTo = card.instance; familiar.familiarOwner = card.name; owner.life.familiars[laneIndex] = familiar; playSpecialFx(owner, laneIndex, 'summoner', 'FAMILIAR · BOND', { generatedOnly: true }); render(); announceEffect(`${familiar.name} became ${card.name}’s Familiar.`); if(match.tutorialMode&&owner===match.player&&tutorialLessonIndex===10)tutorialCompleteAfterEffect(10);
       });
     }
   }
@@ -1415,6 +1563,7 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   const attackPower = effectiveAttack(attacker, from, { attacking: true, targetIndex: targetLane });
   attacker.attacking = false; attacker.attackTargetIndex = null;
   if (target.type === 'life') {
+    if (from===match.player && match.tutorialMode && tutorialLessonIndex===4) window.setTimeout(completeTutorialObjective,120);
     if (target.main) { collectLifeCard(defender, -1, true); resolvePurrnipLifeDraw(attacker, from); endMatch(defender === match.opponent); }
     else { collectLifeCard(defender, target.index); resolvePurrnipLifeDraw(attacker, from); }
     return;
@@ -1429,6 +1578,7 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   if (attacker.id === 'ww-sunnythorn' && loseAttacker && opposing) { opposing.attackBonus = (opposing.attackBonus || 0) - 1; opposing.attackBonusSources = [...(opposing.attackBonusSources || []), attacker.name]; opposing.attackBonusModifiers = [...(opposing.attackBonusModifiers || []), { amount: -1, source: attacker.name }]; announceEffect(`${opposing.name} loses 1 attack to Sunnythorn.`); }
   if (loseDefender) {
     destroyUnit(defender, targetLane, true);
+    if (from===match.player && match.tutorialMode && ((tutorialLessonIndex===2)||(tutorialLessonIndex===3)||(tutorialLessonIndex===7)||(tutorialLessonIndex===9)||(tutorialLessonIndex===14)||(tutorialLessonIndex===15))) window.setTimeout(completeTutorialObjective,120);
     if (attacker.id === 'ip-brody') { attacker.attackBonus = (attacker.attackBonus || 0) + 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), attacker.name]; announceEffect('Brody gained 1 attack for destroying a card.'); }
     if (attacker.id === 'ip-floatbite') { const owner = from; const targets = [index - 1, index + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler' && owner.lanes[slot]?.element === 'Aqua').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` })); if (targets.length) chooseEffect(owner, 'Floatbite: tide of strength', 'Choose an adjacent Aqua Brawler to gain +1 attack.', targets, (slot) => { const ally = owner.lanes[slot]; ally.attackBonus = (ally.attackBonus || 0) + 1; ally.attackBonusModifiers = [...(ally.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; ally.attackBonusSources = [...(ally.attackBonusSources || []), attacker.name]; render(); }); }
   }
@@ -1610,6 +1760,7 @@ function runNpcAttacks(index = 0) {
 }
 function rivalTurn() {
   if (match.active !== 'transition' || match.over) return;
+  if (match.tutorialMode) { tutorialWrongAction('The tutorial is arranging the next practice move.'); return; }
   logBattleEvent('Enemy turn began.', 'enemy');
   match.active = 'opponent'; match.drawn = false;
   if (match.secondPlayerBonusPending) { match.energy = match.maxEnergy + 1; match.secondPlayerBonusPending = false; }
@@ -1669,12 +1820,14 @@ function startPlayerTurn() {
   activateIslandTurnEffects(match.player);
   drawCard(match.player); match.drawn = true; render();
 }
-function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; clearTemporaryAttackModifiers(match.player); match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
+function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; if (match.tutorialMode) { if ([1,8].includes(tutorialLessonIndex) || (tutorialLessonIndex===3&&tutorialPhase==='wait')) tutorialEndTurn(); else tutorialWrongAction('Do the action shown in the center message before ending your turn.'); return; } clearTemporaryAttackModifiers(match.player); match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
 function endMatch(won) {
   match.over = true;
-  document.getElementById('result-title').textContent = won ? 'Victory!' : 'The rival wins';
-  document.getElementById('result-copy').textContent = won ? 'You broke through the rival’s last life card.' : 'Your main life was broken. Give it another try.';
-  renderBattleRewards(settleCollectionBattle(won));
+  if (match.tutorialMode) { document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.add('hidden'); }
+  const tutorialReward=match.tutorialMode&&won?window.peppermintCollection?.claimTutorialReward?.():null;
+  document.getElementById('result-title').textContent = match.tutorialMode&&won ? 'Tutorial complete!' : won ? 'Victory!' : 'The rival wins';
+  document.getElementById('result-copy').textContent = match.tutorialMode&&won ? (tutorialReward?.total ? 'You earned 100 Diamonds for completing the tutorial.' : 'Tutorial complete. Your one-time 100 Diamond reward was already claimed.') : won ? 'You broke through the rival’s last life card.' : 'Your main life was broken. Give it another try.';
+  renderBattleRewards(tutorialReward || settleCollectionBattle(won));
   document.getElementById('result-dialog').showModal();
 }
 function settleCollectionBattle(won) {
@@ -1687,7 +1840,7 @@ function renderBattleRewards(reward) {
   const note = document.getElementById('result-unlock-note');
   if (!list || !note) return;
   const rows = reward ? [
-    { label: reward.won ? 'Victory' : 'Loss', value: reward.base },
+    { label: reward.tutorialBonus ? 'Tutorial completion' : reward.won ? 'Victory' : 'Loss', value: reward.base },
     { label: 'Avatar Gem used', value: reward.avatarGem },
     { label: `Life cards remaining (${reward.remainingLifeCards})`, value: reward.life },
     { label: `Turns elapsed (${reward.turnsElapsed})`, value: reward.turns },
@@ -1700,7 +1853,7 @@ function renderBattleRewards(reward) {
     totalAmount.textContent = `+${total.toLocaleString()}`;
     totalPanel.classList.toggle('hidden', total <= 0);
   }
-  list.innerHTML = rows.map((row) => `<li><img src="assets/ui-icons/diamond-currency.png" alt=""/><span>${row.label}</span><strong>+${row.value}</strong></li>`).join('');
+  list.innerHTML = rows.map((row) => `<li><img src="assets/ui-icons/diamond-currency.webp" alt=""/><span>${row.label}</span><strong>+${row.value}</strong></li>`).join('');
   list.classList.toggle('hidden', !rows.length);
   note.textContent = reward?.unlocked ? `${deckNames[match.opponentDeckId]} booster display unlocked!` : '';
   note.classList.toggle('hidden', !note.textContent);
@@ -1710,7 +1863,8 @@ function giveUp() {
   match.over = true;
   match.attackMode = false;
   match.attackerLane = null;
-  const reward = settleCollectionBattle(false);
+  const remainingLifeCards = match.player.life.middle.filter(Boolean).length + Number(Boolean(match.player.life.main));
+  const reward = match.collectionOnly ? { total:0, base:0, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:false, remainingLifeCards, turnsElapsed:match.turn, battleDestroyedCards:match.battleDestroyedCards||0 } : null;
   document.getElementById('result-title').textContent = 'Battle abandoned';
   document.getElementById('result-copy').textContent = 'You gave up. Choose Play Again to start a fresh battle.';
   renderBattleRewards(reward);
@@ -1739,6 +1893,7 @@ let pendingRedirectAttack = null;
 function requestPlayerAttack(target) {
   const sourceIndex = match.attackerLane;
   if (sourceIndex === null) return;
+  if (match.tutorialMode && !tutorialCanAttack(match.player.lanes[sourceIndex],sourceIndex,target)) { tutorialWrongAction('Choose the highlighted target in the lane named in the message.'); return; }
   const intercepted = resolveAttackTarget(match.opponent, target, sourceIndex);
   if (!intercepted.redirected) { launchPlayerAttack(target); return; }
   const shield = match.opponent.lanes[intercepted.index];
@@ -1763,6 +1918,7 @@ document.getElementById('redirect-cancel').addEventListener('click', cancelRedir
 document.getElementById('redirect-cancel-action').addEventListener('click', cancelRedirect);
 function selectAttackerFromClick(index) {
   const card = match.player?.lanes[index];
+  if (match.tutorialMode && ![2,3,4,7,9,14,15,16].includes(tutorialLessonIndex)) { tutorialWrongAction('Wait for the tutorial to ask you to attack.'); return false; }
   if (match.active !== 'player' || match.over || !canCardAttack(card) || !canAttackLane(card, index, match.opponent)) return false;
   match.attackMode = true;
   match.attackerLane = index;
@@ -2069,9 +2225,9 @@ document.querySelectorAll('[data-rival-deck]').forEach((button) => button.addEve
 document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEventListener('click', () => {
   selectedBattleMode = button.dataset.battleMode;
   document.querySelectorAll('[data-battle-mode]').forEach((option) => { const selected = option === button; option.classList.toggle('selected', selected); option.setAttribute('aria-pressed', String(selected)); });
-  document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'collection');
+  document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode !== 'standard'); document.getElementById('rival-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'tutorial'); document.getElementById('start-battle').innerHTML = selectedBattleMode === 'tutorial' ? 'START TUTORIAL FIGHT <span>→</span>' : 'START BATTLE <span>→</span>';
 }));
-document.getElementById('start-battle').addEventListener('click', () => { document.getElementById('deck-select-dialog').close(); beginMatch(selectedPlayerDeck, selectedRivalDeck, selectedBattleMode === 'collection'); });
+document.getElementById('start-battle').addEventListener('click', () => { document.getElementById('deck-select-dialog').close(); if (selectedBattleMode === 'tutorial') beginMatch('academy', 'wild-west', false, true); else beginMatch(selectedPlayerDeck, selectedRivalDeck, selectedBattleMode === 'collection'); });
 document.getElementById('deck-select-dialog').addEventListener('cancel', (event) => event.preventDefault());
 document.getElementById('restart').addEventListener('click', () => { document.getElementById('result-dialog').close(); showDeckSelect(); });
 function applyGameTerminology(root = document.body) {

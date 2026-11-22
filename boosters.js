@@ -4,10 +4,10 @@
   const DUPLICATE_DIAMONDS = { Common: 1, Uncommon: 1, Rare: 1, 'Super Rare': 2, 'Ultra Rare': 3 };
   const BUNDLE_PACK_COUNT = 3;
   const DECKS = [
-    { id: 'wild-west', name: 'Wild West', logo: 'assets/deck-logos/wild-west.png', pack: 'assets/booster-packs/wild-west-booster-pack-cutout.png' },
-    { id: 'island-paradise', name: 'Island Paradise', logo: 'assets/deck-logos/island-paradise.png', pack: 'assets/booster-packs/island-paradise-coyote-chase-booster-pack-cutout.png' },
-    { id: 'living-toy', name: 'Living Toy', logo: 'assets/deck-logos/living-toy.png', pack: 'assets/booster-packs/living-toy-dollmaster-fritz-booster-pack-cutout.png' },
-    { id: 'winter-ball', name: 'Winter Ball', logo: 'assets/deck-logos/winter-ball.png', pack: 'assets/booster-packs/winter-ball-topaz-diamond-dimitri-booster-pack-cutout.png' },
+    { id: 'wild-west', name: 'Wild West', logo: 'assets/deck-logos/wild-west.webp', pack: 'assets/booster-packs/wild-west-booster-pack-cutout.webp' },
+    { id: 'island-paradise', name: 'Island Paradise', logo: 'assets/deck-logos/island-paradise.webp', pack: 'assets/booster-packs/island-paradise-coyote-chase-booster-pack-cutout.webp' },
+    { id: 'living-toy', name: 'Living Toy', logo: 'assets/deck-logos/living-toy.webp', pack: 'assets/booster-packs/living-toy-dollmaster-fritz-booster-pack-cutout.webp' },
+    { id: 'winter-ball', name: 'Winter Ball', logo: 'assets/deck-logos/winter-ball.webp', pack: 'assets/booster-packs/winter-ball-topaz-diamond-dimitri-booster-pack-cutout.webp' },
   ];
   const STORAGE_KEY = 'peppermint-battle-collection-v1';
   const cardsByDeck = buildBoosterCatalog();
@@ -98,7 +98,7 @@
       if (!next) break;
       deckList.push(next.id); counts.set(next.id, (counts.get(next.id) || 0) + 1);
     }
-    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, ascendanceDeck: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'], deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList], ascendance: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {} };
+    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, ascendanceDeck: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'], deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList], ascendance: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {}, tutorialRewardClaimed: false };
   }
   function collectionCards() {
     const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
@@ -129,7 +129,7 @@
     if (!slots.length) slots.push({ id: 'deck-1', name: 'Academy Starter', cards: oldDeck, ascendance: ownedAscendance });
     const activeDeckId = slots.some((slot) => slot.id === save.activeDeckId) ? save.activeDeckId : slots[0].id;
     const active = slots.find((slot) => slot.id === activeDeckId);
-    return { version: 2, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards, deckList: [...active.cards], ascendanceDeck: [...active.ascendance], deckSlots: slots, activeDeckId, displays: save.displays && typeof save.displays === 'object' ? save.displays : {}, unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {}, defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {} };
+    return { version: 2, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards, deckList: [...active.cards], ascendanceDeck: [...active.ascendance], deckSlots: slots, activeDeckId, displays: save.displays && typeof save.displays === 'object' ? save.displays : {}, unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {}, defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {}, tutorialRewardClaimed: Boolean(save.tutorialRewardClaimed) };
   }  function loadLocalSave() {
     try { const saved = localStorage.getItem(STORAGE_KEY); const normalized = saved ? normalizeSave(JSON.parse(saved)) : freshSave(); localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)); return normalized; }
     catch { return freshSave(); }
@@ -156,7 +156,7 @@
       displays[deckId] = { ...localStock, ...cloudStock };
       for (const [cardId, count] of Object.entries(localStock)) if (Number.isFinite(cloudStock[cardId])) displays[deckId][cardId] = Math.min(count, cloudStock[cardId]);
     }
-    return normalizeSave({ ...cloud, cards, deckSlots: deckSlots.slice(0, 20), displays, unlockedBoosters: { ...local.unlockedBoosters, ...cloud.unlockedBoosters }, defeatedDecks: { ...local.defeatedDecks, ...cloud.defeatedDecks } });
+    return normalizeSave({ ...cloud, cards, deckSlots: deckSlots.slice(0, 20), displays, unlockedBoosters: { ...local.unlockedBoosters, ...cloud.unlockedBoosters }, defeatedDecks: { ...local.defeatedDecks, ...cloud.defeatedDecks }, tutorialRewardClaimed: local.tutorialRewardClaimed || cloud.tutorialRewardClaimed });
   }
   function storeSave() {
     const activeSlot = player.deckSlots?.find((slot) => slot.id === player.activeDeckId);
@@ -199,7 +199,7 @@
     const cards = [...cardsByDeck[activeDeck]].sort((a, b) => rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity) || (a.title + ' ' + a.name).localeCompare(b.title + ' ' + b.name));
     const left = remainingCards(activeDeck);
     const guaranteedReady = left >= 30 && (rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare') > 0);
-    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">CARD SHOP · BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div>${cardReviewButton(card)}</article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.png" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
+    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">CARD SHOP · BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${card.name}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div>${cardReviewButton(card)}</article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
     document.getElementById('buy-one')?.addEventListener('click', () => openPack(false));
     document.getElementById('buy-ten')?.addEventListener('click', () => openPack(true));
   }
@@ -218,7 +218,7 @@
     const count = items.filter((item) => item.converted).length;
     const rarityOrder = Object.keys(DISPLAY_SIZE);
     const sorted = [...items].sort((a, b) => rarityOrder.indexOf(b.card.rarity) - rarityOrder.indexOf(a.card.rarity));
-    document.getElementById('booster-results').innerHTML = `<div class="booster-results-heading"><div><span class="eyebrow">${title}</span><h3>${items.length} cards revealed</h3></div><span>${count} duplicates converted</span></div><div class="booster-pulls">${sorted.map((item, index) => `<article class="booster-pull ${item.converted ? 'converted' : ''} ${item.wasNew ? 'newly-collected' : ''}" ${cardPreviewAttrs(item.card)} style="--reveal-delay:${Math.min(index, 24) * 35}ms">${item.wasNew ? '<span class="booster-new-badge">NEW</span>' : ''}<img class="${item.converted ? 'duplicate-art' : ''}" src="${item.converted ? 'assets/ui-icons/diamond-currency.png' : item.card.art.split('?')[0]}" alt="${item.converted ? 'Diamond currency' : ''}" loading="lazy"/><div class="booster-pull-info"><small class="${rarityClass(item.card.rarity)}">${item.card.rarity} · ${item.card.title}</small><strong>${item.card.name}</strong><span>${item.converted ? `Duplicate · +${item.reward}` : `Collected · ${item.count} / ${item.limit}`}</span></div>${cardReviewButton(item.card)}</article>`).join('')}</div>`;
+    document.getElementById('booster-results').innerHTML = `<div class="booster-results-heading"><div><span class="eyebrow">${title}</span><h3>${items.length} cards revealed</h3></div><span>${count} duplicates converted</span></div><div class="booster-pulls">${sorted.map((item, index) => `<article class="booster-pull ${item.converted ? 'converted' : ''} ${item.wasNew ? 'newly-collected' : ''}" ${cardPreviewAttrs(item.card)} style="--reveal-delay:${Math.min(index, 24) * 35}ms">${item.wasNew ? '<span class="booster-new-badge">NEW</span>' : ''}<img class="${item.converted ? 'duplicate-art' : ''}" src="${item.converted ? 'assets/ui-icons/diamond-currency.webp' : item.card.art.split('?')[0]}" alt="${item.converted ? 'Diamond currency' : ''}" loading="lazy"/><div class="booster-pull-info"><small class="${rarityClass(item.card.rarity)}">${item.card.rarity} · ${item.card.title}</small><strong>${item.card.name}</strong><span>${item.converted ? `Duplicate · +${item.reward}` : `Collected · ${item.count} / ${item.limit}`}</span></div>${cardReviewButton(item.card)}</article>`).join('')}</div>`;
     document.getElementById('booster-results').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   function appendRevealCard(item) {
@@ -360,6 +360,7 @@
       }
       player.deckList = next; storeSave(); renderDeckEditor(); return true;
     },
+    claimTutorialReward() { if (player.tutorialRewardClaimed) return { total:0, base:0, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; player.tutorialRewardClaimed=true; player.diamonds+=100; storeSave(); render(); return { total:100, base:100, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; },
     awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
       const base = won ? 20 : 10;
       const gem = Math.max(0, Math.floor(Number(avatarGemUses) || 0)) * 20;
