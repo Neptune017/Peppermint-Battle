@@ -270,9 +270,9 @@ body::after{background:radial-gradient(ellipse at 50% 38%,transparent 8%,#0b1023
 .lane-label{color:#d8caff;text-shadow:0 1px 5px #080610}
 .world-status,.hand-panel,.history-panel,.side-rail>.deck-stack,.side-rail>.discard-count{backdrop-filter:blur(10px);box-shadow:0 12px 30px #07101855}
 body[data-field-theme="academy-grounds"]::before{background-image:linear-gradient(180deg,#11132338,#121b2c55 50%,#0b1320bd),url("assets/backgrounds/academy-grounds-motion-v3.gif")}
-body[data-field-theme="ip-field"]::before{background-image:linear-gradient(180deg,#102f4a38,#0d263566 56%,#06131faa),url("assets/backgrounds/island-paradise-motion-v3.gif");filter:saturate(1.12)}
-body[data-field-theme="toy-store"]::before{background-image:linear-gradient(180deg,#30214c40,#25203966 56%,#10111dbb),url("assets/backgrounds/toy-store-motion-v3.gif");filter:saturate(1.13)}
-body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient(180deg,#1d234238,#12223562 56%,#10121dbb),url("assets/backgrounds/christmas-mall-motion-v3.gif");filter:saturate(1.1)}
+body[data-field-theme="ip-field"]::before{background-image:linear-gradient(180deg,#102f4a38,#0d263566 56%,#06131faa),url("assets/backgrounds/island-paradise-shore-motion.gif?v=20261122-water-only");filter:saturate(1.12)}
+body[data-field-theme="toy-store"]::before{background-image:linear-gradient(180deg,#30214c40,#25203966 56%,#10111dbb),url("assets/backgrounds/toy-store-light-flicker.gif");filter:saturate(1.13)}
+body[data-field-theme="christmas-mall"]::before{background-image:linear-gradient(180deg,#1d234238,#12223562 56%,#10121dbb),url("assets/backgrounds/christmas-mall-light-flicker.gif");filter:saturate(1.1)}
 body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(180deg,#351c1733,#321d1b55 56%,#1b1110bb),url("assets/backgrounds/cactus-creek-motion-v3.gif");filter:saturate(1.08)}
 @media(max-width:780px){body::before{background-position:center;background-attachment:scroll}.app-shell{background:linear-gradient(180deg,#15142635,#0c1420a0)}}
 @media(max-width:520px){body::before{background-position:center;background-size:auto 100svh,auto 100svh,auto 100svh}.app-shell{background:#0c142055}}
@@ -425,3 +425,6 @@ body[data-field-theme="cactus-creek"]::before{background-image:linear-gradient(1
 
 
 @media(max-width:520px){.field-zone{min-height:58px;padding-bottom:25px}.field-zone>*:not(.field-zone-art).field-zone-action{position:absolute;left:7px;bottom:4px;margin-left:0;padding:3px 7px;font-size:7px;z-index:3}}
+
+body[data-field-theme=grass-plain]::before{background-image:linear-gradient(180deg,#11132338,#121b2c55 50%,#0b1320bd),url(assets/backgrounds/grass-plain-motion.gif)}
+@media(max-width:520px){.hand-card .card-ability-trigger,.battle-card .card-ability-trigger{left:3px!important;right:auto!important}}
