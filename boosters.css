@@ -126,3 +126,14 @@
 .tooltip-name{color:#fff!important}
 
 .editor-deck-control.editor-deck-delete{border-color:#ff6b756b;background:#50272f;color:#ffe1e3}.editor-deck-control.editor-deck-delete:hover:not(:disabled){border-color:#ff7d86;background:#71313a;filter:brightness(1.1)}.editor-deck-control.editor-deck-delete:disabled{opacity:.4;cursor:not-allowed}
+
+/* Make the booster selector reliably swipeable on touch screens. */
+.booster-deck-tabs{min-width:0;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-x;overscroll-behavior-x:contain;scrollbar-width:thin;scroll-snap-type:x proximity}
+.booster-deck-tab{scroll-snap-align:center;touch-action:pan-x}
+.booster-pack-art{display:grid;justify-items:center;gap:5px;flex:0 0 auto}
+.booster-pack-art>img{display:block;width:88px;height:86px;object-fit:contain}
+.booster-pack-navigation{display:flex;align-items:center;justify-content:center;gap:8px}
+.booster-pack-navigation button{display:grid;place-items:center;width:32px;height:30px;padding:0;border:1px solid #e6c87875;border-radius:8px;background:linear-gradient(135deg,#3a2b3b,#242230);color:#fff0c6;font-size:22px;line-height:1;cursor:pointer;touch-action:manipulation}
+.booster-pack-navigation button:hover{border-color:#ffe49a;background:#48384a}
+.booster-pack-navigation span{min-width:35px;color:#c9c0d2;text-align:center;font:8px 'DM Mono',monospace}
+@media(max-width:520px){.booster-deck-tabs{padding:12px 2px 8px;scrollbar-width:none}.booster-deck-tabs::-webkit-scrollbar{display:none}.booster-pack-art>img{width:58px;height:58px}.booster-pack-navigation{gap:5px}.booster-pack-navigation button{width:34px;height:32px;font-size:23px}}

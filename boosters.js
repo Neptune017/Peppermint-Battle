@@ -188,20 +188,26 @@
   function setMessage(text, kind = '') { const el = document.getElementById('booster-message'); el.textContent = text || ''; el.dataset.kind = kind; }
   function renderWallet() { document.getElementById('diamond-total').textContent = player.diamonds.toLocaleString(); }
   function renderDeckTabs() {
-    document.getElementById('booster-deck-tabs').innerHTML = DECKS.map((deck) => { const unlocked = isUnlocked(deck.id); return `<button class="booster-deck-tab ${deck.id === activeDeck ? 'selected' : ''} ${unlocked ? '' : 'locked'}" data-booster-deck="${deck.id}" aria-pressed="${deck.id === activeDeck}" ${unlocked ? '' : 'aria-label="${deck.name} booster locked; beat this deck in Standard"'}><img src="${deck.logo}" alt=""/><span>${unlocked ? deck.name : `🔒 ${deck.name}`}</span></button>`; }).join('');
+    const tabs = document.getElementById('booster-deck-tabs');
+    tabs.innerHTML = DECKS.map((deck) => { const unlocked = isUnlocked(deck.id); return `<button class="booster-deck-tab ${deck.id === activeDeck ? 'selected' : ''} ${unlocked ? '' : 'locked'}" data-booster-deck="${deck.id}" aria-pressed="${deck.id === activeDeck}" ${unlocked ? '' : 'aria-label="${deck.name} booster locked; beat this deck in Standard"'}><img src="${deck.logo}" alt=""/><span>${unlocked ? deck.name : `🔒 ${deck.name}`}</span></button>`; }).join('');
+    requestAnimationFrame(() => {
+      const selected = tabs.querySelector('.booster-deck-tab.selected');
+      if (selected) tabs.scrollTo({ left: selected.offsetLeft - (tabs.clientWidth - selected.offsetWidth) / 2, behavior: 'smooth' });
+    });
   }
+  function packNavigation() { return `<div class="booster-pack-navigation" aria-label="Booster navigation"><button type="button" data-booster-step="-1" aria-label="Previous booster">‹</button><span>${DECKS.findIndex((deck) => deck.id === activeDeck) + 1} / ${DECKS.length}</span><button type="button" data-booster-step="1" aria-label="Next booster">›</button></div>`; }
   function rarityClass(rarity) { return `rarity-${rarity.toLowerCase().replaceAll(' ', '-')}`; }
   function renderDisplay() {
     const deck = getDeck();
     if (!isUnlocked(activeDeck)) {
-      document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">BOOSTER LOCKED</span><h3>${deck.name}</h3><p>Defeat the ${deck.name} deck in Standard to unlock this display.</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div>`;
+      document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">BOOSTER LOCKED</span><h3>${deck.name}</h3><p>Defeat the ${deck.name} deck in Standard to unlock this display.</p></div><div class="booster-pack-art"><img src="${deck.pack}" alt="${deck.name} booster pack"/>${packNavigation()}</div></div>`;
       return;
     }
     const rarityOrder = Object.keys(DISPLAY_SIZE);
     const cards = [...cardsByDeck[activeDeck]].sort((a, b) => rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity) || (a.title + ' ' + a.name).localeCompare(b.title + ' ' + b.name));
     const left = remainingCards(activeDeck);
     const guaranteedReady = left >= 30 && (rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare') > 0);
-    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">CARD SHOP · BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><img src="${deck.pack}" alt="${deck.name} booster pack"/></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${displayedCardName(card)}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div>${cardReviewButton(card)}</article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
+    document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div><span class="eyebrow">CARD SHOP · BOOSTER DISPLAY</span><h3>${deck.name}</h3><p>10 cards per pack · ${left.toLocaleString()} cards remain in this display</p></div><div class="booster-pack-art"><img src="${deck.pack}" alt="${deck.name} booster pack"/>${packNavigation()}</div></div><div class="display-card-grid">${cards.map((card) => { const stock = getStock(activeDeck, card); const owned = collectionCount(card) >= collectionLimit(card); const exhausted = stock <= 0 || owned; return `<article class="display-card ${exhausted ? 'display-card-empty' : ''}" ${cardPreviewAttrs(card)} title="${exhausted ? 'All available copies collected' : `${stock} copies remain in this display`}"><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small class="${rarityClass(card.rarity)}">${card.rarity} · ${card.title}</small><strong>${displayedCardName(card)}</strong><span>${stock} left${owned ? ' · collected' : ''}</span></div>${cardReviewButton(card)}</article>`; }).join('')}</div><div class="booster-buy-row"><button class="booster-buy" id="buy-one" ${opening || player.diamonds < 50 || left < 10 ? 'disabled' : ''}>OPEN 1 PACK <span>50 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/></span></button><button class="booster-buy booster-buy-guaranteed" id="buy-ten" ${opening || player.diamonds < 150 || !guaranteedReady ? 'disabled' : ''}>OPEN 3 PACKS <span>150 <img class="inline-diamond-icon" src="assets/ui-icons/diamond-currency.webp" alt="Diamonds"/> · GUARANTEED SUPER RARE+</span></button></div>${left < 10 ? '<p class="display-empty">This display is empty.</p>' : ''}`;
     document.getElementById('buy-one')?.addEventListener('click', () => openPack(false));
     document.getElementById('buy-ten')?.addEventListener('click', () => openPack(true));
   }
@@ -467,6 +473,12 @@
     const tab = event.target.closest('[data-booster-deck]'); if (!tab) return;
     if (!isUnlocked(tab.dataset.boosterDeck)) { setMessage(`Defeat the ${getDeck(tab.dataset.boosterDeck).name} deck in Standard to unlock this booster.`, 'error'); return; }
     activeDeck = tab.dataset.boosterDeck; document.getElementById('booster-results').replaceChildren(); setMessage('', ''); render();
+  });
+  document.getElementById('booster-display').addEventListener('click', (event) => {
+    const control = event.target.closest('[data-booster-step]'); if (!control) return;
+    const currentIndex = DECKS.findIndex((deck) => deck.id === activeDeck);
+    activeDeck = DECKS[(currentIndex + Number(control.dataset.boosterStep) + DECKS.length) % DECKS.length].id;
+    document.getElementById('booster-results').replaceChildren(); setMessage('', ''); render();
   });
   document.getElementById('open-collection').addEventListener('click', () => { renderCollection(); document.getElementById('collection-dialog').showModal(); });
   document.getElementById('close-collection').addEventListener('click', () => document.getElementById('collection-dialog').close());
