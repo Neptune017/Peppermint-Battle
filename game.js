@@ -473,7 +473,7 @@ function cardMarkup(card, enemy = false, compact = false) {
     const filename = cleanArt.split('/').pop();
     const naturalArtClass = { 'ww-hopkin': 'natural-art-hopkin', 'ww-blake': 'natural-art-blake', 'ww-purrnip': 'natural-art-purrnip' }[card.id];
     if (naturalArtClass) return `<img class="card-art ${naturalArtClass}${handArtClass}" src="${cleanArt}?v=20261122-natural-card-art" alt="${card.name}" />`;
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261121-purrnip-blake-crops`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261123-mobile-card-crops`;
     const size = compact ? 'battle' : 'hand';
     return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" data-original-art="${escapeHTML(cleanArt)}" onerror="this.onerror=null;this.src=this.dataset.originalArt" alt="${card.name}" /></picture>`;
   })() : `<div class="card-art-fallback">${card.name}</div>`;
