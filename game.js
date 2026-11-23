@@ -30,12 +30,15 @@ const cardLibrary = [
   { id: 'zodiac-guardian-rick', title: 'Zodiac Guardian', name: 'Rick', type: 'Transformation', cost: 0, attack: 6, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacGuardianRick.webp', ability: '+1 attack for each Terra card in your Pandemonium Zone.' },
   { id: 'zodiac-guardian-kage', title: 'Zodiac Guardian', name: 'Kage', type: 'Transformation', cost: 0, attack: 5, element: 'Dark', role: 'Blader', art: 'assets/cards/ZodiacGuardianKage.webp', ability: '+1 attack for each Dark card in your Pandemonium Zone.' },
   { id: 'zodiac-guardian-ryota', title: 'Zodiac Guardian', name: 'Ryota', type: 'Transformation', cost: 0, attack: 5, element: 'Solar', role: 'Shooter', art: 'assets/cards/ZodiacGuardianRyota.webp', ability: 'Discard a card to destroy an opposing fighter in a Solar explosion.' },
-  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.webp', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace Egg with a Zodiac creature from your deck matching that fighter’s element.' },
+  { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.webp', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace it with a Zodiac creature from your deck or hand whose ability description mentions that fighter’s name.' },
 ];
 const wildWestLibrary = [
   { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.webp', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty fighter zone on both fields.' },
   { id: 'ww-wade', title: 'Wild West', name: 'Wade', cost: 5, attack: 4, element: 'Terra', role: 'Shooter', art: 'assets/cards/WildWestWade.webp', ability: '+2 attack for each empty enemy fighter zone.' },
-  { id: 'ww-brian', title: 'Wild West', name: 'Brian', cost: 4, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/WildWestBrian.webp', ability: 'On summon, return an enemy fighter to its hand.' },
+  { id: 'ww-brian', title: 'Wild West', name: 'Brian', cost: 4, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/WildWestBrian.png', ability: 'On summon, return an enemy fighter to its hand.' },
+  { id: 'ww-academy-brian', title: 'Academy', name: 'Brian', type: 'Fighter', maxCopies: 1, cost: 3, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/AcademyBrian.webp', ability: 'On summon, search your deck for an Academy Rick or Academy Lynda card and add it to your hand.' },
+  { id: 'ww-zodiac-guardian-brian', title: 'Zodiac Guardian', name: 'Brian', type: 'Transformation', cost: 0, attack: 5, element: 'Terra', role: 'Brawler', art: 'assets/cards/ZodiacGuardianBrian.webp', ability: 'Gains +1 attack for each Terra card on your field or in your hand.' },
+  { id: 'ww-zodiac-muddy-pig', title: 'Zodiac', name: 'Muddy Pig', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Terra', role: 'Brawler', art: 'assets/cards/ZodiacMuddyPig.webp', ability: 'If Brian is on the field, draw an Avatar Gem card from your deck.' },
   { id: 'ww-blake', title: 'Wild West', name: 'Blake', cost: 3, attack: 3, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestBlake.webp', ability: 'Activate on the field: return Blake and the opposing fighter in its lane to their owners’ hands.' },
   { id: 'ww-fritz', title: 'Wild West', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Trickster', art: 'assets/cards/WIldWestFritz.webp', ability: 'On summon, return an Eggscythe from your Pandemonium Zone to your hand.' },
   { id: 'ww-academy-rick', title: 'Academy', name: 'Rick', cost: 4, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/AcademyRick.webp', ability: 'Cannot be destroyed or returned by card effects, except Avatar Gem or Locker Room.' },
@@ -72,6 +75,9 @@ const islandParadiseLibrary = [
   { id: 'ip-sabrina', title: 'Island Paradise', name: 'Sabrina', cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/IslandParadiseSabrina.webp', ability: 'Gains 1 attack for each adjacent Brawler.' },
   { id: 'ip-coyote', title: 'Island Paradise', name: 'Coyote', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.webp', ability: 'Can make 2 attacks each turn, except the turn it is summoned.' },
   { id: 'ip-chase', title: 'Island Paradise', name: 'Chase', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseChase.webp', ability: 'Each turn, give 1 attack to an adjacent Brawler. Choose one if there are several.' },
+  { id: 'ip-academy-chase', title: 'Academy', name: 'Chase', type: 'Fighter', maxCopies: 1, cost: 3, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/AcademyChase.webp', ability: 'Adjacent Aqua cards get +1 attack.' },
+  { id: 'ip-zodiac-aqua-kentaur', title: 'Zodiac', name: 'Aqua Kentaur', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Aqua', role: 'Shooter', art: 'assets/cards/ZodiacAquaKentaur.webp', ability: 'If Chase is on the field, draw an Avatar Gem card from your deck.' },
+  { id: 'ip-zodiac-psycho-chicken', title: 'Zodiac', name: 'Psycho Chicken', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Mind', role: 'Shooter', art: 'assets/cards/ZodiacPsychoChicken.webp', ability: 'If Coyote is on the field, draw an Avatar Gem card from your deck.' },
   { ...cardLibrary.find((card) => card.id === 'academy-coyote') },
   { id: 'ip-banaphin', title: 'Island Paradise', name: 'Banaphin', type: 'Creature', cost: 1, attack: 1, element: 'Aqua', role: 'Enchanter', art: 'assets/cards/IslandParadiseBanaphin.webp', ability: 'When destroyed, draw an Island Paradise Creature.' },
   { id: 'ip-kokocrab', title: 'Island Paradise', name: 'Kokocrab', type: 'Creature', cost: 1, attack: 2, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseKokocrab.webp', ability: 'Loses 1 attack while facing a Brawler.' },
@@ -132,6 +138,7 @@ const winterBallLibrary = [
   { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.webp', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
   { id: 'wb-zodiac-topaz', title: 'Zodiac Guardian', name: 'Topaz', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacGuardianTopaz.webp', ability: 'Gains +1 attack for each Aer card on the field or in your hand.' },
   { id: 'wb-zodiac-dimitri', title: 'Zodiac Guardian', name: 'Dimitri', type: 'Transformation', cost: 0, attack: 5, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacGuardianDimitri.webp', ability: 'Gains +1 attack for each Glacial card on the field or in your hand.' },
+  { id: 'wb-zodiac-cloud-goat', title: 'Zodiac', name: 'Cloud Goat', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacCloudGoat.webp', ability: 'If Topaz is on the field, draw an Avatar Gem card from your deck.' },
   { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 1, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'mana-potion'), deckCopies: 1 },
@@ -143,7 +150,7 @@ const winterBallLibrary = [
 const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', fun: 'Fun Deck', collection: 'My Collection' };
 function allCardCatalog() { return [...new Map([...cardLibrary, ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary].map((card) => [card.id, card])).values()]; }
 function transformationsForDeck(deckId) {
-  const ids = { academy:['zodiac-guardian-kage','zodiac-guardian-ryota'], 'wild-west':['zodiac-guardian-rick'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'], fun:allCardCatalog().filter((card) => card.type === 'Transformation').map((card) => card.id) }[deckId] || [];
+  const ids = { academy:['zodiac-guardian-kage','zodiac-guardian-ryota'], 'wild-west':['zodiac-guardian-rick','ww-zodiac-guardian-brian'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'], fun:allCardCatalog().filter((card) => card.type === 'Transformation').map((card) => card.id) }[deckId] || [];
   return allCardCatalog().filter((card) => card.type === 'Transformation' && ids.includes(card.id));
 }
 let selectedPlayerDeck = 'academy';
@@ -543,6 +550,8 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
   if (card.id === 'lt-zodiac-fritz') { const bonus = owner.destroyed.filter((unit) => ['Fighter', 'Creature'].includes(unit.type || 'Fighter') && unit.element === 'Dark').length; if (bonus) { attack += bonus; reasons.push(`Dark cards in Pandemonium Zone +${bonus}`); addModifier(bonus, card.name); } }
   if (card.role === 'Brawler' && adjacent.some((n) => !owner.lanes[n])) { attack++; reasons.push('Brawler +1'); addModifier(1, card.name); }
   if (card.id === 'ip-sabrina') { const bonus = adjacent.filter((n) => owner.lanes[n]?.role === 'Brawler').length; if (bonus) { attack += bonus; reasons.push(`Adjacent Brawlers +${bonus}`); addModifier(bonus, card.name); } }
+  if (card.id === 'ww-zodiac-guardian-brian') { const bonus=[...owner.hand,...owner.lanes.filter(Boolean)].filter((unit)=>unit.element==='Terra').length;if(bonus){attack+=bonus;reasons.push(`Terra cards on field or in hand +${bonus}`);addModifier(bonus,card.name);} }
+  if (card.id === 'ip-academy-chase') { const bonus=adjacent.filter((n)=>owner.lanes[n]?.element==='Aqua').length;if(bonus){attack+=bonus;reasons.push(`Adjacent Aqua cards +${bonus}`);addModifier(bonus,card.name);} }
   if (owner.life.familiars?.some((familiar) => familiar?.attachedTo === card.instance)) { attack++; reasons.push('Familiar +1'); addModifier(1, owner.life.familiars.find((familiar) => familiar?.attachedTo === card.instance)?.name || 'Familiar'); }
   const enchanters = adjacent.map((n) => owner.lanes[n]).filter((unit) => unit?.role === 'Enchanter');
   const enchanterAuras = enchanters.length;
@@ -1298,7 +1307,7 @@ function triggerOnSummon(card, owner, laneIndex) {
   match.eventActor = owner; match.eventSource = card.name;
   logBattleEvent(`${battleSideName(owner)} summoned ${card.name}.`, owner === match.player ? 'player' : 'enemy');
   const fxKeys = { aemi:'aemi',runny:'runny',berry:'berry',frosty:'frosty',den:'den',ryota:'ryota',gummy:'gummy',dharma:'healer','zodiac-guardian-ryota':'ryota','academy-fritz':'summoner','ww-academy-fritz':'summoner','academy-lynda':'trickster','ww-academy-lynda':'trickster','lt-fritz':'summoner','lt-raterrot':'summoner','lt-boxy':'enchanter','lt-clapster':'shooter','lt-scribble':'summoner','lt-melodoll':'healer','vishnu':'shooter' };
-  if (['aemi','runny','berry','frosty','den','ryota','gummy','brewy','dharma','zodiac-guardian-ryota','academy-fritz','ww-academy-fritz','academy-lynda','ww-academy-lynda','ww-brian','ww-fritz','ww-wild-ox','ww-bandito','ww-sangrizo','ip-natsuki','ip-pinebeak','lt-scribble','lt-fritz','lt-raterrot','lt-boxy','lt-teddy','lt-broomy','lt-melodoll','lt-clapster','vishnu'].includes(card.id)) logBattleEvent(`${battleSideName(owner)} activated ${card.name}'s effect.`, owner === match.player ? 'player' : 'enemy');
+  if (['aemi','runny','berry','frosty','den','ryota','gummy','brewy','dharma','zodiac-guardian-ryota','academy-fritz','ww-academy-fritz','academy-lynda','ww-academy-lynda','ww-brian','ww-academy-brian','ww-zodiac-muddy-pig','ip-zodiac-aqua-kentaur','ip-zodiac-psycho-chicken','wb-zodiac-cloud-goat','ww-fritz','ww-wild-ox','ww-bandito','ww-sangrizo','ip-natsuki','ip-pinebeak','lt-scribble','lt-fritz','lt-raterrot','lt-boxy','lt-teddy','lt-broomy','lt-melodoll','lt-clapster','vishnu'].includes(card.id)) logBattleEvent(`${battleSideName(owner)} activated ${card.name}'s effect.`, owner === match.player ? 'player' : 'enemy');
   if (fxKeys[card.id]) playSpecialFx(owner, laneIndex, fxKeys[card.id], `${card.name.toUpperCase()} · ABILITY`, { generatedOnly: true });
   if (card.id === 'wb-bearnardo') {
     const choices = owner.hand.filter((unit) => unit.element === 'Glacial' && unit.cost > 0).map((unit) => ({ value: unit.instance, label: unit.name, detail: `Reduce cost ${unit.cost} → ${unit.cost - 1}` }));
@@ -1318,14 +1327,15 @@ function triggerOnSummon(card, owner, laneIndex) {
     chooseEffect(owner, 'Dimitri: draw an Academy card', 'Choose an Academy card that costs 3 or 4 from your deck.', choices, (index) => { const [drawn] = owner.deck.splice(Number(index), 1); if (drawn) { owner.hand.push(drawn); queueDrawAnimation(owner,drawn); render(); announceEffect(`${drawn.name} drawn by Dimitri.`); } });
   }
   if (card.id === 'zodiac-egg') {
-    const eggIsStillInLane = owner.lanes[laneIndex] === card;
-    const choices = eggIsStillInLane ? owner.lanes.flatMap((unit, lane) => unit && lane !== laneIndex && owner.transformationDeck.some((guardian) => guardian.title === 'Zodiac Guardian' && guardian.name === unit.name) && owner.deck.some((candidate) => candidate.title === 'Zodiac' && candidate.id !== 'zodiac-egg' && candidate.element === unit.element)
-      ? [{ value: lane, label: unit.name, detail: `${unit.element} · Egg becomes a matching Zodiac creature` }] : []) : [];
-    chooseEffect(owner, 'Zodiac Egg · awaken a creature', 'Choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Egg will transform into a Zodiac creature matching that fighter’s element.', choices, (lane) => {
-      const guide = owner.lanes[Number(lane)]; const guardian = owner.transformationDeck.find((item) => item.title === 'Zodiac Guardian' && item.name === guide?.name);
-      const zodiacIndex = owner.deck.findIndex((item) => item.title === 'Zodiac' && item.id !== 'zodiac-egg' && item.element === guide?.element);
-      if (!guide || !guardian || zodiacIndex < 0 || owner.lanes[laneIndex] !== card) return;
-      const [creature] = owner.deck.splice(zodiacIndex, 1); owner.destroyed.push(card); owner.lanes[laneIndex] = creature; creature.ready = false; render(); playSpecialFx(owner, laneIndex, 'avatar-gem', 'ZODIAC EGG · AWAKEN', { generatedOnly: true, silent: true }); animateSummon(owner, laneIndex, creature).then(() => triggerOnSummon(creature, owner, laneIndex)); announceEffect(`Zodiac Egg transformed into ${creature.name}; ${guide.name} remains in play.`);
+    const eggIsStillInLane=owner.lanes[laneIndex]===card;
+    const canFindMatch=(guide)=>[...owner.hand,...owner.deck].some(x=>x.title==='Zodiac'&&x.id!=='zodiac-egg'&&String(x.ability||'').toLowerCase().includes(guide.name.toLowerCase()));
+    const choices=eggIsStillInLane?owner.lanes.flatMap((unit,lane)=>unit&&lane!==laneIndex&&owner.transformationDeck.some(x=>x.title==='Zodiac Guardian'&&x.name===unit.name)&&canFindMatch(unit)?[{value:lane,label:unit.name,detail:'A matching Zodiac creature is available in your deck or hand.'}]:[]):[];
+    chooseEffect(owner,'Zodiac Egg · awaken a creature','Choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Then choose a Zodiac creature whose ability mentions that fighter by name.',choices,(lane)=>{
+      const guide=owner.lanes[Number(lane)],guardian=owner.transformationDeck.find(x=>x.title==='Zodiac Guardian'&&x.name===guide?.name);
+      const matches=[...owner.hand,...owner.deck].filter(x=>x.title==='Zodiac'&&x.id!=='zodiac-egg'&&String(x.ability||'').toLowerCase().includes(guide?.name?.toLowerCase()||'\u0000'));
+      if(!guide||!guardian||!matches.length||owner.lanes[laneIndex]!==card)return;
+      const summon=(instance)=>{const hi=owner.hand.findIndex(x=>x.instance===instance),di=owner.deck.findIndex(x=>x.instance===instance),creature=hi>=0?owner.hand.splice(hi,1)[0]:di>=0?owner.deck.splice(di,1)[0]:null;if(!creature)return;owner.destroyed.push(card);owner.lanes[laneIndex]=creature;creature.ready=false;render();playSpecialFx(owner,laneIndex,'avatar-gem','ZODIAC EGG · AWAKEN',{generatedOnly:true,silent:true});animateSummon(owner,laneIndex,creature).then(()=>triggerOnSummon(creature,owner,laneIndex));announceEffect(`Zodiac Egg transformed into ${creature.name}; ${guide.name} remains in play.`);};
+      if(matches.length===1)summon(matches[0].instance);else chooseEffect(owner,'Zodiac Egg · choose a Zodiac creature','Choose the creature whose ability mentions your fighter.',matches.map(x=>({value:x.instance,label:x.name,detail:String(x.ability).slice(0,110)})),summon);
     });
   }  if (card.id === 'zodiac-swordtiger' && [...match.player.lanes, ...match.opponent.lanes].some((unit) => unit?.name === 'Dimitri')) drawMatching(owner, (unit) => unit.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'dharma') {
@@ -1375,6 +1385,10 @@ function triggerOnSummon(card, owner, laneIndex) {
       });
     });
   }
+  if (card.id === 'ww-academy-brian') {
+    const choices=owner.deck.map((x,i)=>['ww-academy-rick','ww-academy-lynda'].includes(x.id)?{value:i,label:x.name,detail:x.title+' · add to your hand'}:null).filter(Boolean);
+    chooseEffect(owner,'Academy Brian · choose a card','Choose Academy Rick or Academy Lynda from your deck to add to your hand.',choices,(i)=>{const [found]=owner.deck.splice(i,1);if(found){owner.hand.push(found);render();announceEffect('Academy Brian added '+found.name+' to your hand.');}});
+  }
   if (card.id === 'ww-brian') {
     const choices = opponent.lanes.map((unit, i) => unit && !isEffectProtected(unit) ? { value: i, label: unit.name, detail: `Enemy lane ${i + 1}` } : null).filter(Boolean);
     chooseEffect(owner, 'Brian: return an enemy fighter', 'Choose an enemy fighter to return to its hand.', choices, (targetLane) => { if (opponent.lanes[targetLane]) returnFighterToHand(opponent, targetLane); });
@@ -1384,6 +1398,10 @@ function triggerOnSummon(card, owner, laneIndex) {
     chooseEffect(owner, 'Fritz: revive Eggscythe', 'Choose an Eggscythe from your destroyed zone to return to your hand.', choices, (destroyedIndex) => { const [returned] = owner.destroyed.splice(destroyedIndex, 1); owner.hand.push(returned); render(); announceEffect('Eggscythe returned to your hand.'); });
   }
   if (card.id === 'ww-wild-ox' && owner.lanes.some((unit) => unit?.name === 'Rick')) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
+  if (card.id === 'ww-zodiac-muddy-pig' && owner.lanes.some((unit) => unit?.name === 'Brian')) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
+  if (card.id === 'ip-zodiac-aqua-kentaur' && owner.lanes.some((unit) => unit?.name === 'Chase')) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
+  if (card.id === 'ip-zodiac-psycho-chicken' && owner.lanes.some((unit) => unit?.name === 'Coyote')) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
+  if (card.id === 'wb-zodiac-cloud-goat' && owner.lanes.some((unit) => ['Topaz','Topaz & Diamond'].includes(unit?.name))) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'lt-raterrot' && owner.lanes.some((unit) => unit?.name === 'Fritz')) drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'ww-bandito') { card.ready = match.turn > 1; render(); if (card.ready) announceEffect('Bandito can attack immediately.'); }
   if (card.id === 'ww-sangrizo') {

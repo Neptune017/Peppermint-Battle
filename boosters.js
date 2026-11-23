@@ -78,7 +78,7 @@
   }
   function buildBoosterCatalog() {
     function transformationsForDeck(deckId) {
-    const ids = { 'wild-west':['zodiac-guardian-rick'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'] }[deckId] || [];
+    const ids = { 'wild-west':['zodiac-guardian-rick','ww-zodiac-guardian-brian'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'] }[deckId] || [];
     return [...new Map(allCardCatalog().filter((card) => card.type === 'Transformation' && ids.includes(card.id)).map((card) => [card.id, card])).values()];
   }
     return Object.fromEntries(DECKS.map((deck) => {
