@@ -499,9 +499,12 @@ function cardMarkup(card, enemy = false, compact = false) {
     const filename = cleanArt.split('/').pop();
     const naturalArtClass = { 'ww-hopkin': 'natural-art-hopkin', 'ww-blake': 'natural-art-blake', 'ww-purrnip': 'natural-art-purrnip' }[card.id];
     if (naturalArtClass) return `<img class="card-art ${naturalArtClass}${handArtClass}" src="${cleanArt}?v=20261122-natural-card-art" alt="${card.name}" />`;
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261123-mobile-card-crops`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261124-mobile-art-fallback`;
     const size = compact ? 'battle' : 'hand';
-    return `<picture class="card-art-picture"><source media="(max-width: 520px)" srcset="${crop(`${size}-mobile`)}"/><img class="card-art${handArtClass}" src="${crop(size)}" data-original-art="${escapeHTML(cleanArt)}" onerror="this.onerror=null;this.src=this.dataset.originalArt" alt="${card.name}" /></picture>`;
+    const mobileArt = window.matchMedia?.('(max-width: 520px)').matches || false;
+    const mobileCrop = crop(`${size}-mobile`);
+    const desktopCrop = crop(size);
+    return `<img class="card-art${handArtClass}" src="${mobileArt ? mobileCrop : desktopCrop}" data-mobile-art="${mobileArt ? '1' : '0'}" data-desktop-art="${desktopCrop}" data-original-art="${escapeHTML(cleanArt)}" onerror="if(this.dataset.mobileArt==='1'){this.dataset.mobileArt='0';this.src=this.dataset.desktopArt;}else if(this.dataset.originalArt){this.onerror=null;this.src=this.dataset.originalArt;}" alt="${card.name}" />`;
   })() : `<div class="card-art-fallback">${card.name}</div>`;
   const elementIcon = elementIcons[card.element] ? `<img class="element-icon card-element-icon" src="assets/icons/${elementIcons[card.element]}.webp" alt="${escapeHTML(card.element)}" title="${escapeHTML(card.element)}" />` : '';
   const attackValueClass = attackInfo.change > 0 ? 'attack-value-raised' : attackInfo.change < 0 ? 'attack-value-lowered' : '';
