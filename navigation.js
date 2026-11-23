@@ -2,12 +2,22 @@
   const menu = document.getElementById('main-menu-dialog');
   const selection = document.getElementById('deck-select-dialog');
   let returnToMenu = false;
+  let suppressSelectionMenuReturn = false;
 
   function openChild(dialog) {
     returnToMenu = true;
     menu.close();
     dialog.showModal();
   }
+  window.requirePeppermintSignIn = function () {
+    if (window.peppermintCurrentUser) return true;
+    returnToMenu = false;
+    if (selection.open) { suppressSelectionMenuReturn = true; selection.close(); }
+    if (!menu.open) menu.showModal();
+    openChild(document.getElementById('account-dialog'));
+    window.peppermintAccount?.promptSignIn?.();
+    return false;
+  };
   function returnHome(dialog) {
     returnToMenu = false;
     if (dialog.open) dialog.close();
@@ -15,6 +25,7 @@
   }
   function toMenuAfterClose(dialog) {
     dialog.addEventListener('close', () => {
+      if (dialog === selection && suppressSelectionMenuReturn) { suppressSelectionMenuReturn = false; return; }
       if (returnToMenu && !menu.open) {
         returnToMenu = false;
         menu.showModal();
@@ -27,10 +38,12 @@
 
   document.getElementById('menu-battle').addEventListener('click', () => openChild(selection));
   document.getElementById('menu-editor').addEventListener('click', () => {
+    if (!window.requirePeppermintSignIn()) return;
     window.peppermintCollection?.renderDeckEditor();
     openChild(document.getElementById('deck-editor-dialog'));
   });
-  document.getElementById('menu-featured-booster').addEventListener('click', () => { returnToMenu = true; menu.close(); window.peppermintCollection?.openBoosterDisplay('winter-ball'); });   document.getElementById('menu-boosters').addEventListener('click', () => {
+  document.getElementById('menu-featured-booster').addEventListener('click', () => { if (!window.requirePeppermintSignIn()) return; returnToMenu = true; menu.close(); window.peppermintCollection?.openBoosterDisplay('winter-ball'); });   document.getElementById('menu-boosters').addEventListener('click', () => {
+    if (!window.requirePeppermintSignIn()) return;
     window.peppermintCollection?.renderBoosterDisplay();
     openChild(document.getElementById('booster-dialog'));
   });

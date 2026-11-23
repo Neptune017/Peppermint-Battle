@@ -1344,7 +1344,7 @@ function triggerOnSummon(card, owner, laneIndex) {
   if (card.id === 'lt-melodoll') { const choices = owner.destroyed.map((held, i) => held.element === 'Dark' ? { value: i, label: held.name, detail: `${held.title} · Dark` } : null).filter(Boolean); chooseEffect(owner, 'Melodoll: return a Dark card', 'Choose a Dark card in your Pandemonium Zone to return to your hand.', choices, (index) => { const [returned] = owner.destroyed.splice(index, 1); owner.hand.push(returned); render(); announceEffect(`${returned.name} returned to your hand.`); }); }
   if (card.id === 'lt-clapster') { let milled = null; if (owner.deck.length) { [milled] = owner.deck.splice(0, 1); owner.destroyed.push(milled); } if (opponent.hand.length) { const [discarded] = opponent.hand.splice(Math.floor(Math.random() * opponent.hand.length), 1); opponent.destroyed.push(discarded); announceEffect(`Clapster sent a card to the Pandemonium Zone and discarded ${discarded.name} from the enemy’s hand.`); } else announceEffect('Clapster sent the top card of your deck to the Pandemonium Zone; the enemy had no cards to discard.'); render(); if (milled) summonBeatcracker(owner, milled); }
   if (card.id === 'lt-teddy') { const choices = owner.hand.map((held, i) => ({ value: i, label: held.name, detail: `Discard ${held.title} · gain +1 attack` })); chooseEffect(owner, 'Teddy: discard a card', 'Discard a card from your hand to give Teddy +1 attack.', choices, (index) => { const [discarded] = owner.hand.splice(index, 1); owner.destroyed.push(discarded); if (discarded.id !== 'lt-beatcracker') { card.attackBonus = (card.attackBonus || 0) + 1; card.attackBonusModifiers = [...(card.attackBonusModifiers || []), { amount: 1, source: card.name }]; card.attackBonusSources = [...(card.attackBonusSources || []), card.name]; } render(); announceEffect(`Teddy discarded ${discarded.name} and gained 1 attack.`); summonBeatcracker(owner, discarded); }); }
-  if (card.id === 'lt-broomy') { const choices = owner.lanes.map((unit, i) => unit && i !== laneIndex ? { value: i, label: unit.name, detail: `Return to hand · gain ${unit.cost} Mana` } : null).filter(Boolean); chooseEffect(owner, 'Broomy: return a fighter', 'Choose another one of your fighters to return to your hand. Gain Mana equal to its cost.', choices, (index) => { const target = owner.lanes[index]; const gain = target?.cost || 0; if (target) returnFighterToHand(owner, index); match.energy = Math.min(match.turnEnergyCap, match.energy + gain); render(); announceEffect(`Broomy returned a fighter and restored ${gain} Mana.`); }); }
+  if (card.id === 'lt-broomy') { let choices=owner.lanes.map((unit,i)=>unit&&i!==laneIndex?{value:i,label:unit.name,detail:'Return to hand · gain '+unit.cost+' Mana'}:null).filter(Boolean); if(owner.isAI){choices=choices.filter((choice)=>{const target=owner.lanes[choice.value],gain=target?.cost||0;return Boolean(findAiReplacementCard(owner,target,choice.value,Math.min(match.turnEnergyCap,match.energy+gain)));}).sort((a,b)=>aiCardStrength(owner.lanes[a.value])-aiCardStrength(owner.lanes[b.value]));if(!choices.length)return;} chooseEffect(owner,'Broomy: return a fighter','Choose another one of your fighters to return to your hand. Gain Mana equal to its cost.',choices,(index)=>{const target=owner.lanes[index],gain=target?.cost||0;if(target&&!returnFighterToHand(owner,index))return;match.energy=Math.min(match.turnEnergyCap,match.energy+gain);render();announceEffect('Broomy returned a fighter and restored '+gain+' Mana.');if(owner.isAI&&target)summonAiReplacement(owner,index,target);}); }
   if (card.id === 'lt-fritz') { const toyCount = owner.hand.filter((held) => held.title === 'Living Toy').length; const targets = owner.lanes.filter((unit) => unit && unit.cost === 1 && unit.element === 'Dark'); if (!toyCount || !targets.length) announceEffect(`${card.name} found no 1-cost Dark fighters to empower or Living Toy cards in hand.`); else { targets.forEach((target) => { target.attackBonus = (target.attackBonus || 0) + toyCount; target.attackBonusModifiers = [...(target.attackBonusModifiers || []), { amount: toyCount, source: card.name }]; target.attackBonusSources = [...(target.attackBonusSources || []), card.name]; }); render(); announceEffect(`${card.name} gave ${toyCount} attack to each 1-cost Dark fighter.`); } }
   if (card.id === 'runny') {
     const choices = owner.deck.map((candidate, deckIndex) => candidate.title === 'Academy' && candidate.cost <= 4 ? { value: deckIndex, label: candidate.name, detail: `${candidate.cost} energy · ${candidate.element}` } : null).filter(Boolean);
@@ -1352,8 +1352,9 @@ function triggerOnSummon(card, owner, laneIndex) {
   }
   if (card.id === 'frosty' && opponent.lanes[laneIndex]) { opponent.lanes[laneIndex].skipAttackNext = true; announceEffect('Frosty freezes the fighter opposite it for its next turn.'); render(); }
   if (card.id === 'berry') {
-    const options = owner.lanes.map((unit, i) => unit && i !== laneIndex ? { value: i, label: unit.name, detail: `Lane ${i + 1}` } : null).filter(Boolean);
-    chooseEffect(owner, 'Return a fighter', 'Berry can return one of your other fighters to your hand.', options, (targetLane) => returnFighterToHand(owner, targetLane));
+    let options=owner.lanes.map((unit,i)=>unit&&i!==laneIndex?{value:i,label:unit.name,detail:'Lane '+(i+1)}:null).filter(Boolean);
+    if(owner.isAI){options=options.filter((choice)=>Boolean(findAiReplacementCard(owner,owner.lanes[choice.value],choice.value,match.energy))).sort((a,b)=>aiCardStrength(owner.lanes[a.value])-aiCardStrength(owner.lanes[b.value]));if(!options.length)return;}
+    chooseEffect(owner,'Return a fighter','Berry can return one of your other fighters to your hand.',options,(targetLane)=>{const target=owner.lanes[targetLane];if(!target||!returnFighterToHand(owner,targetLane))return;if(owner.isAI)summonAiReplacement(owner,targetLane,target);});
   }
   if (card.id === 'den') {
     const options = owner.lanes.map((unit, i) => unit && !unit.ready ? { value: i, label: unit.name, detail: `Lane ${i + 1}` } : null).filter(Boolean);
@@ -1463,19 +1464,27 @@ function activateIslandTurnEffects(owner) {
     }
   });
 }
+function aiCardStrength(card) { return (card?.attack || 0) + (card?.attackBonus || 0); }
+function findAiReplacementCard(owner, returnedCard, laneIndex, energy = match.energy) {
+  if (!owner?.isAI || !returnedCard || laneIndex < 0 || (owner.lanes[laneIndex] && owner.lanes[laneIndex] !== returnedCard)) return null;
+  const current=owner.lanes[laneIndex]; owner.lanes[laneIndex]=null; let candidates=[];
+  try { candidates=owner.hand.filter((candidate)=>candidate!==returnedCard&&['Fighter','Creature'].includes(candidate.type)&&aiCardStrength(candidate)>aiCardStrength(returnedCard)&&canSummonCard(owner,candidate)&&playCost(owner,candidate)<=energy); candidates.sort((a,b)=>aiCardStrength(b)-aiCardStrength(a)||playCost(owner,a)-playCost(owner,b)); }
+  finally { owner.lanes[laneIndex]=current; }
+  return candidates[0]||null;
+}
+function summonAiReplacement(owner, laneIndex, returnedCard) {
+  const candidate=findAiReplacementCard(owner,returnedCard,laneIndex,match.energy); if(!candidate||owner.lanes[laneIndex])return false;
+  const cost=playCost(owner,candidate), handIndex=owner.hand.indexOf(candidate); if(handIndex<0||cost>match.energy||!canSummonCard(owner,candidate))return false;
+  owner.hand.splice(handIndex,1); match.energy-=cost; candidate.ready=false; owner.lanes[laneIndex]=candidate; render();
+  animateSummon(owner,laneIndex,candidate).then(()=>triggerOnSummon(candidate,owner,laneIndex)); return true;
+}
 function activateZoya(owner, laneIndex) {
-  const zoya = owner.lanes[laneIndex];
-  if (!zoya || zoya.id !== 'zoya' || zoya.abilityUsedTurn === match.turn) return;
-  let candidates = [match.player, match.opponent].flatMap((side) => side.lanes.map((card, index) => card?.title === 'Academy' && !isEffectProtected(card) && !(owner.isAI && side === owner && card.id === 'zoya') ? { value: `${side === match.player ? 'p' : 'o'}:${index}`, label: card.name, detail: `Return from ${side === match.player ? 'your' : 'rival'} lane ${index + 1}` } : null).filter(Boolean));
-  const canPlayAfterReturn = owner.isAI && !owner.lanes.some((card) => !card) && owner.hand.some((card) => card.type !== 'Action' && card.cost <= match.energy);
-  if (canPlayAfterReturn) {
-    const ownTargets = candidates.filter((choice) => choice.value.startsWith('o:')).sort((a, b) => owner.lanes[Number(a.value.split(':')[1])].attack - owner.lanes[Number(b.value.split(':')[1])].attack);
-    if (ownTargets.length) candidates = [ownTargets[0], ...candidates.filter((choice) => choice !== ownTargets[0])];
-  }
-  chooseEffect(owner, 'Zoya: return an Academy card', 'Choose an Academy fighter on either field to return to its owner’s hand.', candidates, (key) => {
-    const [sideKey, position] = key.split(':'); const side = sideKey === 'p' ? match.player : match.opponent; const target = side.lanes[Number(position)];
-    if (target && returnFighterToHand(side, Number(position))) { playSpecialFx(owner, laneIndex, 'zoya', 'RETURN TO HAND'); zoya.abilityUsedTurn = match.turn; render(); }
-  });
+  const zoya=owner.lanes[laneIndex];
+  if(!zoya||zoya.id!=='zoya'||zoya.abilityUsedTurn===match.turn||(owner.isAI&&owner.aiReplacementPlan))return;
+  let candidates=[match.player,match.opponent].flatMap((side)=>side.lanes.map((unit,index)=>unit?.title==='Academy'&&!isEffectProtected(unit)&&!(owner.isAI&&side===owner&&unit.id==='zoya')?{value:(side===match.player?'p':'o')+':'+index,label:unit.name,detail:'Return from '+(side===match.player?'your':'rival')+' lane '+(index+1)}:null).filter(Boolean));
+  const replacementByTarget=new Map();
+  if(owner.isAI){candidates=candidates.filter((choice)=>{const parts=choice.value.split(':'),sideKey=parts[0],lane=Number(parts[1]);if(sideKey!=='o')return false;const replacement=findAiReplacementCard(owner,owner.lanes[lane],lane,match.energy);if(!replacement)return false;replacementByTarget.set(choice.value,replacement);return true;});candidates.sort((a,b)=>aiCardStrength(owner.lanes[Number(a.value.split(':')[1])])-aiCardStrength(owner.lanes[Number(b.value.split(':')[1])]));if(!candidates.length)return;}
+  chooseEffect(owner,'Zoya: return an Academy card','Choose an Academy fighter on either field to return to its owner’s hand.',candidates,(key)=>{const parts=key.split(':'),side=parts[0]==='p'?match.player:match.opponent,position=Number(parts[1]),target=side.lanes[position];if(target&&returnFighterToHand(side,position)){playSpecialFx(owner,laneIndex,'zoya','RETURN TO HAND');zoya.abilityUsedTurn=match.turn;render();if(owner.isAI){const replacement=replacementByTarget.get(key);if(replacement)owner.aiReplacementPlan={lane:position,instance:replacement.instance,strength:aiCardStrength(replacement)};}}});
 }
 function activateSteepod(owner, laneIndex) {
   const card = owner.lanes[laneIndex]; if (!card || card.id !== 'wb-steepod' || card.abilityUsedTurn === match.turn) return;
@@ -1775,7 +1784,7 @@ function rivalTurn() {
   resolveDharmaRevives(match.opponent);
   activateIslandTurnEffects(match.opponent);
   runNpcRepositioning(match.opponent);
-  maybeUseZoya(match.opponent);
+  match.opponent.aiReplacementPlan=null;
   let summoned = null; let summonedLane = -1;
   const toyStore = match.opponent.hand.find((card) => card.id === 'toy-store' && card.cost <= match.energy);
   const islandField = match.opponent.hand.find((card) => card.id === 'ip-field' && card.cost <= match.energy);
@@ -1796,14 +1805,16 @@ function rivalTurn() {
   if (avatarGem) useAvatarGem(match.opponent, avatarGem.instance);
   const medusaIndex = match.opponent.lanes.findIndex((unit) => unit?.id === 'ww-medusa' && unit.abilityUsedTurn !== match.turn);
   if (medusaIndex >= 0 && match.energy >= 1 && match.opponent.deck.length) activateMedusa(match.opponent, medusaIndex);
+  maybeUseZoya(match.opponent);
   const availableEnergy = match.energy;
   const unitPlayable = match.opponent.hand.filter((card) => card.type !== 'Action' && playCost(match.opponent, card) <= availableEnergy && canSummonCard(match.opponent, card)).sort((a, b) => playCost(match.opponent, a) - playCost(match.opponent, b));
   const openLanes = match.opponent.lanes.map((card, lane) => card ? -1 : lane).filter((lane) => lane >= 0);
   if (openLanes.length && unitPlayable.length) {
-    summoned = unitPlayable[unitPlayable.length - 1];
+    const replacementPlan=match.opponent.aiReplacementPlan;
+    if(replacementPlan){const planned=unitPlayable.find((unit)=>unit.instance===replacementPlan.instance&&aiCardStrength(unit)>replacementPlan.strength);if(planned&&openLanes.includes(replacementPlan.lane)){summoned=planned;summonedLane=replacementPlan.lane;}match.opponent.aiReplacementPlan=null;}
+    if(!summoned){summoned=unitPlayable[unitPlayable.length-1];summonedLane=openLanes[Math.floor(Math.random()*openLanes.length)];}
     const handIndex = match.opponent.hand.indexOf(summoned);
     const cost = playCost(match.opponent, summoned);
-    summonedLane = openLanes[Math.floor(Math.random() * openLanes.length)];
     if (handIndex >= 0 && !match.opponent.lanes[summonedLane] && match.energy >= cost) {
       match.opponent.hand.splice(handIndex, 1);
       match.energy -= cost;
@@ -2231,7 +2242,7 @@ document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEv
   document.querySelectorAll('[data-battle-mode]').forEach((option) => { const selected = option === button; option.classList.toggle('selected', selected); option.setAttribute('aria-pressed', String(selected)); });
   document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode !== 'standard'); document.getElementById('rival-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'tutorial'); document.getElementById('start-battle').innerHTML = selectedBattleMode === 'tutorial' ? 'START TUTORIAL FIGHT <span>→</span>' : 'START BATTLE <span>→</span>';
 }));
-document.getElementById('start-battle').addEventListener('click', () => { document.getElementById('deck-select-dialog').close(); if (selectedBattleMode === 'tutorial') beginMatch('academy', 'wild-west', false, true); else beginMatch(selectedPlayerDeck, selectedRivalDeck, selectedBattleMode === 'collection'); });
+document.getElementById('start-battle').addEventListener('click', () => { if (selectedBattleMode === 'collection' && !window.peppermintCurrentUser) { window.requirePeppermintSignIn?.(); return; } document.getElementById('deck-select-dialog').close(); if (selectedBattleMode === 'tutorial') beginMatch('academy', 'wild-west', false, true); else beginMatch(selectedPlayerDeck, selectedRivalDeck, selectedBattleMode === 'collection'); });
 document.getElementById('deck-select-dialog').addEventListener('cancel', (event) => event.preventDefault());
 document.getElementById('restart').addEventListener('click', () => { document.getElementById('result-dialog').close(); showDeckSelect(); });
 function applyGameTerminology(root = document.body) {

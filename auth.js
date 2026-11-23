@@ -127,7 +127,7 @@
     if (error) setStatus(error.message, 'error');
     else { updateAccountUI(null); setMode(false); setStatus('You are signed out.'); }
   }
-  window.peppermintAccount = { signOut: performSignOut };
+  window.peppermintAccount = { signOut: performSignOut, promptSignIn() { setMode(false); setStatus(window.peppermintLanguage?.translate('Sign in to use this feature.') || 'Sign in to use this feature.'); } };
   signOut.addEventListener('click', performSignOut);
 
   setMode(false);

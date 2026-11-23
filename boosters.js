@@ -347,6 +347,19 @@
     selectDeck(id) { const slot = player.deckSlots.find((entry) => entry.id === id); if (!slot) return false; player.activeDeckId = id; activeDeckSlot = id; player.deckList = [...slot.cards]; player.ascendanceDeck = [...slot.ascendance]; storeSave(); renderDeckEditor(); return true; },
     createDeck(name) { if (player.deckSlots.length >= 20) return false; const n = player.deckSlots.length + 1; const id = `deck-${Date.now()}-${n}`; const ascendance = this.listOwnedAscendance().filter((card) => card.owned > 0).slice(0, 12).map((card) => card.id); const slot = { id, name: String(name || `My Deck ${n}`).slice(0, 28), cards: [], ascendance }; player.deckSlots.push(slot); player.activeDeckId = id; activeDeckSlot = id; player.deckList = []; player.ascendanceDeck = ascendance; storeSave(); renderDeckEditor(); return true; },
     renameDeck(name) { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); if (!slot || !String(name || '').trim()) return false; slot.name = String(name).trim().slice(0, 28); storeSave(); renderDeckEditor(); return true; },
+    deleteActiveDeck() {
+      const index = player.deckSlots.findIndex((slot) => slot.id === player.activeDeckId);
+      if (index < 0) return false;
+      if (player.deckSlots.length <= 1) {
+        const slot = player.deckSlots[0]; slot.name = 'My Deck 1'; slot.cards = []; slot.ascendance = [];
+        player.deckList = []; player.ascendanceDeck = [];
+        storeSave(); renderDeckEditor(); return true;
+      }
+      player.deckSlots.splice(index, 1);
+      const next = player.deckSlots[Math.max(0, index - 1)];
+      player.activeDeckId = next.id; activeDeckSlot = next.id; player.deckList = [...next.cards]; player.ascendanceDeck = [...next.ascendance];
+      storeSave(); renderDeckEditor(); return true;
+    },
     renderDeckEditor() { renderDeckEditor(); },
     editorChange(cardId, delta) {
       cardId = canonicalId(cardId);
@@ -401,6 +414,8 @@
     slotSelect.value = player.activeDeckId;
     document.getElementById('deck-editor-new').disabled = player.deckSlots.length >= 20;
     document.getElementById('deck-editor-new').title = player.deckSlots.length >= 20 ? 'Maximum 20 saved decks' : 'Create a new saved deck';
+    document.getElementById('deck-editor-delete').disabled = false;
+    document.getElementById('deck-editor-delete').title = 'Delete the active saved deck';
     document.getElementById('deck-editor-count').textContent = `${deck.length} / 40 cards`;
     document.getElementById('deck-editor-list').innerHTML = deck.length ? deck.map((id) => {
       const card = cards.find((entry) => entry.id === canonicalId(id)) || collectionCards().find((entry) => entry.id === canonicalId(id));
@@ -423,6 +438,7 @@
   document.getElementById('deck-editor-slot').addEventListener('change', (event) => window.peppermintCollection.selectDeck(event.target.value));
   document.getElementById('deck-editor-new').addEventListener('click', () => { const name = prompt('Name this deck', `My Deck ${player.deckSlots.length + 1}`); if (name !== null && !window.peppermintCollection.createDeck(name)) setMessage('You can save up to 20 decks.', 'error'); });
   document.getElementById('deck-editor-rename').addEventListener('click', () => { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); const name = prompt('Rename this deck', slot?.name || 'My Deck'); if (name !== null) window.peppermintCollection.renameDeck(name); });
+  document.getElementById('deck-editor-delete').addEventListener('click', () => { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); const message = window.peppermintLanguage?.translate('Delete the active deck? This cannot be undone.') || 'Delete the active deck? This cannot be undone.'; if (slot && confirm(`${message}\n\n${slot.name}`)) window.peppermintCollection.deleteActiveDeck(); });
   const bindEditorDrag = (container, mode) => {
     container.addEventListener('dragstart', (event) => { const item = event.target.closest(mode === 'add' ? '[data-editor-drag-add]' : '[data-editor-drag-remove]'); if (!item || item.draggable === false) { event.preventDefault(); return; } const id = item.dataset[mode === 'add' ? 'editorDragAdd' : 'editorDragRemove']; event.dataTransfer.setData('text/plain', `${mode}:${id}`); event.dataTransfer.effectAllowed = 'move'; });
   };
