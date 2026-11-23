@@ -627,7 +627,58 @@
     "Choose an enemy fighter to lose 1 attack until your next turn.":"Válassz egy ellenséges Harcost, amely a következő köröd kezdetéig 1 támadást veszít.",
     "Choose an Academy card that costs 3 or 4 from your deck.":"Válassz egy 3 vagy 4 Manába kerülő Akadémia-kártyát a paklidból."
   });
-  for(const [english,hungarian] of Object.entries(translations))glossary.set(english,hungarian);
+  Object.assign(translations,{
+    'While another Valhalla Creature is on your field, Axir gains +1 attack.':'Amíg egy másik Valhalla Lény van a meződön, Axir +1 támadást kap.',
+    'On summon, give Euphoria to adjacent allies. Their attack doubles for one turn, then they are destroyed after attacking.':'Megidézéskor Eufóriát ad a szomszédos szövetségeseknek. Támadásuk egy körre megduplázódik, majd a támadás után elpusztulnak.',
+    'Gains +1 attack for each card with Euphoria on the field.':'Minden Eufóriával rendelkező mezőn lévő kártyáért +1 támadást kap.',
+    'Shared Field: when a card with Euphoria attacks, flip a coin. Heads: it is not destroyed by Euphoria.':'Közös mező: amikor egy Eufóriás kártya támad, dobj fel egy érmét. Fej esetén a kártyát nem pusztítja el az Eufória.',
+    'The first time an adjacent ally would be destroyed by an enemy card effect, destroy Miss Ragna instead.':'Amikor egy szomszédos szövetségest először pusztítana el egy ellenséges kártyaképesség, Miss Ragna pusztul el helyette.',
+    'Can attack the opposing fighter directly across from it.':'Közvetlenül a vele szemben álló ellenséges Harcost is megtámadhatja.',
+    'On summon, reveal the top card of the opposing deck.':'Megidézéskor fedd fel az ellenfél paklijának legfelső kártyáját.',
+    'On summon, draw a Golden Egg Flatbread.':'Megidézéskor húzz egy Aranytojásos lepénykét.',
+    'On summon, destroy an enemy fighter.':'Megidézéskor pusztíts el egy ellenséges Harcost.',
+    'Cannot be destroyed by card effects, including Euphoria.':'Kártyaképesség nem pusztíthatja el, az Eufória sem.',
+    'Cannot attack during its first two turns after being summoned.':'A megidézése utáni első két körben nem támadhat.',
+    'At the start of your turn, draw a Valkyrie’s Mead while Wendy is on your field.':'A köröd kezdetén, ha Wendy a meződön van, húzz egy Valkűr-mézsört.',
+    'On summon, give Euphoria to the opposing fighter in this lane.':'Megidézéskor Eufóriát ad az ebben a sávban álló ellenséges Harcosnak.',
+    'Give a Fighter Euphoria: its attack doubles for one turn, then it is destroyed after attacking.':'Adj Eufóriát egy Harcosnak: támadása egy körre megduplázódik, majd a támadás után elpusztul.',
+    'Choose a Fighter with Euphoria. It will not be destroyed by Euphoria after attacking.':'Válassz egy Eufóriás Harcost. Az Eufória nem pusztítja el a támadása után.',
+    'Give a Fighter +1 attack.':'Adj +1 támadást egy Harcosnak.',
+    'On summon, stun the opposing fighter. It cannot attack during its next turn.':'Megidézéskor elkábítja a vele szemben álló Harcost. Az a következő körében nem támadhat.',
+    "Valkyrie's Mead · choose a Fighter":'Valkűr-mézsör · válassz Harcost',
+    'Give a Fighter Euphoria.':'Adj Eufóriát egy Harcosnak.',
+    'Golden Egg Flatbread · protect a Fighter':'Aranytojásos lepényke · válassz Harcost',
+    'Choose a Fighter with Euphoria. It will survive Euphoria after attacking.':'Válassz egy Eufóriás Harcost. Támadása után túléli az Eufória pusztító hatását.',
+    'Training · choose a Fighter':'Edzés · válassz Harcost',
+    'Training':'Edzés',
+    "Valkyrie's Mead":'Valkűr-mézsör',
+    'Valkyrie’s Mead':'Valkűr-mézsör',
+    'Golden Egg Flatbread':'Aranytojásos lepényke',
+    'Lane 1 · double attack, then destroy after attacking':'1. sáv · dupla támadás, utána elpusztul',
+    'protected from Euphoria':'védett az Eufória pusztító hatásától',
+    'permanent +1 attack':'végleges +1 támadás',
+    'Valhalla Bar is now the shared field. Euphoria coin flips can save attacking fighters.':'A Valhalla Bar lett a közös mező. Az Eufóriásan támadó Harcosokat az érmedobás megmentheti.',
+    'Valhalla Sabrina is immune to destruction by card effects.':'Valhalla Sabrina ellenáll a kártyaképességek pusztító hatásának.',
+    'Miss Ragna · adjacent ally protection':'Miss Ragna · szomszédos szövetséges védelme',
+    'Valhalla Ryota · destroy an enemy':'Valhalla Ryota · ellenséges Harcos elpusztítása',
+    'Choose an enemy fighter to destroy.':'Válassz egy elpusztítandó ellenséges Harcost.',
+    'Valhalla Ryota has no enemy fighter to destroy.':'Valhalla Ryotának nincs elpusztítható ellenséges Harcos célpontja.',
+    'Morrikyn checked the opposing deck; it is empty.':'Morrikyn belenézett az ellenfél paklijába, de az üres.',
+    'Valhalla Bar coin flip: heads.':'Valhalla Bar – fej!',
+    'Valhalla Bar coin flip: tails.':'Valhalla Bar – írás!',
+    'Euphoria ×2':'Eufória ×2',
+    'Valhalla Creature ally +1':'Valhalla Lény szövetséges +1',
+    'Euphoria on field':'Eufória a mezőn',
+    'Euphoria':'Eufória',
+    'STUN':'KÁBÍTÁS',
+    'Stunned: cannot attack next turn':'Kábult: a következő körben nem támadhat',
+    'Cannot attack next turn':'A következő körben nem támadhat'
+  });  Object.assign(translations,{
+    'On summon, give Euphoria to adjacent allies: their attack doubles for one turn, then they are destroyed after attacking.':'Megidézéskor Eufóriát ad a szomszédos szövetségeseknek: támadásuk egy körre megduplázódik, majd a támadás után elpusztulnak.',
+    'On summon, give Euphoria to the opposing fighter in this lane: its attack doubles for one turn, then it is destroyed after attacking.':'Megidézéskor Eufóriát ad az ebben a sávban álló ellenséges Harcosnak: támadása egy körre megduplázódik, majd a támadás után elpusztul.',
+    'If Sabrina is on the field, draw an Avatar Gem.':'Ha Sabrina a mezőn van, húzz egy Avatar Gem kártyát.',
+    'Gains +1 attack for each Aer card in your Pandemonium Zone.':'Minden Aer kártyáért a Pandémonium zónádban +1 támadást kap.'
+  });  for(const [english,hungarian] of Object.entries(translations))glossary.set(english,hungarian);
   const originalText = new WeakMap();
   const lastTranslatedText = new WeakMap();
   const originalAttrs = new WeakMap();
@@ -667,6 +718,22 @@
     m=text.match(/^Choose a fighter that can attack this turn\.$/); if(m)return 'Válassz egy Harcost, aki ebben a körben támadhat.';
     const actor=text.match(/^(You|Enemy): (.+)$/);
     if(actor){const translated=translateDynamic(actor[2]);if(translated!==null)return (actor[1]==='You'?'Te: ':'Ellenfél: ')+translated;}
+    m=text.match(/^(.+) gained Euphoria\.$/); if(m)return hname(m[1])+' Eufóriát kapott.';
+    m=text.match(/^Barfy gave Euphoria to (.+)\.$/); if(m)return 'Barfy Eufóriát adott a szomszédos szövetségeseinek: '+m[1].split(' and ').map(hname).join(' és ')+'.';
+    m=text.match(/^(.+) gained Euphoria from Meadsting\.$/); if(m)return hname(m[1])+' Meadstingtől Eufóriát kapott.';
+    m=text.match(/^(.+) is protected from Euphoria’s destruction\.$/); if(m)return hname(m[1])+' védett az Eufória pusztító hatásától.';
+    m=text.match(/^(.+) survived Euphoria’s destruction effect\.$/); if(m)return hname(m[1])+' túlélte az Eufória pusztító hatását.';
+    m=text.match(/^Valhalla Bar coin flip: heads\. (.+) survived Euphoria\.$/); if(m)return 'Valhalla Bar – fej! '+hname(m[1])+' túlélte az Eufóriát.';
+    m=text.match(/^Valhalla Bar coin flip: tails\. (.+) is destroyed by Euphoria\.$/); if(m)return 'Valhalla Bar – írás! '+hname(m[1])+' elpusztult az Eufória miatt.';
+    m=text.match(/^(.+) was stunned and cannot attack next turn\.$/); if(m)return hname(m[1])+' elkábult, ezért a következő körben nem támadhat.';
+    m=text.match(/^Morrikyn revealed (the rival’s|your) top card: (.+) · (.+)\.$/); if(m)return 'Morrikyn felfedte '+(m[1]==='your'?'a te':'az ellenfél')+' paklijának legfelső lapját: '+hname(m[2])+' · '+hname(m[3])+'.';
+    m=text.match(/^Miss Ragna intercepted the effect and protected (.+)\.$/); if(m)return 'Miss Ragna közbelépett, és megvédte: '+hname(m[1])+'.';
+    m=text.match(/^(.+) gained \+1 attack from Training\.$/); if(m)return hname(m[1])+' az Edzésnek köszönhetően +1 támadást kapott.';
+    m=text.match(/^(.+) gained \+1 attack from Training\.$/); if(m)return hname(m[1])+' az Edzésnek köszönhetően +1 támadást kapott.';
+    m=text.match(/^Euphoria on field \+(\d+)$/); if(m)return 'Eufória a mezőn +'+m[1];
+    m=text.match(/^Lane (\d+) · double attack, then destroy after attacking$/); if(m)return m[1]+'. sáv · dupla támadás, majd a támadás után elpusztul';
+    m=text.match(/^Lane (\d+) · protected from Euphoria$/); if(m)return m[1]+'. sáv · védett az Eufória pusztító hatásától';
+    m=text.match(/^Lane (\d+) · permanent \+1 attack$/); if(m)return m[1]+'. sáv · végleges +1 támadás';    m=text.match(/^Enemy lane (\d+)$/); if(m)return 'Ellenséges sáv: '+m[1];
     m=text.match(/^Clapster sent a card to the Pandemonium Zone and discarded (.+) from the enemy’s hand\.$/); if(m)return 'Clapster a paklid legfelső kártyáját a Pandémonium zónába küldte, az ellenfél pedig eldobta a kezéből ezt a kártyát: '+hname(m[1])+'.';
     m=text.match(/^Clapster sent the top card of your deck to the Pandemonium Zone; the enemy had no cards to discard\.$/); if(m)return 'Clapster a paklid legfelső kártyáját a Pandémonium zónába küldte, de az ellenfélnek nem volt kártya a kezében, amit eldobhatott volna.';
     m=text.match(/^Teddy discarded (.+) and gained 1 attack\.$/); if(m)return 'Teddy eldobta ezt a kártyát: '+hname(m[1])+', és +1 támadást kapott.';
