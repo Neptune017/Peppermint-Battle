@@ -197,6 +197,10 @@
 .tooltip-card-controls{display:none}
 .tooltip-card-controls button{border:1px solid #8de1c7aa;border-radius:6px;background:linear-gradient(135deg,#255847,#183a36);color:#edfff8;padding:7px 9px;font:700 8px 'DM Mono',monospace;letter-spacing:.04em;cursor:pointer;box-shadow:0 0 12px #76e2bd24;transition:transform .15s ease,box-shadow .15s ease}
 .tooltip-card-controls button:hover,.tooltip-card-controls button:focus-visible{transform:translateY(-1px);box-shadow:0 0 16px #76e2bd66;outline:1px solid #a7f3d4}
+.card-tooltip.has-controls{grid-template-rows:minmax(0,1fr) auto}
+.card-tooltip.has-controls .tooltip-card-controls{display:flex;grid-column:1/-1;grid-row:2;align-items:center;justify-content:flex-end;gap:8px;min-height:42px;padding-top:9px;border-top:1px solid #ffffff24;background:linear-gradient(180deg,#211e2d55,#19162299)}
+.card-tooltip.has-controls .tooltip-card-controls button{min-width:112px;min-height:36px;padding:8px 14px;font-size:10px;letter-spacing:.08em}
+@media(max-width:520px){.card-tooltip.mobile-open.has-controls{grid-template-rows:minmax(0,1fr) auto}.card-tooltip.mobile-open.has-controls .tooltip-card-controls{position:sticky;bottom:-9px;justify-content:stretch;margin:0 -9px -9px;padding:8px 9px;background:linear-gradient(180deg,#211e2ded,#191622fa)}.card-tooltip.mobile-open.has-controls .tooltip-card-controls button{flex:1 1 0;min-width:0;min-height:38px}}
 .hand-card{touch-action:pan-x;user-select:none;-webkit-user-select:none}
 .class-icon{display:none}
 .class-icon-badge{width:21px;height:21px;flex:0 0 21px;display:inline-grid;place-items:center;box-sizing:border-box;border:1px solid color-mix(in srgb,var(--class-color,#c9b7df) 84%,white);border-radius:50%;background:radial-gradient(circle at 35% 28%,color-mix(in srgb,var(--class-color,#c9b7df) 35%,#262132),color-mix(in srgb,var(--class-color,#c9b7df) 15%,#16141e));color:var(--class-color,#c9b7df);box-shadow:0 0 8px color-mix(in srgb,var(--class-color,#c9b7df) 34%,transparent),inset 0 0 5px color-mix(in srgb,var(--class-color,#c9b7df) 20%,transparent)}
@@ -434,7 +438,7 @@ body[data-field-theme="valhalla-bar"]::before{background-image:linear-gradient(1
 @media(max-width:520px){.deck-stack,.discard-count{width:100%;max-width:100%;overflow:hidden;gap:2px;padding-inline:0}.deck-stack .deck-card{width:23px;height:31px;flex:0 0 23px}.deck-stack .deck-card .ui-icon{width:100%;height:100%}.discard-count .discard-icon{width:23px;height:31px;flex:0 0 23px}.deck-stack>span,.discard-count>span:last-child{flex:0 0 auto}.deck-stack b,.discard-count b{font-size:9px;white-space:nowrap}}
 .enemy-life-row .life-card::before{background:#bd8cff;box-shadow:0 0 8px #bd8cff88}
 .enemy-life-row .life-card.main-life{background:linear-gradient(110deg,#392650,#282039);border-color:#bd8cff;box-shadow:0 0 15px #bd8cff35}
-.field-zone[data-card-preview]{cursor:help}
+.field-zone[data-card-preview]{cursor:pointer}
 .deck-option{position:relative}
 
 .special-dharma-revival{--special-color:#a9ffc9}.special-dharma-revival>span{animation:fx-heal 1s ease-out both}
