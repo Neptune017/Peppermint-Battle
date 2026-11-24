@@ -506,5 +506,37 @@
   "ToyCapsule.webp": {
     "x": 0.5,
     "y": 0.43
+  },
+  "ValhallaRyota.webp": {
+    "x": 0.5,
+    "y": 0.18
+  },
+  "ValhallaPryce.webp": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "AcademySabrina.webp": {
+    "x": 0.5,
+    "y": 0.22
+  },
+  "AcademyBrian.webp": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "ZodiacGuardianSabrina.webp": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "ZodiacCloudGoat.webp": {
+    "x": 0.5,
+    "y": 0.32
+  },
+  "ZodiacAquaKentaur.webp": {
+    "x": 0.5,
+    "y": 0.2
+  },
+  "ValhallaSabrina.webp": {
+    "x": 0.5,
+    "y": 0.2
   }
 }

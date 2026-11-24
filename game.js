@@ -505,7 +505,7 @@ function cardMarkup(card, enemy = false, compact = false) {
     const filename = cleanArt.split('/').pop();
     const naturalArtClass = { 'ww-hopkin': 'natural-art-hopkin', 'ww-blake': 'natural-art-blake', 'ww-purrnip': 'natural-art-purrnip' }[card.id];
     if (naturalArtClass) return `<img class="card-art ${naturalArtClass}${handArtClass}" src="${cleanArt}?v=20261122-natural-card-art" alt="${card.name}" />`;
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261124-valhalla-crops`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261124-face-crops`;
     const size = compact ? 'battle' : 'hand';
     const mobileArt = window.matchMedia?.('(max-width: 520px)').matches || false;
     const mobileCrop = crop(`${size}-mobile`);
@@ -537,9 +537,13 @@ function lifeMarkup(player, side) {
   return `<div class="life-middle">${middle}</div><div class="main-life-back">${main}</div>`;
 }
 function allMiddleLifeGone(player) { return player.life.middle.every((card) => !card); }
+function islandParadiseBypassesLane(defender, laneIndex) {
+  const blocker = defender?.lanes[laneIndex];
+  return Boolean(match.fieldCard?.id === 'ip-field' && blocker?.title === 'Island Paradise' && !blocker?.ignoresIslandField);
+}
 function canAttackMainLife(attacker, laneIndex, defender) {
-  const shooterHasCenterAccess = attacker?.role === 'Shooter' && (laneIndex === 1 || !defender.lanes[1]);
-  const ordinaryLaneIsOpen = attacker?.role !== 'Shooter' && !defender.lanes[laneIndex];
+  const shooterHasCenterAccess = attacker?.role === 'Shooter' && (laneIndex === 1 || !defender.lanes[1] || islandParadiseBypassesLane(defender, 1));
+  const ordinaryLaneIsOpen = attacker?.role !== 'Shooter' && (!defender.lanes[laneIndex] || islandParadiseBypassesLane(defender, laneIndex));
   return Boolean(attacker && defender.life.main && allMiddleLifeGone(defender) && (shooterHasCenterAccess || ordinaryLaneIsOpen));
 }
 function hasLifeTarget(player, laneIndex, attacker = null) { return Boolean(player.life.middle[laneIndex] || canAttackMainLife(attacker, laneIndex, player)); }
@@ -552,7 +556,7 @@ function canAttackLane(attacker, laneIndex, defender) {
 function canCardAttack(card) { return Boolean(card?.ready && !card.skipAttackThisTurn && (card.id === 'ip-coyote' ? (card.attacksThisTurn || 0) < 2 : !card.attacked)); }
 function canTargetLifeZone(attacker, sourceIndex, defender, targetIndex) {
   if (!attacker || sourceIndex !== targetIndex || !defender.life.middle[targetIndex]) return false;
-  return attacker.role === 'Shooter' || !defender.lanes[targetIndex];
+  return attacker.role === 'Shooter' || !defender.lanes[targetIndex] || islandParadiseBypassesLane(defender, targetIndex);
 }
 function canTargetLane(attacker, sourceIndex, defender, targetIndex) {
   if (!attacker || targetIndex < 0 || targetIndex > 2) return false;
@@ -827,10 +831,11 @@ function drawCard(player, count = 1) {
 }
 function playPendingDrawAnimations() {
   const pending=pendingDrawAnimations.splice(0);
-  pending.forEach((draw)=>{if(draw.side==='player'){animatingDrawInstances.add(draw.instance);document.querySelector('#hand .hand-card[data-id="'+draw.instance+'"]')?.classList.add('draw-arriving');}});
-  pending.forEach((draw,index)=>window.setTimeout(()=>{
+  pending.forEach((draw)=>{if(draw.side==='player'){animatingDrawInstances.add(draw.instance);document.querySelector(`#hand .hand-card[data-id="${draw.instance}"]`)?.classList.add('draw-arriving');}});
+  const startAnimation = (draw) => {
     const target=draw.side==='player'?document.querySelector(`#hand .hand-card[data-id="${draw.instance}"]`):null;
     if(!target){animatingDrawInstances.delete(draw.instance);return;}
+    animatingDrawInstances.add(draw.instance);
     const to=target.getBoundingClientRect();
     const flight=target.cloneNode(true); flight.classList.remove('draw-arriving'); flight.classList.add('draw-flight'); flight.setAttribute('aria-hidden','true'); flight.removeAttribute('data-id'); flight.removeAttribute('data-card-preview');
     flight.style.left=`${to.left}px`; flight.style.top=`${to.top}px`; flight.style.width=`${to.width}px`; flight.style.height=`${to.height}px`;
@@ -838,7 +843,11 @@ function playPendingDrawAnimations() {
     target.classList.add('draw-arriving'); document.body.appendChild(flight);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{flight.style.transform='translate(0,0) scale(1)';}));
     window.setTimeout(()=>{animatingDrawInstances.delete(draw.instance);target.classList.remove('draw-arriving');flight.remove();},620);
-  },index*180));
+  };
+  pending.forEach((draw,index)=>{
+    if (index === 0) startAnimation(draw);
+    else window.setTimeout(()=>startAnimation(draw),index*180);
+  });
 }
 let pendingEffectChoice = null;
 const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.webp',runny:'30FPS_FA02_04_Impulse.webp',berry:'30FPS_FA01_09_Barrier.webp',frosty:'30FPS_FA01_08_Shield.webp',den:'30FPS_FA01_04_Buff.webp',ryota:'30FPS_FA01_01_Slash.webp',healer:'30FPS_FA01_07_Cure.webp',summoner:'30FPS_FA02_01_EnergyBurst.webp',gummy:'30FPS_FA02_03_CrystalBlossom.webp',zoya:'30FPS_FA02_02_Smokescreen.webp',cooking:'30FPS_FA02_03_CrystalBlossom.webp',cotton:'30FPS_FA02_03_CrystalBlossom.webp',kage:'30FPS_FA02_02_Smokescreen.webp',amethyst:'30FPS_FA01_10_Burst.webp',shielder:'30FPS_FA01_08_Shield.webp',shooter:'30FPS_FA01_02_Thrust.webp',enchanter:'30FPS_FA01_04_Buff.webp',trickster:'30FPS_FA01_05_Debuff.webp',blader:'30FPS_FA01_01_Slash.webp',brawler:'30FPS_FA01_03_Punch.webp',peppermint:'30FPS_FA01_04_Buff.webp','avatar-gem':'30FPS_FA02_07_HyperCharge.webp','dharma-revival':'30FPS_FA02_03_CrystalBlossom.webp' };
@@ -1686,6 +1695,7 @@ function collectLifeCard(owner, laneIndex, main = false) {
   if (main) owner.life.main = null;
   else owner.life.middle[laneIndex] = null;
   owner.hand.push(card);
+  queueDrawAnimation(owner, card);
   return true;
 }
 function resolvePurrnipLifeDraw(attacker, owner) {
