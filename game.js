@@ -647,6 +647,11 @@ function render() {
   hideCardTooltip();
   const fieldTheme = match.fieldCard?.id || 'city-night';
   document.body.dataset.fieldTheme = fieldTheme;
+  const islandBackgroundVideo = document.getElementById('island-paradise-background');
+  if (islandBackgroundVideo) {
+    if (fieldTheme === 'ip-field' && islandBackgroundVideo.paused) islandBackgroundVideo.play().catch(() => {});
+    else if (fieldTheme !== 'ip-field' && !islandBackgroundVideo.paused) { islandBackgroundVideo.pause(); islandBackgroundVideo.currentTime = 0; }
+  }
   document.getElementById('player-board').innerHTML = match.player.lanes.map((card, i) => laneMarkup(card, i, 'player', match.active === 'player')).join('');
   document.getElementById('opponent-board').innerHTML = match.opponent.lanes.map((card, i) => laneMarkup(card, i, 'opponent', false)).join('');
   document.getElementById('hand').innerHTML = match.player.hand.map((card) => cardMarkup(card)).join('') || '<div class="lane-hint">Your hand is empty</div>';
