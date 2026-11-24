@@ -1,0 +1,274 @@
+/* Small optional adjustments that leave the previous game styling intact. */
+.brand { gap: 0; flex: 0 0 auto; }
+.brand-logo {
+  display: block;
+  width: clamp(100px, 11vw, 142px);
+  max-height: 43px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 2px 5px #05071088);
+}
+
+/* Keep the drag instruction behavior in code, but remove its redundant button. */
+#attack-button { display: none !important; }
+
+.battle-buttons #give-up,
+.battle-buttons #end-turn {
+  width: clamp(112px, 9.5vw, 140px);
+  min-height: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  padding: 0 10px;
+  border: 0 !important;
+  border-radius: 8px;
+  background: transparent url("assets/ui-icons/control-button.webp") center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+  color: #f7f0ff;
+  font: 700 9px Manrope, sans-serif;
+  letter-spacing: .035em;
+  text-shadow: 0 1px 4px #090713;
+  filter: drop-shadow(0 3px 5px #0805117a) !important;
+  transition: filter .15s, transform .15s;
+}
+.battle-buttons #end-turn {
+  position: relative;
+  isolation: isolate;
+}
+.battle-buttons #end-turn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, #75eaa18a, #27b969b8);
+  mix-blend-mode: color;
+  -webkit-mask: url("assets/ui-icons/control-button.webp") center / 100% 100% no-repeat;
+  mask: url("assets/ui-icons/control-button.webp") center / 100% 100% no-repeat;
+}
+.battle-buttons #end-turn .turn-button-label,
+.battle-buttons #end-turn .turn-button-arrow {
+  position: relative;
+  z-index: 1;
+  color: #edfff3;
+  text-shadow: 0 1px 4px #071b12;
+}
+.battle-buttons #end-turn .turn-button-label { margin-left: 0; }
+.battle-buttons #give-up:hover:not(:disabled),
+.battle-buttons #end-turn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.2) drop-shadow(0 4px 7px #08051199) !important; }
+.battle-buttons #end-turn .turn-button-arrow { margin-left: 4px; }
+.battle-buttons #give-up:disabled,
+.battle-buttons #end-turn:disabled { opacity: .58; }
+.board-controls { justify-content: flex-end; }
+
+.hand-panel {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  max-width: 1320px;
+  padding: 10px 14px 8px 10px;
+  overflow: visible;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  box-shadow: none;
+}
+.hand-panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border: 1px solid #b497e550;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #292536b0, #211e2cdd);
+  backdrop-filter: blur(12px) saturate(115%);
+  box-shadow: inset 0 0 20px #b97bff0b, 0 6px 18px #07121a3b;
+}
+.hand-status-orb {
+  position: relative;
+  z-index: 3;
+  display: block;
+  flex: 0 0 259px;
+  width: 259px;
+  height: 180px;
+  align-self: center;
+  margin: 0 12px 0 0;
+  overflow: visible;
+}
+.hand-stat-cell {
+  position: absolute;
+  display: grid;
+  width: 148px;
+  height: 120px;
+  place-items: center;
+  border: 2px solid transparent;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  filter: drop-shadow(0 0 4px #bd91ef73) drop-shadow(0 7px 10px #0308128c);
+  background: radial-gradient(circle at 35% 24%, #344d62, #1a2a40 62%, #101b2b 100%) padding-box, linear-gradient(145deg, #f0ddff, #9c73c8 28%, #d6b5fa 52%, #7652a4 76%, #d6b5fa) border-box;
+  box-shadow: inset 0 1px 10px #d6f3ff20, inset 0 0 0 1px #cba9fa38;
+}
+.hand-stat-cell::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border: 1px solid #e2cfff52;
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+  pointer-events: none;
+}
+.battle-card {
+  overflow: hidden;
+}
+.hand-mana-cell {
+  top: 60px;
+  left: 111px;
+  background: radial-gradient(circle at 35% 24%, #47325f, #20243f 62%, #121b2c 100%) padding-box, linear-gradient(145deg, #f0ddff, #9c73c8 28%, #d6b5fa 52%, #7652a4 76%, #d6b5fa) border-box;
+}
+.hand-life-cell {
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at 35% 24%, #593344, #28243f 62%, #121b2c 100%) padding-box, linear-gradient(145deg, #f0ddff, #9c73c8 28%, #d6b5fa 52%, #7652a4 76%, #d6b5fa) border-box;
+}
+.hand-stat-cell .energy {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  padding: 0;
+  gap: 4px;
+  border: 0;
+  border-radius: 0;
+  clip-path: none;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
+}
+.hand-stat-cell .energy::before { display: none; }
+.hand-mana-cell .energy-icon { width: 42px; height: 42px; object-fit: fill; filter: drop-shadow(0 0 7px #bd77ffc7); }
+.hand-mana-cell .energy > span {
+  display: flex;
+  align-items: baseline;
+  justify-items: start;
+  gap: 3px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.hand-mana-cell .energy { padding-inline: 14px; gap: 2px; }
+.hand-life-count > span { display: grid; justify-items: start; line-height: 1; }
+.hand-mana-cell .energy b { color: #f4eaff; font-size: 18px; line-height: 1; white-space: nowrap; }
+.hand-mana-cell .energy small { margin-top: 0; color: #d8c7ee; font-size: 7px; white-space: nowrap; }
+.hand-life-count { display: flex; align-items: center; justify-content: center; gap: 7px; }
+.hand-life-crystal { display: block; width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 0 8px #ff315e99); }
+.hand-life-count b { color: #fff0f3; font-size: 22px; line-height: 1; text-shadow: 0 0 10px #ff58706b; }
+.hand-life-count small { margin-top: 4px; color: #ffd2da; font: 700 7px Manrope, sans-serif; letter-spacing: .08em; }
+.hand-content {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 7px 0;
+  padding: 7px 9px 5px 20px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  box-shadow: inset 0 1px #d5bbff12;
+}
+.hand-content .hand-title { justify-content: center; margin-bottom: 7px; }
+.hand-content .hand {
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 3px 7px;
+  scrollbar-width: none;
+  transform: none;
+}
+.hand-content .hand::-webkit-scrollbar { display: none; }
+.hand-content .hand-card { flex: 0 0 122px; }
+.hand-content::after {
+  content: "";
+  position: absolute;
+  inset: 5px 8px;
+  border: 1px solid #b58be61a;
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.energy {
+  position: relative;
+  min-width: 146px;
+  min-height: 62px;
+  padding: 5px 17px 5px 9px;
+  gap: 9px;
+  border: 0;
+  border-radius: 0;
+  clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 12px 100%, 0 50%);
+  background: linear-gradient(112deg, #284456, #1c2c46 58%, #342a4d);
+  box-shadow: none;
+  filter: drop-shadow(0 0 1px #bbf8e7) drop-shadow(0 5px 8px #05071088);
+}
+.energy::before {
+  inset: 2px 3px;
+  border: 1px solid #d7fff34d;
+  border-radius: 0;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+}
+.energy-icon { width: 43px; height: 47px; }
+.energy b { font-size: 23px; }
+.energy small { font-size: 8px; }
+
+@media (max-width: 780px) {
+  .brand-logo { width: 106px; max-height: 36px; }
+  .battle-buttons #give-up, .battle-buttons #end-turn { width: 116px; height: 46px; min-height: 46px; padding-inline: 10px; font-size: 10px; }
+  .hand-status-orb { flex-basis: 217px; width: 217px; height: 153px; margin: 0 8px 0 0; }
+  .hand-stat-cell { width: 124px; height: 102px; }
+  .hand-mana-cell { top: 51px; left: 93px; }
+  .hand-life-cell { top: 0; left: 0; }
+  .hand-mana-cell .energy-icon { width: 38px; height: 38px; }
+  .hand-mana-cell .energy b { font-size: 17px; }
+  .hand-mana-cell .energy small { font-size: 6px; }
+  .hand-life-crystal { width: 42px; height: 42px; }
+}
+@media (max-width: 520px) {
+  .brand-logo { width: 92px; max-height: 32px; }
+  .battle-buttons #give-up, .battle-buttons #end-turn { width: 100px; height: 44px; min-height: 44px; padding-inline: 7px; font-size: 9px; }
+  .hand-panel { padding: 7px 6px 6px; }
+  .hand-status-orb { flex-basis: 192px; width: 192px; height: 135px; margin: 0 6px 0 0; }
+  .hand-stat-cell { width: 110px; height: 90px; }
+  .hand-mana-cell { top: 45px; left: 82px; }
+  .hand-life-cell { top: 0; left: 0; }
+  .hand-mana-cell .energy { gap: 1px; padding-inline: 10px; }
+  .hand-mana-cell .energy-icon { width: 33px; height: 33px; }
+  .hand-mana-cell .energy b { font-size: 15px; }
+  .hand-mana-cell .energy small { font-size: 5px; }
+  .hand-life-count { gap: 3px; }
+  .hand-life-crystal { width: 37px; height: 37px; }
+  .hand-life-count b { font-size: 17px; }
+  .hand-life-count small { font-size: 6px; }
+  .hand-content { margin-block: 5px; padding: 5px 4px 4px 13px; }
+  .hand-content .hand-title { margin-bottom: 5px; }
+  .hand-content .hand { gap: 6px; transform: none; }
+  .hand-content .hand-card { flex-basis: 110px; }
+}
+@media (max-width: 360px) {
+  .battle-buttons #give-up, .battle-buttons #end-turn { width: 88px; height: 42px; min-height: 42px; font-size: 8px; }
+  .hand-status-orb { flex-basis: 172px; width: 172px; height: 120px; margin: 0 4px 0 0; }
+  .hand-stat-cell { width: 98px; height: 80px; }
+  .hand-mana-cell { top: 40px; left: 74px; }
+  .hand-life-cell { top: 0; left: 0; }
+  .hand-mana-cell .energy { gap: 0; padding-inline: 7px; }
+  .hand-mana-cell .energy-icon { width: 29px; height: 29px; }
+  .hand-mana-cell .energy b { font-size: 13px; }
+  .hand-mana-cell .energy small { font-size: 4px; }
+  .hand-life-count { gap: 2px; }
+  .hand-life-crystal { width: 33px; height: 33px; }
+  .hand-content { padding-left: 11px; }
+  .hand-content .hand-card { flex-basis: 100px; }
+}
+
+/* Shared game typography */
+:root,body{font-family:Manrope,system-ui,sans-serif}
+h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055em}

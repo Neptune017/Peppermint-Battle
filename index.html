@@ -4,18 +4,22 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#191626" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <title>Peppermint Battle</title>
-  <link rel="stylesheet" href="styles.css?v=20261123-status-tint-v1" />
+  <link rel="stylesheet" href="styles.css?v=20261124-cinzel-manrope" />
   <link rel="stylesheet" href="enhancements.css?v=20261122-natural-card-art" />
   <link rel="stylesheet" href="effects.css?v=20261124-island-video" />
   <link rel="stylesheet" href="auth.css?v=20261121-auth-start" />
-  <link rel="stylesheet" href="boosters.css?v=20261124-booster-swipe-nav" />
+  <link rel="stylesheet" href="boosters.css?v=20261124-booster-showcase-v2" />
+  <link rel="stylesheet" href="ui-tweaks.css?v=20261124-game-fonts-v1" />
 </head>
 <body>
   <video id="island-paradise-background" class="field-background-video" muted loop playsinline preload="none" poster="assets/backgrounds/island-paradise.webp" aria-hidden="true" tabindex="-1"><source src="assets/backgrounds/island-paradise-field-loop.webm" type="video/webm" /></video>
   <main class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Peppermint Battle home"><span class="brand-mark">✦</span><span>PEPPERMINT <b>BATTLE</b></span></a>
+      <a class="brand" href="#" aria-label="Peppermint Battle home"><img class="brand-logo" src="assets/ui-icons/peppermint-battle-logo.webp" alt="Peppermint Battle" /></a>
       <div class="match-meta"><span class="live-dot"></span><span id="phase-label">YOUR TURN</span><span class="meta-divider">·</span><span id="turn-label">TURN 1</span></div>
       <button class="mobile-rules-button" id="mobile-rules-button" type="button" aria-label="How to play" title="How to play">?</button><button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Open battle menu" aria-expanded="false" aria-controls="topbar-actions"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button><div class="topbar-actions" id="topbar-actions"><button class="quiet-button" id="quick-menu-button" type="button">MAIN MENU</button><button class="quiet-button booster-button" id="booster-button" type="button" aria-label="Open Card Shop">CARD SHOP</button><button class="quiet-button account-button" id="account-button" type="button">SIGN IN</button><button class="quiet-button" id="card-library-button">CARD LIBRARY</button><button class="quiet-button element-guide-trigger" id="element-guide-button" title="Open the element advantage circle">ELEMENTS</button><button class="quiet-button" id="rules-button">HOW TO PLAY</button></div>
     </header>
@@ -36,9 +40,9 @@
         <div id="opponent-board" class="lanes opponent-board" aria-label="Opponent fighter lanes"></div>
         <div id="field-zone" class="field-zone hidden" aria-live="polite"></div>
         <div id="player-board" class="lanes player-board" aria-label="Your fighter lanes"></div>
-        <div class="life-row player-life-row"><span class="life-row-label">YOUR LIFE <b id="player-life-count">4</b></span><div id="player-life" class="life-zone-layout"></div></div>
+        <div class="life-row player-life-row"><span class="life-row-label">YOUR LIFE</span><div id="player-life" class="life-zone-layout"></div></div>
         <div class="board-heading player-heading"><span>YOUR FIELD</span><span id="board-message" class="lane-hint">Choose a card, then choose an open lane</span></div>
-      <div class="board-controls"><div class="energy"><img class="ui-icon energy-icon" src="assets/ui-icons/mana-crystal.webp" alt="" /><span><b id="energy-value">1</b><small> / <span id="max-energy">1</span> MANA</small></span></div><div class="battle-buttons"><button class="give-up-button" id="give-up" disabled>GIVE UP</button><button class="attack-button" id="attack-button" title="Drag a ready Battle Card onto its target">⚔ DRAG</button><button class="end-turn" id="end-turn">END TURN <span>→</span></button></div></div>
+      <div class="board-controls"><div class="battle-buttons"><button class="give-up-button" id="give-up" disabled><span>GIVE UP</span></button><button class="attack-button" id="attack-button" title="Drag a ready Battle Card onto its target">⚔ DRAG</button><button class="end-turn" id="end-turn"><span class="turn-button-label">END TURN</span><span class="turn-button-arrow">→</span></button></div></div>
       </section>
 
       <aside class="side-rail player-side">
@@ -51,9 +55,14 @@
     </section>
 
     <footer class="hand-panel">
-      <div class="hand-title"><div><span class="eyebrow">YOUR HAND</span><strong id="hand-count">4 cards</strong></div></div>
-      <div id="hand" class="hand" aria-label="Your hand"></div>
-      <div class="footer-note"><span>✦</span> Element matchups can turn the tide. Hover over a card to see its details.</div>
+      <div class="hand-status-orb" aria-label="Mana and life cards">
+        <div class="hand-stat-cell hand-mana-cell"><div class="energy"><img class="ui-icon energy-icon" src="assets/ui-icons/mana-crystal.webp" alt="" /><span><b id="energy-value">1</b><small> / <span id="max-energy">1</span> MANA</small></span></div></div>
+        <div class="hand-stat-cell hand-life-cell"><div class="hand-life-count"><img class="hand-life-crystal" src="assets/ui-icons/crystal-heart.webp" alt="" /><span><b id="player-life-count">4</b><small>LIFE</small></span></div></div>
+      </div>
+      <div class="hand-content">
+        <div class="hand-title"><div><span class="eyebrow">YOUR HAND</span><strong id="hand-count">4 cards</strong></div></div>
+        <div id="hand" class="hand" aria-label="Your hand"></div>
+      </div>
     </footer>
     <div id="effect-toast" class="effect-toast" role="status" aria-live="polite"></div>
     <div id="card-tooltip" class="card-tooltip" role="tooltip" popover="manual" aria-hidden="true"></div>
