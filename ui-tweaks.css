@@ -320,3 +320,14 @@ h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055e
   .hand-mana-cell .energy b { font-size: 12px; }
   .hand-content .hand-title { padding-right: 106px; }
 }
+
+/* On phones, keep the compact Mana display above the hand on its left edge. */
+@media(max-width:520px) {
+  .hand-status-orb { top: 7px; left: 10px; right: auto; width: 94px; height: 42px; }
+  .hand-mana-cell { width: 92px; height: 40px; }
+  .hand-mana-cell .energy { padding: 1px 4px; gap: 1px; }
+  .hand-mana-cell .energy-icon { width: 22px; height: 24px; }
+  .hand-mana-cell .energy b { font-size: 12px; }
+  .hand-mana-cell .energy small { font-size: 5px; }
+  .hand-content .hand-title { padding: 0 0 0 102px; }
+}

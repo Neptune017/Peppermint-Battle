@@ -150,27 +150,9 @@
   function mergeSaves(localValue, cloudValue) {
     const local = normalizeSave(localValue);
     const cloud = normalizeSave(cloudValue);
-    const sameDeckContents = (left, right) => {
-      const sameCards = (a, b) => {
-        if (a.length !== b.length) return false;
-        const sortedA = [...a].sort();
-        const sortedB = [...b].sort();
-        return sortedA.every((id, index) => id === sortedB[index]);
-      };
-      return sameCards(left.cards, right.cards) && sameCards(left.ascendance, right.ascendance);
-    };
     const cards = { ...cloud.cards };
     Object.entries(local.cards).forEach(([id, count]) => { cards[id] = Math.max(cards[id] || 0, count); });
     const deckSlots = cloud.deckSlots.map((slot) => ({ ...slot, cards: [...slot.cards], ascendance: [...slot.ascendance] }));
-    for (const localSlot of local.deckSlots) {
-      const existing = deckSlots.find((slot) => slot.id === localSlot.id);
-      if (deckSlots.some((slot) => sameDeckContents(slot, localSlot))) continue;
-      if (!existing) { if (deckSlots.length < 20) deckSlots.push({ ...localSlot, cards: [...localSlot.cards], ascendance: [...localSlot.ascendance] }); continue; }
-      if (deckSlots.length >= 20) continue;
-      let suffix = 1, id = `${localSlot.id}-local-${suffix}`;
-      while (deckSlots.some((slot) => slot.id === id)) { suffix += 1; id = `${localSlot.id}-local-${suffix}`; }
-      deckSlots.push({ ...localSlot, id, name: `${localSlot.name} (Local)`.slice(0, 28), cards: [...localSlot.cards], ascendance: [...localSlot.ascendance] });
-    }
     const displays = { ...local.displays, ...cloud.displays };
     for (const [deckId, localStock] of Object.entries(local.displays)) {
       const cloudStock = cloud.displays[deckId];
@@ -340,8 +322,9 @@
     window.peppermintPlayerSave.load().then((data) => {
       cloudSaveData = data && typeof data === 'object' ? data : {};
       const localSave = loadLocalSave();
-      if (cloudSaveData.boosters) player = mergeSaves(localSave, cloudSaveData.boosters);
-      else player = localSave;
+      // Keep account decks authoritative. Older local-only decks are not imported
+      // when a player signs in; only their collection and progression are merged.
+      player = mergeSaves(localSave, cloudSaveData.boosters || freshSave());
       storeSave();
       render();
     }).catch(() => { cloudUserId = null; setMessage('Could not load the account collection. Local collection remains available.', 'error'); render(); });

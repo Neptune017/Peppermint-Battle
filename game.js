@@ -493,7 +493,9 @@ function cardMarkup(card, enemy = false, compact = false) {
   const laneIndex = owner?.lanes.indexOf(card) ?? -1;
   const attacking = compact && (card.attacking || (!enemy && match.attackMode && laneIndex === match.attackerLane));
   const attackInfo = compact ? attackBreakdown(card, owner, { attacking, targetIndex: card.attackTargetIndex ?? (attacking ? laneIndex : null) }) : { total: card.attack + (card.attackBonus || 0), change: card.attackBonus || 0, reasons: card.attackBonus ? ['Card effect'] : [], sources: card.attackBonusSources || (card.attackBonus ? [card.name] : []) };
-  const attackBadge = attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
+  const attackBadge = compact && card.role === 'Blader'
+    ? '<em class="attack-boost blader-modifier" title="Blader: +1 támadáskor">+1</em><em class="attack-boost attack-reduced blader-modifier" title="Blader: −1 védekezéskor">−1</em>'
+    : attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
   const actionButton = compact && !enemy && ['zoya','ww-medusa','ww-blake','ip-croaktail','wb-steepod','wb-topaz-diamond'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Drag this button onto the battlefield to use ${card.name}’s once-per-turn effect">DRAG</button>` : '';
   const handAbilityButton = !compact && card.id === 'wb-sageape' ? '<button class="hand-ability-trigger" data-hand-ability="wb-sageape" title="Drag this button onto the battlefield to discard Sageape and move a Glacial fighter">DRAG</button>' : '';
   const frozen = compact && Boolean(card.skipAttackThisTurn || card.skipAttackNext);
@@ -1782,9 +1784,17 @@ function maybeUseZoya(owner) { owner.lanes.forEach((card, index) => { if (card?.
 function collectLifeCard(owner, laneIndex, main = false) {
   const card = main ? owner.life.main : owner.life.middle[laneIndex];
   if (!card) return false;
+  const breaksMainChain = !main && Boolean(owner.life.main) && owner.life.middle.filter(Boolean).length === 1;
+  const side = owner === match.player ? 'player' : 'opponent';
   animateLifeShatter(owner, laneIndex, main);
   if (main) owner.life.main = null;
   else owner.life.middle[laneIndex] = null;
+  if (breaksMainChain) {
+    // The render that follows replaces the life-zone DOM, so play the effect
+    // on the freshly rendered main-life element and prevent a duplicate render-triggered effect.
+    mainLifeChainState[side] = false;
+    window.requestAnimationFrame(() => window.requestAnimationFrame(() => playMainLifeChainFx(side, 'break')));
+  }
   owner.hand.push(card);
   queueDrawAnimation(owner, card);
   return true;
