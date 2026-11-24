@@ -272,3 +272,51 @@
 /* Shared game typography */
 :root,body{font-family:Manrope,system-ui,sans-serif}
 h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055em}
+.hand-content .hand-title { justify-content: flex-start; }
+.enemy-hand-count { display: block; margin-top: 4px; color: #c8b8da; font: 700 7px Manrope, sans-serif; letter-spacing: .08em; }
+.enemy-hand-count b { color: #f1e9f4; margin-left: 4px; }
+.hand-limit-dialog { width: min(850px, calc(100% - 28px)); max-height: min(88vh, 900px); overflow-y: auto; }
+.hand-limit-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(98px, 1fr)); gap: 10px; margin: 18px 0; }
+.hand-limit-card { position: relative; min-width: 0; cursor: pointer; border-radius: 9px; outline: 1px solid #736080; transition: .16s; }
+.hand-limit-card .hand-card { width: 100%; height: clamp(112px, 18vw, 170px); }
+.hand-limit-card .hand-card.disabled { opacity: 1 !important; filter: none !important; }
+.hand-limit-card.selected { outline: 2px solid #f1a1b8; box-shadow: 0 0 18px #ed789955; transform: translateY(-3px); }
+.hand-limit-check { position: absolute; top: 6px; left: 6px; display: grid; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: #a84268; color: white; opacity: 0; }
+.hand-limit-card.selected .hand-limit-check { opacity: 1; }
+.hand-limit-confirm { display: block; margin-left: auto; }
+@media(max-width:520px) { .hand-limit-cards { grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 7px; } .hand-limit-card .hand-card { height: 118px; padding: 6px; } .hand-limit-dialog { padding: 20px 14px; } }
+.card-tooltip.has-controls .tooltip-body .tooltip-card-controls { position: static !important; display: flex; grid-column: auto; grid-row: auto; align-self: stretch; justify-content: flex-start; flex-wrap: wrap; gap: 8px; min-height: 0; margin: 8px 0 0; padding: 0; border: 0; background: transparent; }
+.card-tooltip.has-controls .tooltip-body .tooltip-card-controls button { flex: 0 1 auto; }
+.life-card.main-life .main-life-chain-fx { position: absolute; inset: -22% -2%; top: auto; right: auto; display: block; transform: none; z-index: 7; pointer-events: none; }
+@media(max-width:520px) { .card-tooltip.mobile-open.has-controls .tooltip-body .tooltip-card-controls { position: static !important; grid-column: auto; grid-row: auto; align-self: stretch; justify-content: flex-start; margin: 8px 0 0; padding: 0; border: 0; background: transparent; } }
+
+/* One desktop Mana hex aligned beside the hand; compact top-right version on phones. */
+.hand-status-orb { flex: 0 0 166px; width: 166px; height: 148px; align-self: center; margin: 0 12px 0 0; }
+.hand-mana-cell { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.hand-life-cell { display: none !important; }
+.life-card.main-life { overflow: visible; }
+.life-card.main-life .main-life-chain-fx { inset: -36% -5%; z-index: 12; }
+.enemy-life-row .main-life-chain-fx { filter: drop-shadow(0 0 5px #fff) drop-shadow(0 0 12px #d7b5ff); }
+.player-life-row .life-row-label b { margin-left: 4px; color: #fff0f3; }
+@media(max-width:780px) {
+  .hand-status-orb { flex-basis: 150px; width: 150px; height: 138px; margin-right: 8px; }
+  .hand-mana-cell { width: 138px; height: 112px; }
+}
+@media(max-width:520px) {
+  .hand-status-orb { position: absolute; top: 5px; right: 8px; z-index: 4; flex: none; width: 118px; height: 48px; margin: 0; }
+  .hand-mana-cell { top: 50%; left: 50%; width: 116px; height: 46px; transform: translate(-50%, -50%); }
+  .hand-mana-cell .energy { min-width: 0; min-height: 0; width: 100%; height: 100%; padding: 2px 7px; gap: 3px; }
+  .hand-mana-cell .energy-icon { width: 26px; height: 29px; }
+  .hand-mana-cell .energy b { font-size: 13px; }
+  .hand-mana-cell .energy small { font-size: 5px; }
+  .hand-content .hand-title { min-height: 38px; justify-content: flex-start; padding-right: 118px; }
+  .hand-panel { position: relative; }
+}
+@media(max-width:360px) {
+  .hand-status-orb { right: 5px; width: 106px; }
+  .hand-mana-cell { width: 104px; }
+  .hand-mana-cell .energy { gap: 1px; padding-inline: 5px; }
+  .hand-mana-cell .energy-icon { width: 23px; height: 25px; }
+  .hand-mana-cell .energy b { font-size: 12px; }
+  .hand-content .hand-title { padding-right: 106px; }
+}

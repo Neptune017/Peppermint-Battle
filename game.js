@@ -1,7 +1,7 @@
 const cardLibrary = [
   { id: 'academy-coyote', title: 'Academy', name: 'Coyote', cost: 3, attack: 3, element: 'Mind', role: 'Brawler', art: 'assets/cards/AcademyCoyote.webp', ability: 'On summon, draw an Academy Brawler from your deck.' },
   { id: 'peppermint', title: 'Academy', name: 'Peppermint', cost: 5, attack: 5, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyPeppermint.webp?v=20261120bm', ability: '+1 attack for each adjacent ally Academy card.' },
-  { id: 'aemi', title: 'Academy', name: 'Aemi', cost: 2, attack: 2, element: 'Dark', role: 'Shooter', art: 'assets/cards/AcademyAemi.webp', ability: 'Draw an Academy card with a different element.' },
+  { id: 'aemi', title: 'Academy', name: 'Aemi', cost: 2, attack: 2, element: 'Ignis', role: 'Shooter', art: 'assets/cards/AcademyAemi.webp', ability: 'Draw an Academy card with a different element.' },
   { id: 'kage', title: 'Academy', name: 'Kage', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/AcademyKage.webp', ability: 'Draw a Zoya card when destroyed.' },
   { id: 'ryota', title: 'Academy', name: 'Ryota', cost: 3, attack: 2, element: 'Solar', role: 'Shooter', art: 'assets/cards/AcademyRyota.webp', ability: 'Discard a card to destroy a fighter.' },
   { id: 'zoya', title: 'Academy', name: 'Zoya', cost: 5, attack: 4, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyZoya.webp', ability: 'Return an Academy card on the field to its owner’s hand.' },
@@ -183,6 +183,7 @@ let tutorialLessonIndex = 0;
 let pendingDrawAnimations = [];
 const animatingDrawInstances = new Set();
 const match = { turn: 1, turnSerial: 0, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
+let mainLifeChainState = { player: null, opponent: null };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
 document.getElementById('battle-history-list')?.previousElementSibling?.addEventListener('click', () => {
@@ -263,9 +264,12 @@ function newPlayer(isAI = false, deckId = 'academy', collectionOnly = false) {
     : transformationsForDeck(deckId);
   const transformationDeck = ascendanceCards.map(cloneCard);
   const lifeCards = deck.splice(0, 4);
-  return { hand: deck.splice(0, 4), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
+  return { hand: deck.splice(0, 5), deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
 function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', collectionOnly = false, tutorialMode = false) {
+  mainLifeChainState = { player: null, opponent: null };
+  handOverflowOpen = false;
+  pendingEndTurnAfterDiscard = false;
   battleHistory.length = 0;
   const historyList = document.getElementById('battle-history-list'); if (historyList) historyList.replaceChildren();
   const historyCount = document.getElementById('history-count'); if (historyCount) historyCount.textContent = '0';
@@ -533,7 +537,8 @@ function lifeMarkup(player, side) {
     return `<div class="life-card ${card ? '' : 'broken'} ${familiar ? 'has-familiar' : ''} ${direct ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-index="${index}" aria-label="Life zone ${index + 1}"><span class="target-mark" aria-hidden="true">⌖</span>${card ? '<img class="life-heart" src="assets/ui-icons/crystal-heart.webp" alt="" aria-hidden="true" />' : ''}${familiar ? `<img class="life-familiar" src="${familiar.art}" alt="${familiar.name} Familiar" title="${familiar.name} · Familiar" />` : ''}</div>`;
   }).join('');
   const mainDirect = side === 'opponent' && match.attackMode && match.attackerLane !== null && canAttackMainLife(attacker, match.attackerLane, player);
-  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone"><span class="target-mark" aria-hidden="true">⌖</span>${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/crystal-heart.webp" alt="" aria-hidden="true" />' : ''}</div>`;
+  const mainGuarded = player.life.middle.some(Boolean);
+  const main = `<div class="life-card main-life ${player.life.main ? '' : 'broken'} ${mainDirect ? 'direct-life-target' : ''}" data-life-side="${side}" data-life-main="true" aria-label="Main life zone"><span class="target-mark" aria-hidden="true">⌖</span>${player.life.main ? '<img class="life-heart main-life-heart" src="assets/ui-icons/' + (mainGuarded ? 'crystal-heart-chained.png?v=2' : 'crystal-heart.webp') + '" alt="" aria-hidden="true" />' : ''}</div>`;
   return `<div class="life-middle">${middle}</div><div class="main-life-back">${main}</div>`;
 }
 function allMiddleLifeGone(player) { return player.life.middle.every((card) => !card); }
@@ -637,6 +642,7 @@ function effectiveAttack(card, owner, context) { return attackBreakdown(card, ow
 function laneMarkup(card, index, side, isActive) {
   const laneClasses = ['lane'];
   if (card) laneClasses.push('has-card');
+  if (side === 'opponent' && card && pendingAiSummons.has(card.instance)) laneClasses.push('ai-summon-pending');
   if (side === 'player' && match.selected && isActive && !card) laneClasses.push('lane-target');
   if (side === 'player' && isActive && canCardAttack(card) && canAttackLane(card, index, match.opponent)) laneClasses.push('attack-click-ready');
   if (side === 'player' && match.attackMode && canCardAttack(card)) laneClasses.push('attack-source');
@@ -699,8 +705,16 @@ function render() {
   fieldZone.classList.toggle('hidden', !match.fieldCard);
   document.getElementById('player-life-count').textContent = lifeCount(match.player);
   document.getElementById('opponent-life-count').textContent = lifeCount(match.opponent);
+  document.getElementById('opponent-hand-count').textContent = match.opponent.hand.length;
   document.getElementById('player-life').innerHTML = lifeMarkup(match.player, 'player');
   document.getElementById('opponent-life').innerHTML = lifeMarkup(match.opponent, 'opponent');
+  for (const side of ['player', 'opponent']) {
+    const owner = match[side];
+    const chained = Boolean(owner.life.main && owner.life.middle.some(Boolean));
+    const previous = mainLifeChainState[side];
+    if (previous !== null && previous !== chained) playMainLifeChainFx(side, chained ? 'restore' : 'break');
+    mainLifeChainState[side] = chained;
+  }
   document.getElementById('end-turn').disabled = match.active !== 'player' || match.over || match.attackResolving;
   document.getElementById('give-up').disabled = !match.player || match.over || match.attackResolving;
   document.getElementById('attack-button').disabled = match.active !== 'player' || match.over || !match.player.lanes.some((card, index) => canCardAttack(card) && canAttackLane(card, index, match.opponent));
@@ -737,7 +751,7 @@ function canActivateCardAbility(card, owner, laneIndex) {
   return false;
 }
 function showCardTooltip(card, event) {
-  if (!card) return;
+  if (!card || handOverflowOpen || document.getElementById('hand-limit-dialog')?.open) return;
   const tooltip = document.getElementById('card-tooltip'); const owner = cardOwner(card);
   for (const className of [...tooltip.classList]) if (className.startsWith('element-')) tooltip.classList.remove(className);
   tooltip.classList.add(`element-${(card.element || 'None').toLowerCase()}`);
@@ -752,7 +766,7 @@ function showCardTooltip(card, event) {
   })();
   const inPlayerHand = owner === match.player && match.player.hand.includes(card);
   const canUseFromHand = inPlayerHand && match.active === 'player' && !match.over && playCost(match.player, card) <= match.energy;
-  const cottonAbility = canUseFromHand && card.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds';
+  const cottonAbility = inPlayerHand && match.active === 'player' && !match.over && card.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds';
   const canSummonFromHand = canUseFromHand && card.type !== 'Action' && canSummonCard(match.player, card) && !cottonAbility && match.player.lanes.some((unit) => !unit);
   const sageapeAbility = canUseFromHand && card.id === 'wb-sageape';
   const canAttackFromField = owner === match.player && laneIndex >= 0 && match.active === 'player' && !match.over && !match.attackResolving && canCardAttack(card) && canAttackLane(card,laneIndex,match.opponent);
@@ -772,7 +786,7 @@ function showCardTooltip(card, event) {
   const elementLabel = card.element === 'None' ? 'Neutral' : card.element;
   const typeIcon = cardTypeIcon(card, 'tooltip-field-type-icon');
   const tooltipClass = hasCardClass(card) ? `<span class="tooltip-class-chip">${classIconMarkup(card.role, card.element, 'tooltip-class-icon')}<span>${escapeHTML(card.role)}</span></span>` : '';
-  tooltip.innerHTML = `<button class="tooltip-dismiss" type="button" aria-label="Close card details">×</button><div class="tooltip-art">${artwork}</div><div class="tooltip-body"><div class="tooltip-kicker"><span>${card.title}</span><span class="tooltip-element-chip">${tooltipIcon}${escapeHTML(elementLabel)}</span>${tooltipClass}</div><strong class="tooltip-name">${card.name}</strong><div class="tooltip-type-row">${typeIcon}<span>${escapeHTML(typeLabel)}</span></div>${details}${classAbility}<div class="tooltip-card-ability"><b>CARD EFFECT</b><span>${card.ability}</span></div>${card.skipAttackThisTurn ? '<div class="tooltip-modifier frozen-note">Frozen: cannot attack this turn</div>' : ''}${laneIndex >= 0 ? `<div class="tooltip-status">FIELD · LANE ${laneIndex + 1}</div>` : ''}</div>${controls}`;
+  tooltip.innerHTML = `<button class="tooltip-dismiss" type="button" aria-label="Close card details">×</button><div class="tooltip-art">${artwork}</div><div class="tooltip-body"><div class="tooltip-kicker"><span>${card.title}</span><span class="tooltip-element-chip">${tooltipIcon}${escapeHTML(elementLabel)}</span>${tooltipClass}</div><strong class="tooltip-name">${card.name}</strong><div class="tooltip-type-row">${typeIcon}<span>${escapeHTML(typeLabel)}</span></div>${details}${classAbility}<div class="tooltip-card-ability"><b>CARD EFFECT</b><span>${card.ability}</span></div>${controls}${card.skipAttackThisTurn ? '<div class="tooltip-modifier frozen-note">Frozen: cannot attack this turn</div>' : ''}${laneIndex >= 0 ? `<div class="tooltip-status">FIELD · LANE ${laneIndex + 1}</div>` : ''}</div>`;
   tooltip.classList.toggle('has-controls', Boolean(controls));
   if (typeof tooltip.showPopover === 'function' && !tooltip.matches(':popover-open')) tooltip.showPopover();   tooltip.dataset.previewCard = card.instance; tooltip._anchorElement = event?.target?.closest?.('[data-card-preview]') || document.querySelector(`[data-card-preview="${CSS.escape(card.instance)}"]`); tooltip.classList.toggle('mobile-open', isTouchInput());
   tooltip.classList.add('visible'); tooltip.setAttribute('aria-hidden', 'false'); positionCardTooltip(event);
@@ -846,7 +860,34 @@ function playCost(owner, card) { if (!card) return Infinity; const fieldLanes = 
 function canSummonCard(owner, card) { return card?.id !== 'vishnu' || Boolean(owner?.lanes.some((unit) => unit?.name === 'Peppermint')); }
 function queueDrawAnimation(owner, card) { if(owner&&card) pendingDrawAnimations.push({side:owner===match.player?'player':'opponent',instance:card.instance}); }
 function drawCard(player, count = 1) {
-  for (let i = 0; i < count; i++) { if (player.deck.length) { const card=player.deck.shift(); player.hand.push(card); queueDrawAnimation(player,card); } }
+  for (let i = 0; i < count; i++) { if (player.deck.length) { const card=player.deck.shift(); player.hand.push(card); queueDrawAnimation(player,card); if (player.isAI && player.hand.length > MAX_HAND_SIZE) player.destroyed.push(player.hand.pop()); } }
+}
+const MAX_HAND_SIZE = 7;
+let handOverflowOpen = false;
+let pendingEndTurnAfterDiscard = false;
+function enforceHandLimit() {
+  if (!match.player || !match.opponent) return;
+  for (const owner of [match.player, match.opponent]) {
+    while (owner.isAI && owner.hand.length > MAX_HAND_SIZE) owner.destroyed.push(owner.hand.pop());
+  }
+  if (match.player.hand.length <= MAX_HAND_SIZE || handOverflowOpen) return;
+  handOverflowOpen = true;
+  const discardCount = match.player.hand.length - MAX_HAND_SIZE;
+  const dialog = document.getElementById('hand-limit-dialog');
+  document.getElementById('hand-limit-title').textContent = discardCount === 1 ? 'Choose a card to discard' : 'Choose cards to discard';
+  handLimitSelection.clear();
+  const handLimitCopy = document.getElementById('hand-limit-copy');
+  if (window.peppermintLanguage?.get() === 'hu') {
+    handLimitCopy.textContent = discardCount === 1
+      ? `A kezedben ${match.player.hand.length} kártya van. Válassz ki egy kártyát, amelyet a Pandémonium zónába küldesz.`
+      : `A kezedben ${match.player.hand.length} kártya van. Válaszd ki az eldobandó kártyákat, amelyeket a Pandémonium zónába küldesz.`;
+  } else {
+    handLimitCopy.textContent = `Your hand has ${match.player.hand.length} cards. Choose ${discardCount} ${discardCount === 1 ? 'card' : 'cards'} to send to the Pandemonium Zone.`;
+  }
+  document.getElementById('hand-limit-selection').textContent = `0 / ${discardCount} selected`;
+  document.getElementById('hand-limit-confirm').disabled = true;
+  document.getElementById('hand-limit-cards').innerHTML = match.player.hand.map(card => `<div class="hand-limit-card" role="checkbox" aria-checked="false" tabindex="0" data-hand-discard="${escapeHTML(card.instance)}">${cardMarkup(card)}<span class="hand-limit-check" aria-hidden="true">✓</span></div>`).join('');
+  dialog.showModal();
 }
 function playPendingDrawAnimations() {
   const pending=pendingDrawAnimations.splice(0);
@@ -894,7 +935,7 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, si
       };
       sheet.src = `assets/effects/${spriteFile}`;
     } else window.setTimeout(() => fx.remove(), 1250);
-    const abilityElements = { aemi:'Dark',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','dharma-revival':'Terra','solar-explosion':'Solar' };
+    const abilityElements = { aemi:'Ignis',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','dharma-revival':'Terra','solar-explosion':'Solar' };
     if (!silent) playSfx('special', abilityElements[key] || 'Mind');
   }, 0);
 }
@@ -916,6 +957,33 @@ function playHealthPotionFx(owner, index) {
   const fx = document.createElement('span'); fx.className = 'health-crystal-fx'; fx.innerHTML = '<svg viewBox="0 0 100 100" aria-hidden="true"><path class="crystal-heart" d="M50 86 15 51C-6 24 18 4 39 18l11 11 11-11c21-14 45 6 24 33Z"/><path class="crystal-facet" d="m50 29-13 20 13 37 13-37Z M15 51h70 M37 49l13-20 13 20"/><circle class="crystal-orbit" cx="50" cy="50" r="43"/><path class="crystal-spark" d="M50 1v14M50 85v14M1 50h14M85 50h14M16 16l10 10M74 74l10 10M84 16 74 26M26 74 16 84"/></svg>';
   host.appendChild(fx);
   window.setTimeout(() => fx.remove(), 1300);
+}
+function playMainLifeChainFx(side, mode) {
+  const host = document.querySelector(`#${side}-life .main-life-back .main-life`);
+  if (!host) return;
+  const fx = document.createElement('span');
+  fx.className = `main-life-chain-fx chain-${mode}`;
+  fx.setAttribute('aria-hidden', 'true');
+  fx.innerHTML = '<svg viewBox="0 0 200 60" preserveAspectRatio="none"><defs><linearGradient id="chain-metal" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff7ff"/><stop offset=".34" stop-color="#d9c9e4"/><stop offset=".62" stop-color="#777181"/><stop offset="1" stop-color="#f7ecff"/></linearGradient><filter id="chain-glow"><feGaussianBlur stdDeviation="2.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g class="chain-lines" fill="none" stroke="url(#chain-metal)" stroke-width="5" stroke-linecap="round" filter="url(#chain-glow)"><path d="M4 18 C34 5 66 40 99 30 S162 7 196 18"/><path d="M4 42 C37 54 65 19 99 30 S165 53 196 42"/></g><g class="chain-links" fill="none" stroke="#fff4ff" stroke-width="1.3" opacity=".8"><path d="M10 16 C40 8 66 37 99 30 S161 11 190 17"/><path d="M10 42 C39 50 68 22 99 30 S160 48 190 42"/></g><g class="chain-lock" filter="url(#chain-glow)"><path d="M92 29v-5a8 8 0 0 1 16 0v5" fill="none" stroke="#fff0ff" stroke-width="3"/><rect x="88" y="28" width="24" height="20" rx="4" fill="#c9b6d8" stroke="#fff4ff" stroke-width="2"/><circle cx="100" cy="37" r="2.4" fill="#402b48"/><path d="M100 39v4" stroke="#402b48" stroke-width="2"/></g><g class="chain-sparks" fill="#fff5ff"><path d="M30 7v8M26 11h8M169 46v8M165 50h8M100 2v6M97 5h6"/></g></svg>';
+  host.appendChild(fx);
+  playChainTransitionSound(mode);
+  window.setTimeout(() => fx.remove(), 1000);
+}
+function playChainTransitionSound(mode) {
+  try {
+    soundContext ??= new (window.AudioContext || window.webkitAudioContext)();
+    if (soundContext.state === 'suspended') soundContext.resume();
+    const now = soundContext.currentTime;
+    const notes = mode === 'restore' ? [370, 560, 840] : [980, 620, 290];
+    notes.forEach((frequency, index) => {
+      const osc = soundContext.createOscillator(); const gain = soundContext.createGain(); const filter = soundContext.createBiquadFilter();
+      const at = now + index * .055; const end = mode === 'restore' ? frequency * 1.18 : frequency * .58;
+      osc.type = index === 2 ? 'triangle' : 'sine'; osc.frequency.setValueAtTime(frequency, at); osc.frequency.exponentialRampToValueAtTime(Math.max(45, end), at + .2);
+      filter.type = 'bandpass'; filter.frequency.value = 1800 - index * 280; filter.Q.value = 2.2;
+      gain.gain.setValueAtTime(.0001, at); gain.gain.exponentialRampToValueAtTime(.055, at + .012); gain.gain.exponentialRampToValueAtTime(.0001, at + .23);
+      osc.connect(filter); filter.connect(gain); gain.connect(soundContext.destination); osc.start(at); osc.stop(at + .25);
+    });
+  } catch (_) { /* The visual chain effect still plays if audio is unavailable. */ }
 }
 function playManaPotionFx() {
   const host = document.querySelector('.energy');
@@ -1849,14 +1917,32 @@ function playSfx(kind, element = 'Mind') {
     noise.start(now + .012); noise.stop(now + .27);
   } catch (_) { /* Audio stays optional when a browser blocks it. */ }
 }
+const pendingAiSummons = new Set();
+let aiSummonAnimationTail = Promise.resolve();
+function waitForAiSummonAnimations() {
+  const current = aiSummonAnimationTail;
+  return current.then(() => current === aiSummonAnimationTail ? undefined : waitForAiSummonAnimations());
+}
 function animateSummon(owner, index, card) {
-  const side = owner === match.player ? 'player' : 'opponent';
-  const lane = document.querySelector(`[data-side="${side}"][data-lane="${index}"]`);
-  lane?.querySelector('.battle-card')?.classList.add('summon-pop');
-  const glyphs = { Ignis: '✹', Glacial: '❄', Terra: '✿', Aer: '〰', Aqua: '◉', Mind: '✧', Dark: '◐', Solar: '☼' };
-  if (lane) { const burst = document.createElement('div'); burst.className = `element-burst summon-burst effect-${card.element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[card.element] || '✧'}</span><i></i><i></i><i></i><i></i>`; lane.appendChild(burst); window.setTimeout(() => burst.remove(), 1050); }
-  playSfx('summon', card.element);
-  return new Promise((resolve) => window.setTimeout(resolve, 850));
+  const beginAnimation = () => {
+    const side = owner === match.player ? 'player' : 'opponent';
+    const lane = document.querySelector(`[data-side="${side}"][data-lane="${index}"]`);
+    lane?.classList.remove('ai-summon-pending');
+    lane?.querySelector('.battle-card')?.classList.add('summon-pop');
+    const glyphs = { Ignis: '✹', Glacial: '❄', Terra: '✿', Aer: '〰', Aqua: '◉', Mind: '✧', Dark: '◐', Solar: '☼' };
+    if (lane) { const burst = document.createElement('div'); burst.className = `element-burst summon-burst effect-${card.element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[card.element] || '✧'}</span><i></i><i></i><i></i><i></i>`; lane.appendChild(burst); window.setTimeout(() => burst.remove(), owner.isAI ? 1500 : 1050); }
+    playSfx('summon', card.element);
+    return new Promise((resolve) => window.setTimeout(resolve, owner.isAI ? 1250 : 850));
+  };
+  if (!owner.isAI) return beginAnimation();
+  pendingAiSummons.add(card.instance);
+  document.querySelector(`[data-side="opponent"][data-lane="${index}"]`)?.classList.add('ai-summon-pending');
+  const animation = aiSummonAnimationTail.then(() => {
+    pendingAiSummons.delete(card.instance);
+    return beginAnimation();
+  });
+  aiSummonAnimationTail = animation.catch(() => {});
+  return animation;
 }
 function lifeTargetElement(side, index, main = false) {
   const player = side === 'player' ? match.player : match.opponent;
@@ -2008,7 +2094,7 @@ function rivalTurn() {
   }
   render();
   if (summoned) animateSummon(match.opponent, summonedLane, summoned).then(() => triggerOnSummon(summoned, match.opponent, summonedLane));
-  if (!match.over) window.setTimeout(() => { runNpcRepositioning(match.opponent); runNpcAttacks(); }, summoned ? 1100 : 250);
+  if (!match.over) waitForAiSummonAnimations().then(() => { if (!match.over) window.setTimeout(() => { runNpcRepositioning(match.opponent); runNpcAttacks(); }, 250); });
 }
 function startPlayerTurn() {
   match.turn++;
@@ -2019,9 +2105,9 @@ function startPlayerTurn() {
   refreshAttackStatuses(match.player);
   resolveDharmaRevives(match.player);
   activateIslandTurnEffects(match.player);
-  drawCard(match.player); match.drawn = true; render();
+  drawCard(match.player); match.drawn = true; render(); enforceHandLimit();
 }
-function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; if (match.tutorialMode) { if ([1,8].includes(tutorialLessonIndex) || (tutorialLessonIndex===3&&tutorialPhase==='wait')) tutorialEndTurn(); else tutorialWrongAction('Do the action shown in the center message before ending your turn.'); return; } clearTemporaryAttackModifiers(match.player); match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
+function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; if (match.tutorialMode) { if ([1,8].includes(tutorialLessonIndex) || (tutorialLessonIndex===3&&tutorialPhase==='wait')) tutorialEndTurn(); else tutorialWrongAction('Do the action shown in the center message before ending your turn.'); return; } if (match.player.hand.length > MAX_HAND_SIZE) { pendingEndTurnAfterDiscard = true; enforceHandLimit(); return; } clearTemporaryAttackModifiers(match.player); match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
 function endMatch(won) {
   match.over = true;
   if (match.tutorialMode) { document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.add('hidden'); }
@@ -2316,6 +2402,10 @@ function getAttackDropAt(x, y, attacker, sourceIndex) {
   if (enemyLane) {
     const index = Number(enemyLane.dataset.lane);
     if (canTargetLane(attacker, sourceIndex, match.opponent, index)) return { target: { type: 'lane', index }, element: enemyLane, valid: true };
+    if (!match.opponent.lanes[index] && index === sourceIndex) {
+      if (canTargetLifeZone(attacker, sourceIndex, match.opponent, index)) return { target: { type: 'life', index }, element: enemyLane, valid: true };
+      if (canAttackMainLife(attacker, sourceIndex, match.opponent)) return { target: { type: 'life', index: sourceIndex, main: true }, element: enemyLane, valid: true };
+    }
     return { element: enemyLane, valid: false };
   }
   const mainLife = under?.closest('.life-card[data-life-side="opponent"][data-life-main="true"]');
@@ -2482,6 +2572,36 @@ document.addEventListener('pointerout', (event) => {
   }
   if (preview && !related?.closest?.('[data-card-preview]') && !related?.closest?.('#card-tooltip')) hideCardTooltip();
 });
+const handLimitSelection = new Set();
+document.getElementById('hand-limit-cards').addEventListener('click', (event) => {
+  const card = event.target.closest('[data-hand-discard]');
+  if (!card || !handOverflowOpen) return;
+  const id = card.dataset.handDiscard;
+  if (handLimitSelection.has(id)) handLimitSelection.delete(id);
+  else handLimitSelection.add(id);
+  card.classList.toggle('selected', handLimitSelection.has(id));
+  card.setAttribute('aria-checked', String(handLimitSelection.has(id)));
+  const discardCount = match.player.hand.length - MAX_HAND_SIZE;
+  document.getElementById('hand-limit-selection').textContent = `${handLimitSelection.size} / ${discardCount} selected`;
+  document.getElementById('hand-limit-confirm').disabled = handLimitSelection.size !== discardCount;
+});
+document.getElementById('hand-limit-cards').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' || event.key === ' ') { const card = event.target.closest('[data-hand-discard]'); if (card) { event.preventDefault(); card.click(); } }
+});
+document.getElementById('hand-limit-confirm').addEventListener('click', () => {
+  if (!handOverflowOpen || !match.player) return;
+  const required = match.player.hand.length - MAX_HAND_SIZE;
+  if (handLimitSelection.size !== required) return;
+  const discarded = match.player.hand.filter(card => handLimitSelection.has(card.instance));
+  match.player.hand = match.player.hand.filter(card => !handLimitSelection.has(card.instance));
+  match.player.destroyed.push(...discarded);
+  handLimitSelection.clear(); handOverflowOpen = false;
+  document.getElementById('hand-limit-dialog').close();
+  render();
+  if (discarded.length) logBattleEvent(`You sent ${discarded.map(card => card.name).join(', ')} to the Pandemonium Zone to meet the hand limit.`, 'player');
+  if (pendingEndTurnAfterDiscard) { pendingEndTurnAfterDiscard = false; endPlayerTurn(); }
+});
+document.getElementById('hand-limit-dialog').addEventListener('cancel', event => { if (handOverflowOpen) event.preventDefault(); });
 document.getElementById('effect-options').addEventListener('click', (event) => {
   const button = event.target.closest('[data-choice]');
   if (!button || !pendingEffectChoice) return;

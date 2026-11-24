@@ -168,3 +168,11 @@
 @media(max-width:700px){#booster-display-panel{min-height:0;padding:9px;border-radius:16px}.booster-display-heading{min-height:0;align-items:center;padding:14px 10px;gap:4px}.booster-pack-art{min-width:0;padding:4px 0}.booster-pack-art>img{width:clamp(136px,39vw,210px);height:clamp(180px,52vw,255px)}.booster-display-heading h3{font-size:clamp(22px,6vw,31px)}.booster-display-heading p{font-size:11px}.booster-buy-row{gap:9px;margin-top:13px}.booster-buy{min-height:74px;padding:13px 10px;font-size:15px}.booster-buy span{font-size:10px}}.booster-display-copy{align-self:stretch;display:flex;flex:1;min-width:0;flex-direction:column}
 .booster-buy-row{grid-template-columns:1fr 1.2fr;align-self:stretch;margin-top:auto;margin-bottom:0}
 @media(max-width:700px){.booster-display-copy{width:55%;flex:1}.booster-buy-row{grid-template-columns:1fr;gap:7px;margin-top:auto;padding-top:14px}.booster-buy{min-height:64px;padding:10px 7px;font-size:12px;letter-spacing:.025em}.booster-buy span{font-size:9px}}
+/* Keep pack actions close to the display title and stock line, flush left */
+.booster-display-heading{padding-left:clamp(10px,1.25vw,18px)}
+.booster-display-copy{align-self:stretch;justify-content:flex-start;padding-left:0}
+.booster-buy-row{margin:auto 0 12px;max-width:780px;align-self:flex-start}
+@media(max-width:700px){.booster-buy-row{margin:9px 0 0;padding-top:0}}
+/* Center the featured booster action directly above its pack art */
+.featured-booster-copy button{align-self:center}
+@media(max-width:760px){.featured-booster-copy{grid-column:1/-1;width:100%}.featured-booster-copy button{align-self:center}.featured-booster-pack{grid-column:1/-1;grid-row:auto;width:min(76%,290px);height:clamp(145px,28vh,220px)}}@media(min-width:761px){.featured-booster-copy button{position:relative;left:clamp(8px,1.1vw,18px)}}

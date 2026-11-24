@@ -199,6 +199,26 @@
 .tooltip-card-controls button:hover,.tooltip-card-controls button:focus-visible{transform:translateY(-1px);box-shadow:0 0 16px #76e2bd66;outline:1px solid #a7f3d4}
 .card-tooltip.has-controls{grid-template-rows:minmax(0,1fr) auto}
 .card-tooltip.has-controls .tooltip-card-controls{display:flex;grid-column:1/-1;grid-row:2;align-items:center;justify-content:flex-end;gap:8px;min-height:42px;padding-top:9px;border-top:1px solid #ffffff24;background:linear-gradient(180deg,#211e2d55,#19162299)}
+.card-tooltip.has-controls{grid-template-rows:minmax(0,1fr)}
+.card-tooltip.has-controls .tooltip-body .tooltip-card-controls{display:flex;position:static!important;grid-column:auto;grid-row:auto;align-self:stretch;justify-content:flex-start;flex-wrap:wrap;gap:8px;min-height:0;margin-top:8px;padding:0;border:0;background:transparent}
+.card-tooltip.has-controls .tooltip-body .tooltip-card-controls button{flex:0 1 auto}
+.main-life-chain-fx{position:absolute;z-index:7;inset:-22% -2%;display:block;pointer-events:none;overflow:visible}
+.main-life-chain-fx svg{width:100%;height:100%;overflow:visible}
+.main-life-chain-fx .chain-lines{transform-origin:center;}
+.main-life-chain-fx.chain-break .chain-lines{animation:chain-sever .78s cubic-bezier(.18,.72,.25,1) both}
+.main-life-chain-fx.chain-break .chain-lock{transform-origin:100px 36px;animation:chain-lock-drop .78s cubic-bezier(.18,.72,.25,1) both}
+.main-life-chain-fx.chain-break .chain-sparks{animation:chain-spark-burst .72s ease-out both}
+.main-life-chain-fx.chain-restore .chain-lines{stroke-dasharray:220;stroke-dashoffset:220;animation:chain-reform .82s cubic-bezier(.2,.7,.2,1) both}
+.main-life-chain-fx.chain-restore .chain-links{animation:chain-link-flash .82s ease-out both}
+.main-life-chain-fx.chain-restore .chain-lock{transform-origin:100px 36px;animation:chain-lock-seat .72s cubic-bezier(.2,.8,.2,1) both}
+.main-life-chain-fx.chain-restore .chain-sparks{animation:chain-spark-burst .72s ease-out both}
+@keyframes chain-sever{0%{opacity:0;transform:scaleX(.65)}22%{opacity:1;transform:scaleX(1.08)}48%{opacity:1;transform:scaleX(1.12) translateY(-2px)}100%{opacity:0;transform:scaleX(1.36) translateY(-10px)}}
+@keyframes chain-lock-drop{0%,28%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(21px) rotate(34deg)}}
+@keyframes chain-spark-burst{0%,30%{opacity:0;transform:scale(.3)}48%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.7)}}
+@keyframes chain-reform{0%{opacity:.1;stroke-dashoffset:220;transform:scaleX(.55)}55%{opacity:1;stroke-dashoffset:70;transform:scaleX(1.08)}100%{opacity:1;stroke-dashoffset:0;transform:scaleX(1)}}
+@keyframes chain-link-flash{0%,48%{opacity:0}68%{opacity:1}100%{opacity:.8}}
+@keyframes chain-lock-seat{0%{opacity:0;transform:translateY(20px) scale(.55)}62%{opacity:1;transform:translateY(-3px) scale(1.18)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.main-life-chain-fx *{animation-duration:.12s!important}}
 .card-tooltip.has-controls .tooltip-card-controls button{min-width:112px;min-height:36px;padding:8px 14px;font-size:10px;letter-spacing:.08em}
 @media(max-width:520px){.card-tooltip.mobile-open.has-controls{grid-template-rows:minmax(0,1fr) auto}.card-tooltip.mobile-open.has-controls .tooltip-card-controls{position:sticky;bottom:-9px;justify-content:stretch;margin:0 -9px -9px;padding:8px 9px;background:linear-gradient(180deg,#211e2ded,#191622fa)}.card-tooltip.mobile-open.has-controls .tooltip-card-controls button{flex:1 1 0;min-width:0;min-height:38px}}
 .hand-card{touch-action:pan-x;user-select:none;-webkit-user-select:none}
@@ -226,6 +246,7 @@
 .attack-drag-ghost{position:fixed;z-index:2000;left:0;top:0;width:clamp(86px,8vw,132px);height:clamp(108px,10vw,158px);margin:0;pointer-events:none;opacity:.94;transform:translate(-50%,-55%) scale(1.05);filter:drop-shadow(0 10px 24px #05030acc) drop-shadow(0 0 13px #ff7e91aa);border-color:#ff9eaa}
 .attack-drop-target{outline:2px solid #ff9da9!important;outline-offset:2px;background-color:#ff69851c!important;box-shadow:inset 0 0 30px #ff69852e,0 0 20px #ff82934d!important}
 .attack-life-target{outline:2px solid #ff9da9!important;outline-offset:2px;background:#ff698529!important;box-shadow:0 0 18px #ff829366!important}
+.lane.ai-summon-pending .battle-card{opacity:0;transform:scale(.78);pointer-events:none}
 .hand-card.dragging{opacity:.35;transform:scale(.96)}
 .drag-ghost{position:fixed;z-index:2000;left:0;top:0;width:clamp(82px,9vw,144px);height:clamp(102px,11vw,174px);margin:0;pointer-events:none;opacity:.94;transform:translate(-50%,-58%) scale(1.05);filter:drop-shadow(0 10px 24px #05030acc) drop-shadow(0 0 12px #88f4cf88);border-color:#a6f5d7}
 .drag-drop-target{outline:2px solid #83efc4!important;outline-offset:2px;background-color:#63d8ae20!important;box-shadow:inset 0 0 28px #67e8bb2e,0 0 18px #78f0c34c!important}
@@ -452,3 +473,9 @@ body[data-field-theme="valhalla-bar"]::before{background-image:linear-gradient(1
 
 body[data-field-theme=grass-plain]::before{background-image:linear-gradient(180deg,#11132338,#121b2c55 50%,#0b1320bd),url(assets/backgrounds/grass-plain-motion.gif)}
 @media(max-width:520px){.hand-card .card-ability-trigger,.battle-card .card-ability-trigger{left:3px!important;right:auto!important}}
+
+/* Protected main life crystal while any reserve life remains */
+.life-card.main-life:has(img[src^="assets/ui-icons/crystal-heart-chained.png"]){border-color:#f0a5c5;background:linear-gradient(110deg,#44243d,#292039);box-shadow:inset 0 0 14px #e64a8d18,0 0 14px #d7579340}
+.life-card.main-life img[src^="assets/ui-icons/crystal-heart-chained.png"]{left:50%;width:35px;height:35px;transform:translate(-50%,-50%);filter:drop-shadow(0 0 7px #f04b91a8)}
+.player-life-row .life-card.main-life img[src^="assets/ui-icons/crystal-heart-chained.png"]{filter:drop-shadow(0 0 7px #55dfbdab)}
+@media(max-width:520px){.life-card.main-life img[src^="assets/ui-icons/crystal-heart-chained.png"]{width:31px;height:31px}}.enemy-life-row .life-card.main-life img[src^="assets/ui-icons/crystal-heart-chained.png"]{filter:hue-rotate(290deg) saturate(1.2) drop-shadow(0 0 7px #b67cffc4)}
