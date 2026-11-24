@@ -606,6 +606,7 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
     if (academyCount) { attack += 1; reasons.push('Academy Hall +1'); addModifier(1, 'Academy Hall'); }
   }
   if (card.id === 'zodiac-guardian-rick') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Terra').length; if (bonus) { attack += bonus; reasons.push(`Terra cards destroyed +${bonus}`); addModifier(bonus, card.name); } }
+  if (card.id === 'zodiac-guardian-sabrina') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Aer').length; if (bonus) { attack += bonus; reasons.push(`Aer cards in Pandemonium Zone +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'wb-zodiac-topaz' || card.id === 'wb-zodiac-dimitri') { const element = card.id === 'wb-zodiac-topaz' ? 'Aer' : 'Glacial'; const bonus = [...owner.hand, ...owner.lanes.filter(Boolean)].filter((unit) => unit.element === element).length; if (bonus) { attack += bonus; reasons.push(`${element} cards in hand or on field +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'zodiac-guardian-kage') { const bonus = owner.destroyed.filter((unit) => unit.element === 'Dark').length; if (bonus) { attack += bonus; reasons.push(`Dark cards destroyed +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'ip-coyote-zodiac') { const bonus = owner.destroyed.filter((unit) => unit.role === 'Brawler').length; if (bonus) { attack += bonus; reasons.push(`Brawlers destroyed +${bonus}`); addModifier(bonus, card.name); } }
