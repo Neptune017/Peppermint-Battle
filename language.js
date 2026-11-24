@@ -688,6 +688,11 @@
     'Cannot attack on the turn it is summoned or its next turn.':'A megidézése körében és a következő körében sem támadhat.',
     'On summon, draw a Valkyrie’s Mead.':'Megidézéskor húzz egy Valkűr-mézsört.',
     'Valhalla Bar is now the shared field. Euphoria coin flips can save attacking Battle Cards.':'A Valhalla Bar lett a közös mező. Az Eufóriásan támadó Harci kártyákat az érmedobás megmentheti.'
+  }); Object.assign(translations,{
+    'On summon, give Euphoria to adjacent allies until the start of your next turn. Their attack doubles, but they are destroyed after attacking.':'Megidézéskor Eufóriát ad a szomszédos szövetséges Harci kártyáknak a következő saját köröd kezdetéig. Támadásuk megduplázódik, de támadás után elpusztulnak.',
+    'On summon, give Euphoria to the opposing Battle Card in this lane until the start of your next turn. Its attack doubles, but it is destroyed after attacking.':'Megidézéskor Eufóriát ad az ebben a sávban álló ellenséges Harci kártyának a következő saját köröd kezdetéig. Támadása megduplázódik, de támadás után elpusztul.',
+    'Give a Battle Card Euphoria until the start of your next turn. Its attack doubles, but it is destroyed after attacking.':'Adj Eufóriát egy Harci kártyának a következő saját köröd kezdetéig. Támadása megduplázódik, de támadás után elpusztul.',
+    'Give a Battle Card Euphoria until the start of your next turn.':'Adj Eufóriát egy Harci kártyának a következő saját köröd kezdetéig.'
   }); for(const [english,hungarian] of Object.entries(translations))glossary.set(english,hungarian);
   const originalText = new WeakMap();
   const lastTranslatedText = new WeakMap();
@@ -724,7 +729,9 @@
   }
   function translateDynamic(text){
     const hname=(value)=>reviseHungarian(glossary.get(value)||value);
-    let m=text.match(/^Choose one of your fighters\. Replace it with a same-named Zodiac Guardian from your (?:Transformation|Ascendance) Deck\.$/); if(m)return 'Válassz egy saját Harcost, majd cseréld le a Felemelkedés paklidban lévő, azonos nevű Zodiákus Őrzőre.';
+    let m=text.match(/^(.+) needs one of your Battle Cards in a Battle Zone\.$/); if(m)return hname(m[1])+' használatához Harci kártyádnak kell lennie egy Harci zónában.';
+    m=text.match(/^(.+) needs (\d+) Mana\.$/); if(m)return hname(m[1])+' kijátszásához '+m[2]+' Mana szükséges.';
+    m=text.match(/^Choose one of your fighters\. Replace it with a same-named Zodiac Guardian from your (?:Transformation|Ascendance) Deck\.$/); if(m)return 'Válassz egy saját Harcost, majd cseréld le a Felemelkedés paklidban lévő, azonos nevű Zodiákus Őrzőre.';
     m=text.match(/^Choose a fighter that can attack this turn\.$/); if(m)return 'Válassz egy Harcost, aki ebben a körben támadhat.';
     const actor=text.match(/^(You|Enemy): (.+)$/);
     if(actor){const translated=translateDynamic(actor[2]);if(translated!==null)return (actor[1]==='You'?'Te: ':'Ellenfél: ')+translated;}

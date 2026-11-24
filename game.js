@@ -151,7 +151,7 @@ const valhallaLibrary = [
   { id: 'zodiac-valkyrie-chicken', title: 'Zodiac', name: 'Valkyrie Chicken', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacValkyrieChicken.webp', ability: 'If Sabrina is on the field, draw an Avatar Gem.' },
   { id: 'zodiac-guardian-sabrina', title: 'Zodiac Guardian', name: 'Sabrina', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ZodiacGuardianSabrina.webp', ability: 'Gains +1 attack for each Aer card in your Pandemonium Zone.' },
   { id: 'valhalla-axir', title: 'Valhalla', name: 'Axir', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Neutral', role: 'Blader', art: 'assets/cards/ValhallaAxir.webp', ability: 'While another Valhalla Creature is on your field, Axir gains +1 attack.' },
-  { id: 'valhalla-barfy', title: 'Valhalla', name: 'Barfy', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/ValhallaBarfy.webp', ability: 'On summon, give Euphoria to adjacent allies until the start of the next turn. Their attack doubles, but they are destroyed after attacking.' },
+  { id: 'valhalla-barfy', title: 'Valhalla', name: 'Barfy', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/ValhallaBarfy.webp', ability: 'On summon, give Euphoria to adjacent allies until the start of your next turn. Their attack doubles, but they are destroyed after attacking.' },
   { id: 'valhalla-khendal', title: 'Valhalla', name: 'Khendal', maxCopies: 1, deckCopies: 1, cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ValhallaKhendal.webp', ability: 'Gains +1 attack for each card with Euphoria on the field.' },
   { id: 'valhalla-bar', title: '', name: 'Valhalla Bar', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValhallaBar.webp', ability: 'Shared Field: when a Battle Card with Euphoria attacks, flip a coin. Heads: it is not destroyed by Euphoria.' },
   { id: 'valhalla-miss-ragna', title: 'Valhalla', name: 'Miss Ragna', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Terra', role: 'Trickster', art: 'assets/cards/ValhallaMissRagna.webp', ability: 'The first time an adjacent ally would be destroyed by an enemy card effect, destroy Miss Ragna instead.' },
@@ -162,8 +162,8 @@ const valhallaLibrary = [
   { id: 'valhalla-sabrina', title: 'Valhalla', name: 'Sabrina', maxCopies: 1, deckCopies: 1, cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ValhallaSabrina.webp', ability: 'Cannot be destroyed by card effects, including Euphoria.' },
   { id: 'valhalla-sloetunn', title: 'Valhalla', name: 'Sloetunn', type: 'Creature', maxCopies: 3, cost: 1, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/ValhallaSloetunn.webp', ability: 'Cannot attack on the turn it is summoned or its next turn.' },
   { id: 'valhalla-wendy', title: 'Valhalla', name: 'Wendy', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Dark', role: 'Trickster', art: 'assets/cards/ValhallaWendy.webp', ability: 'On summon, draw a Valkyrie’s Mead.' },
-  { id: 'valhalla-meadsting', title: 'Valhalla', name: 'Meadsting', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/ValhallaMeadsting.webp', ability: 'On summon, give Euphoria to the opposing Battle Card in this lane until the start of the next turn. Its attack doubles, but it is destroyed after attacking.' },
-  { id: 'valkyries-mead', title: 'General', name: "Valkyrie's Mead", type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValkyriesMead.webp', ability: 'Give a Battle Card Euphoria until the start of the next turn. Its attack doubles, but it is destroyed after attacking.' },
+  { id: 'valhalla-meadsting', title: 'Valhalla', name: 'Meadsting', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/ValhallaMeadsting.webp', ability: 'On summon, give Euphoria to the opposing Battle Card in this lane until the start of your next turn. Its attack doubles, but it is destroyed after attacking.' },
+  { id: 'valkyries-mead', title: 'General', name: "Valkyrie's Mead", type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValkyriesMead.webp', ability: 'Give a Battle Card Euphoria until the start of your next turn. Its attack doubles, but it is destroyed after attacking.' },
   { id: 'golden-egg-flatbread', title: 'General', name: 'Golden Egg Flatbread', type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/GoldenEggFlatbread.webp', ability: 'Choose a Battle Card with Euphoria. It will not be destroyed by Euphoria after attacking.' },
   { id: 'training', title: 'General', name: 'Training', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/Training.webp', ability: 'Give a Battle Card +1 attack.' },
 ];
@@ -180,7 +180,7 @@ let selectedBattleMode = 'collection';
 let tutorialLessonIndex = 0;
 let pendingDrawAnimations = [];
 const animatingDrawInstances = new Set();
-const match = { turn: 1, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
+const match = { turn: 1, turnSerial: 0, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
 document.getElementById('battle-history-list')?.previousElementSibling?.addEventListener('click', () => {
@@ -267,7 +267,7 @@ function beginMatch(playerDeckId = 'academy', opponentDeckId = 'wild-west', coll
   battleHistory.length = 0;
   const historyList = document.getElementById('battle-history-list'); if (historyList) historyList.replaceChildren();
   const historyCount = document.getElementById('history-count'); if (historyCount) historyCount.textContent = '0';
-  match.turn = 1; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.tutorialMode = tutorialMode; match.avatarGemUses = 0; match.battleDestroyedCards = 0;
+  match.turn = 1; match.turnSerial = 0; match.active = 'player'; match.energy = 1; match.maxEnergy = 1; match.turnEnergyCap = 1; match.secondPlayerBonusPending = true; match.fieldCard = null; match.pendingDharmaRevives = []; match.selected = null; match.attackerLane = null; match.attackMode = false; match.attackResolving = false; match.drawn = false; match.over = false; match.collectionOnly = collectionOnly; match.tutorialMode = tutorialMode; match.avatarGemUses = 0; match.battleDestroyedCards = 0;
   match.playerDeckId = collectionOnly ? 'collection' : playerDeckId; match.opponentDeckId = opponentDeckId; document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.add('hidden');
   match.player = newPlayer(false, collectionOnly ? 'academy' : match.playerDeckId, collectionOnly); match.opponent = newPlayer(true, match.opponentDeckId);
   if (tutorialMode) setupTutorialScene(0); else match.player.hand.forEach((card)=>queueDrawAnimation(match.player,card));
@@ -857,8 +857,7 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, si
 }
 let fieldFxSequence = 0;
 function playFieldActivationFx(fieldId) {
-  const host = document.querySelector('.battlefield');
-  if (!host) return;
+  const host = document.body;
   const names = { 'ip-field':'ISLAND PARADISE', 'toy-store':'TOY STORE', 'christmas-mall':'CHRISTMAS MALL', 'academy-grounds':'ACADEMY HALL', 'cactus-creek':'CACTUS CREEK', 'valhalla-bar':'VALHALLA BAR' };
   const id = `field-flow-${++fieldFxSequence}`;
   const fx = document.createElement('div');
@@ -1002,11 +1001,11 @@ function setSharedField(owner, id, card = null) {
   }
   match.fieldCard = { id, owner: owner === match.player ? 'player' : 'opponent', card };
 }
-function applyEuphoria(card, owner = cardOwner(card)) { if (!card) return; const currentAttack = owner ? effectiveAttack(card, owner, {}) : Math.max(0, card.attack + (card.attackBonus || 0)); card.euphoriaAttackBonus = currentAttack; card.euphoria = true; card.euphoriaProtected = false; render(); }
+function applyEuphoria(card, owner = cardOwner(card)) { if (!card) return; const currentAttack = owner ? effectiveAttack(card, owner, {}) : Math.max(0, card.attack + (card.attackBonus || 0)); card.euphoriaAttackBonus = currentAttack; card.euphoria = true; card.euphoriaProtected = false; card.euphoriaExpiresAt = (match.turnSerial || 0) + 2; render(); }
 function expireEuphoriaAtTurnStart() {
   [match.player, match.opponent].forEach((owner) => owner?.lanes.forEach((card) => {
-    if (!card?.euphoria) return;
-    card.euphoria = false; card.euphoriaProtected = false; card.euphoriaAttackBonus = 0;
+    if (!card?.euphoria || (card.euphoriaExpiresAt ?? 0) > match.turnSerial) return;
+    card.euphoria = false; card.euphoriaProtected = false; card.euphoriaAttackBonus = 0; delete card.euphoriaExpiresAt;
   }));
 }
 function refreshAttackStatuses(owner) {
@@ -1017,12 +1016,23 @@ function refreshAttackStatuses(owner) {
     card.ready = true; card.attacked = false; card.attacksThisTurn = 0;
   });
 }
+function playCoinFlipFx(heads) {
+  const host = document.querySelector('.battlefield');
+  if (!host) return;
+  const fx = document.createElement('div');
+  fx.className = 'coin-flip-fx';
+  fx.setAttribute('aria-hidden', 'true');
+  fx.innerHTML = `<span class="coin-flip-disc ${heads ? 'coin-heads' : 'coin-tails'}"><i class="coin-flip-face coin-front"><em>VALHALLA</em><b>HEADS</b></i><i class="coin-flip-face coin-back"><em>VALHALLA</em><b>TAILS</b></i></span>`;
+  host.appendChild(fx);
+  window.setTimeout(() => fx.remove(), 1500);
+}
 function resolveEuphoriaAfterAttack(owner, laneIndex) {
   const card = owner?.lanes[laneIndex];
   if (!card?.euphoria) return;
   const protectedByCard = Boolean(card.euphoriaProtected || isEffectProtected(card));
   const hasValhallaBar = match.fieldCard?.id === 'valhalla-bar';
   const survivesCoin = hasValhallaBar && Math.random() < 0.5;
+  if (hasValhallaBar && !protectedByCard) playCoinFlipFx(survivesCoin);
   card.euphoria = false; card.euphoriaProtected = false; card.euphoriaAttackBonus = 0;
   if (protectedByCard || survivesCoin) {
     render();
@@ -1035,6 +1045,8 @@ function resolveEuphoriaAfterAttack(owner, laneIndex) {
 function activateAction(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (match.tutorialMode && owner===match.player && action && !tutorialCanUseAction(action)) { tutorialWrongAction('Play the Action or Field card named in the lesson.'); return; }
+  if (action?.type === 'Action' && match.energy < action.cost) { announceEffect(`${action.name || action.title} needs ${action.cost} Mana.`); return; }
+  if (['valkyries-mead', 'training'].includes(action?.id) && !owner.lanes.some(isBattleCard)) { announceEffect(`${action.name} needs one of your Battle Cards in a Battle Zone.`); return; }
   if (action) { match.eventActor = owner; match.eventSource = action.name || action.title; logBattleEvent(`${battleSideName(owner)} activated ${action.name || action.title}.`, owner === match.player ? 'player' : 'enemy'); }
   if (action?.type === 'Action' && match.energy >= action.cost) playActionSfx(action);
   if (action?.id === 'avatar-gem') useAvatarGem(owner, actionInstance);
@@ -1044,7 +1056,7 @@ function activateAction(owner, actionInstance) {
   else if (action?.id === 'locker-room') useLockerRoom(owner, actionInstance);
   else if (action?.id === 'valkyries-mead' && match.energy >= action.cost) {
     const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · double attack, then destroy after attacking` }] : []);
-    chooseEffect(owner, "Valkyrie's Mead · choose a Battle Card", 'Give a Battle Card Euphoria.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, owner); playSpecialFx(owner, Number(lane), 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`); });
+    chooseEffect(owner, "Valkyrie's Mead · choose a Battle Card", 'Give a Battle Card Euphoria until the start of your next turn.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, owner); playSpecialFx(owner, Number(lane), 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`); });
   }
   else if (action?.id === 'golden-egg-flatbread' && match.energy >= action.cost) {
     const targets = owner.lanes.flatMap((unit, lane) => unit?.euphoria ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · protected from Euphoria` }] : []);
@@ -1888,7 +1900,7 @@ function rivalTurn() {
   if (match.active !== 'transition' || match.over) return;
   if (match.tutorialMode) { tutorialWrongAction('The tutorial is arranging the next practice move.'); return; }
   logBattleEvent('Enemy turn began.', 'enemy');
-  match.active = 'opponent'; match.drawn = false;
+  match.active = 'opponent'; match.drawn = false; match.turnSerial = (match.turnSerial || 0) + 1;
   expireEuphoriaAtTurnStart();
   if (match.secondPlayerBonusPending) { match.energy = match.maxEnergy + 1; match.secondPlayerBonusPending = false; }
   else match.energy = match.maxEnergy;
@@ -1943,7 +1955,7 @@ function startPlayerTurn() {
   match.turn++;
   clearTemporaryAttackModifiers(match.player); clearTemporaryAttackModifiers(match.opponent);
   logBattleEvent('Your turn began.', 'player');
-  match.active = 'player'; match.drawn = false; match.maxEnergy = Math.min(10, match.maxEnergy + 1); match.energy = match.maxEnergy; match.turnEnergyCap = match.maxEnergy;
+  match.active = 'player'; match.drawn = false; match.turnSerial = (match.turnSerial || 0) + 1; match.maxEnergy = Math.min(10, match.maxEnergy + 1); match.energy = match.maxEnergy; match.turnEnergyCap = match.maxEnergy;
   expireEuphoriaAtTurnStart();
   refreshAttackStatuses(match.player);
   resolveDharmaRevives(match.player);
