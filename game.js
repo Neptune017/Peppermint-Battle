@@ -148,6 +148,8 @@ const winterBallLibrary = [
   { id: 'wb-merry-christmas', title: 'General', name: 'Merry Christmas!', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Glacial', role: 'Action', art: 'assets/cards/MerryChristmas.webp', ability: 'Search your deck for a Glacial card and add it to your hand.' },
 ];
 const valhallaLibrary = [
+  { ...cardLibrary.find((card) => card.id === 'avatar-gem'), maxCopies: 3, deckCopies: 1 },
+  { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
   { id: 'zodiac-valkyrie-chicken', title: 'Zodiac', name: 'Valkyrie Chicken', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacValkyrieChicken.webp', ability: 'If Sabrina is on the field, draw an Avatar Gem.' },
   { id: 'zodiac-guardian-sabrina', title: 'Zodiac Guardian', name: 'Sabrina', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ZodiacGuardianSabrina.webp', ability: 'Gains +1 attack for each Aer card in your Pandemonium Zone.' },
   { id: 'valhalla-axir', title: 'Valhalla', name: 'Axir', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Neutral', role: 'Blader', art: 'assets/cards/ValhallaAxir.webp', ability: 'While another Valhalla Creature is on your field, Axir gains +1 attack.' },
@@ -422,7 +424,10 @@ function showDeckSelect() {
 }
 function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
 function displayedCardType(card) { return ['academy-grounds', 'toy-store', 'ip-field', 'christmas-mall', 'cactus-creek', 'valhalla-bar'].includes(card.id) ? 'Field' : card.type || 'Fighter'; }
-function isBattleCard(card) { return ['Fighter', 'Creature', 'Transformation'].includes(card?.type || 'Fighter'); }
+// Cards in a Battle Zone are battle cards regardless of their printed subtype.
+// Treat the zones as the source of truth so Creature/Fighter and older cards
+// without a type field all remain valid targets for Battle Card effects.
+function isBattleCard(card) { return Boolean(card && !['Action', 'Field'].includes(card.type)); }
 function displayedCardName(card) { return card.name || (displayedCardType(card) === 'Field' ? 'Field' : card.title); }
 function cardTypeIcon(card, extraClass = '') { return displayedCardType(card) === 'Field' ? `<svg class="field-type-icon ${extraClass}" viewBox="0 0 48 48" role="img" aria-label="Field card"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 5 9 11 9 18s-3 13-9 18M24 6c-6 5-9 11-9 18s3 13 9 18M9 15h30M9 33h30"/></svg>` : ''; }
 function hasCardClass(card) { return !!card.role && card.role !== 'Action' && card.type !== 'Action'; }
@@ -1055,16 +1060,31 @@ function activateAction(owner, actionInstance) {
   else if (action?.id === 'cooking') useCooking(owner, actionInstance);
   else if (action?.id === 'locker-room') useLockerRoom(owner, actionInstance);
   else if (action?.id === 'valkyries-mead' && match.energy >= action.cost) {
-    const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · double attack, then destroy after attacking` }] : []);
-    chooseEffect(owner, "Valkyrie's Mead · choose a Battle Card", 'Give a Battle Card Euphoria until the start of your next turn.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, owner); playSpecialFx(owner, Number(lane), 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`); });
+    const targets = [
+      ...owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: `own:${lane}`, label: unit.name, detail: `Your Battle Zone · Lane ${lane + 1} · double attack, then destroy after attacking` }] : []),
+      ...match.opponent.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: `enemy:${lane}`, label: unit.name, detail: `Opponent’s Battle Zone · Lane ${lane + 1} · double attack, then destroy after attacking` }] : []),
+    ];
+    chooseEffect(owner, "Valkyrie's Mead · choose a Battle Card", 'Give any Battle Card Euphoria until the start of its owner’s next turn.', targets, (key) => {
+      const [side, laneText] = String(key).split(':'); const lane = Number(laneText); const targetOwner = side === 'own' ? owner : match.opponent; const target = targetOwner.lanes[lane];
+      if (!isBattleCard(target)) { announceEffect('That Battle Card is no longer in its Battle Zone.'); return; }
+      if (!owner.hand.includes(action)) { announceEffect("Valkyrie's Mead is no longer in your hand."); return; }
+      if (match.energy < action.cost) { announceEffect("You no longer have enough Mana for Valkyrie's Mead."); return; }
+      owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, targetOwner); playSpecialFx(targetOwner, lane, 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`);
+    });
   }
   else if (action?.id === 'golden-egg-flatbread' && match.energy >= action.cost) {
     const targets = owner.lanes.flatMap((unit, lane) => unit?.euphoria ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · protected from Euphoria` }] : []);
     chooseEffect(owner, 'Golden Egg Flatbread · protect a Battle Card', 'Choose a Battle Card with Euphoria. It will survive Euphoria after attacking.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !target.euphoria || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.euphoriaProtected = true; render(); announceEffect(`${target.name} is protected from Euphoria’s destruction.`); });
   }
   else if (action?.id === 'training' && match.energy >= action.cost) {
-    const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · permanent +1 attack` }] : []);
-    chooseEffect(owner, 'Training · choose a Battle Card', 'Give a Battle Card +1 attack.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; addPermanentAttack(target, 1, 'Training'); render(); announceEffect(`${target.name} gained +1 attack from Training.`); });
+    const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: unit.instance, label: unit.name, detail: `Your Battle Zone · Lane ${lane + 1} · permanent +1 attack` }] : []);
+    chooseEffect(owner, 'Training · choose a Battle Card', 'Give one of your Battle Cards +1 attack.', targets, (instance) => {
+      const lane = owner.lanes.findIndex((unit) => unit?.instance === instance); const target = owner.lanes[lane];
+      if (!isBattleCard(target)) { announceEffect('That Battle Card is no longer in your Battle Zone.'); return; }
+      if (!owner.hand.includes(action)) { announceEffect('Training is no longer in your hand.'); return; }
+      if (match.energy < action.cost) { announceEffect('You no longer have enough Mana for Training.'); return; }
+      owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; addPermanentAttack(target, 1, 'Training'); render(); announceEffect(`${target.name} gained +1 attack from Training.`);
+    });
   }
   else if (action?.id === 'drinking-tea' && match.energy >= action.cost) {
     const choices = owner.lanes.flatMap((unit, lane) => unit?.element === 'Glacial' && !unit.ready ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · may act this turn` }] : []);
