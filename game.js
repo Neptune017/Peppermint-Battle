@@ -842,7 +842,11 @@ function playPendingDrawAnimations() {
     flight.style.transform=`translate(${window.innerWidth-to.left+24}px,0) scale(.36)`;
     target.classList.add('draw-arriving'); document.body.appendChild(flight);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{flight.style.transform='translate(0,0) scale(1)';}));
-    window.setTimeout(()=>{animatingDrawInstances.delete(draw.instance);target.classList.remove('draw-arriving');flight.remove();},620);
+    window.setTimeout(()=>{
+      animatingDrawInstances.delete(draw.instance);
+      document.querySelector(`#hand .hand-card[data-id="${draw.instance}"]`)?.classList.remove('draw-arriving');
+      flight.remove();
+    },620);
   };
   pending.forEach((draw,index)=>{
     if (index === 0) startAnimation(draw);
