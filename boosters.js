@@ -126,8 +126,19 @@
     const ownedAscendance = [...new Map(allCardCatalog().filter((card) => card.type === 'Transformation' && (cards[card.id] || 0) > 0).map((card) => [card.id, card])).keys()].slice(0, 12);
     const academy = [...new Map(mainCards('academy').map((card) => [card.id, card])).values()];
     const migratedDeck = academy.flatMap((card) => Array.from({ length: Math.min(Math.max(0, Math.floor(Number(cards[card.id]) || 0)), collectionLimit(card)) }, () => card.id)).slice(0, 40);
-    const oldDeck = Array.isArray(save.deckList) ? save.deckList.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : migratedDeck;
-    const slots = Array.isArray(save.deckSlots) ? save.deckSlots.slice(0, 20).filter((slot) => slot && typeof slot === 'object').map((slot, index) => ({ id: typeof slot.id === 'string' ? slot.id : `deck-${index + 1}`, name: String(slot.name || `Deck ${index + 1}`).slice(0, 28), cards: Array.isArray(slot.cards) ? slot.cards.filter((id) => typeof id === 'string').map(canonicalId).slice(0, 40) : [], ascendance: (Array.isArray(slot.ascendance) ? slot.ascendance : (Array.isArray(save.ascendanceDeck) && slot.id === save.activeDeckId ? save.ascendanceDeck : ownedAscendance)).filter((id) => ownedAscendance.includes(id)).slice(0, 12) })) : [];
+    const clampDeck = (list) => {
+      const counts = new Map();
+      return list.filter((id) => typeof id === 'string').map(canonicalId).filter((id) => {
+        const card = collectionCards().find((item) => item.id === id);
+        if (!card) return false;
+        const count = counts.get(id) || 0;
+        if (count >= collectionLimit(card)) return false;
+        counts.set(id, count + 1);
+        return true;
+      }).slice(0, 40);
+    };
+    const oldDeck = Array.isArray(save.deckList) ? clampDeck(save.deckList) : migratedDeck;
+    const slots = Array.isArray(save.deckSlots) ? save.deckSlots.slice(0, 20).filter((slot) => slot && typeof slot === 'object').map((slot, index) => ({ id: typeof slot.id === 'string' ? slot.id : `deck-${index + 1}`, name: String(slot.name || `Deck ${index + 1}`).slice(0, 28), cards: Array.isArray(slot.cards) ? clampDeck(slot.cards) : [], ascendance: (Array.isArray(slot.ascendance) ? slot.ascendance : (Array.isArray(save.ascendanceDeck) && slot.id === save.activeDeckId ? save.ascendanceDeck : ownedAscendance)).filter((id) => ownedAscendance.includes(id)).slice(0, 12) })) : [];
     if (!slots.length) slots.push({ id: 'deck-1', name: 'Academy Starter', cards: oldDeck, ascendance: ownedAscendance });
     const activeDeckId = slots.some((slot) => slot.id === save.activeDeckId) ? save.activeDeckId : slots[0].id;
     const active = slots.find((slot) => slot.id === activeDeckId);
@@ -183,7 +194,7 @@
   }
   function remainingCards(deckId = activeDeck) { return cardsByDeck[deckId].reduce((sum, card) => sum + getStock(deckId, card), 0); }
   function rarityRemaining(deckId, rarity) { return cardsByDeck[deckId].filter((card) => card.rarity === rarity).reduce((sum, card) => sum + getStock(deckId, card), 0); }
-  function collectionLimit(card) { return ['Creature', 'Action'].includes(card.type) ? 3 : 1; }
+  function collectionLimit(card) { return card.maxCopies ?? (['Creature', 'Action'].includes(card.type) ? 3 : 1); }
   function collectionCount(card) { return aliasesFor(card).reduce((sum, id) => sum + Math.max(0, Math.floor(Number(player.cards[id]) || 0)), 0); }
   function setMessage(text, kind = '') { const el = document.getElementById('booster-message'); el.textContent = text || ''; el.dataset.kind = kind; }
   function renderWallet() { document.getElementById('diamond-total').textContent = player.diamonds.toLocaleString(); }

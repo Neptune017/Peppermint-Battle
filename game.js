@@ -15,12 +15,12 @@ const cardLibrary = [
   { id: 'academy-grounds', title: 'Pocket World', name: 'Academy Hall', type: 'Action', deckCopies: 1, cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AcademyHall.webp', ability: 'Academy cards gain +1 attack while at least one Academy card is on the field.' },
   { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.webp', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
   { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.webp', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
-  { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.webp', ability: 'Replace a card in a fighter zone with a card from the Ascendance Deck that has the same name.' },
+  { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.webp', ability: 'Replace a card in a battle zone with a card from the Ascendance Deck that has the same name.' },
   { id: 'academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261120a', ability: 'Draw an Academy card with a different element.' },
   { id: 'academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Mind', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.webp', ability: 'Draw an Academy card with a different element.' },
-  { id: 'dharma', title: 'Academy', name: 'Dharma', cost: 5, attack: 4, element: 'Terra', role: 'Healer', art: 'assets/cards/AcademyDharma.webp', ability: 'On summon, choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, summon it to an open Fighter Zone if Dharma is still on the field.' },
+  { id: 'dharma', title: 'Academy', name: 'Dharma', cost: 5, attack: 4, element: 'Terra', role: 'Healer', art: 'assets/cards/AcademyDharma.webp', ability: 'On summon, choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, summon it to an open Battle Zone if Dharma is still on the field.' },
   { id: 'horatio', title: 'Academy', name: 'Horatio', cost: 5, attack: 4, element: 'Terra', role: 'Enchanter', art: 'assets/cards/AcademyHoratio.webp', ability: 'On summon, draw a Terra Action card.' },
-  { id: 'vishnu', title: 'Djinn', name: 'Vishnu', cost: 5, attack: 5, element: 'Dark', role: 'Shooter', art: 'assets/cards/DjinnVishnu.webp', ability: 'Can only be summoned if Peppermint is in one of your Fighter Zones. On summon, draw Avatar Gem.' },
+  { id: 'vishnu', title: 'Djinn', name: 'Vishnu', cost: 5, attack: 5, element: 'Dark', role: 'Shooter', art: 'assets/cards/DjinnVishnu.webp', ability: 'Can only be summoned if Peppermint is in one of your Battle Zones. On summon, draw Avatar Gem.' },
   { id: 'brewy', title: 'Candy Goblin', name: 'Brewy', type: 'Creature', cost: 1, attack: 1, element: 'Mind', role: 'Enchanter', art: 'assets/cards/CandyGoblinBrewy.webp', ability: 'On summon, draw a Potion card.' },
   { id: 'mana-potion', title: 'General', name: 'Mana Potion', type: 'Action', cost: 0, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/ManaPotion.webp', ability: 'Restore up to 2 spent Mana this turn.' },
   { id: 'health-potion', title: 'General', name: 'Health Potion', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/HealthPotion.webp', ability: 'Restore an empty Life Zone with the top card of your deck.' },
@@ -33,8 +33,8 @@ const cardLibrary = [
   { id: 'zodiac-egg', title: 'Zodiac', name: 'Egg', type: 'Creature', maxCopies: 1, cost: 1, attack: 0, element: 'Solar', role: 'Enchanter', art: 'assets/cards/ZodiacEgg.webp', ability: 'On summon, choose a fighter whose Zodiac Guardian is in your Ascendance Deck. Send Egg to your Pandemonium Zone and replace it with a Zodiac creature from your deck or hand whose ability description mentions that fighter’s name.' },
 ];
 const wildWestLibrary = [
-  { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.webp', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty fighter zone on both fields.' },
-  { id: 'ww-wade', title: 'Wild West', name: 'Wade', cost: 5, attack: 4, element: 'Terra', role: 'Shooter', art: 'assets/cards/WildWestWade.webp', ability: '+2 attack for each empty enemy fighter zone.' },
+  { id: 'ww-rick', title: 'Wild West', name: 'Rick', cost: 5, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestRick.webp', ability: 'While this is on the field, Wild West fighters gain +1 attack for each empty battle zone on both fields.' },
+  { id: 'ww-wade', title: 'Wild West', name: 'Wade', cost: 5, attack: 4, element: 'Terra', role: 'Shooter', art: 'assets/cards/WildWestWade.webp', ability: '+2 attack for each empty enemy battle zone.' },
   { id: 'ww-brian', title: 'Wild West', name: 'Brian', cost: 4, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/WildWestBrian.png', ability: 'On summon, return an enemy fighter to its hand.' },
   { id: 'ww-academy-brian', title: 'Academy', name: 'Brian', type: 'Fighter', maxCopies: 1, cost: 3, attack: 3, element: 'Terra', role: 'Brawler', art: 'assets/cards/AcademyBrian.webp', ability: 'On summon, search your deck for an Academy Rick or Academy Lynda card and add it to your hand.' },
   { id: 'ww-zodiac-guardian-brian', title: 'Zodiac Guardian', name: 'Brian', type: 'Transformation', cost: 0, attack: 5, element: 'Terra', role: 'Brawler', art: 'assets/cards/ZodiacGuardianBrian.webp', ability: 'Gains +1 attack for each Terra card on your field or in your hand.' },
@@ -47,7 +47,7 @@ const wildWestLibrary = [
   { id: 'ww-medusa', title: 'Wild West', name: 'Medusa', cost: 2, attack: 2, element: 'Mind', role: 'Trickster', art: 'assets/cards/WildWestMedusa.webp', ability: 'Once per turn, spend 1 Mana to look at the top card of your deck.' },
   { id: 'ww-wild-ox', title: 'Zodiac', name: 'Wild Ox', type: 'Creature', cost: 2, attack: 2, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacWildOx.webp', ability: 'If Rick is on your field, draw an Avatar Gem.' },
   { id: 'ww-eggscythe', title: 'Vegcritter', name: 'Eggscythe', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/VegcritterEggyscythe.webp', ability: 'When destroyed, return a different Dark card from your Pandemonium Zone to your hand.' },
-  { id: 'ww-hopkin', title: 'Vegcritter', name: 'Hopkin', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Brawler', art: 'assets/cards/VegcritterHopkin.webp', ability: 'When an enemy targets your Life Zone, if your Fighter Zones are empty, summon Hopkin from your hand.' },
+  { id: 'ww-hopkin', title: 'Vegcritter', name: 'Hopkin', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Brawler', art: 'assets/cards/VegcritterHopkin.webp', ability: 'When an enemy targets your Life Zone, if your Battle Zones are empty, summon Hopkin from your hand.' },
   { id: 'ww-purrnip', title: 'Vegcritter', name: 'Purrnip', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Shooter', art: 'assets/cards/VegCritterPurrnip.webp', ability: 'When Purrnip destroys a Life Zone, draw a card.' },
   { id: 'ww-bandito', title: 'Wild West', name: 'Bandito', type: 'Creature', cost: 1, attack: 1, element: 'Terra', role: 'Blader', art: 'assets/cards/WildWestBandito.webp', ability: 'Can attack on the turn it is summoned, except on the first turn.' },
   { id: 'ww-littlebeak', title: 'Wild West', name: 'Littlebeak', type: 'Creature', cost: 1, attack: 1, element: 'Aer', role: 'Shielder', art: 'assets/cards/WildWestLittlebeak.webp', ability: 'Gets +1 attack during the enemy turn.' },
@@ -61,7 +61,7 @@ const wildWestLibrary = [
   { id: 'ww-root', title: 'General', name: 'Root', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Root.webp', ability: 'Make an enemy fighter unable to move next turn.' },
   { id: 'ww-wanted-poster', title: 'General', name: 'Wanted Poster', type: 'Action', cost: 2, attack: 0, element: 'Action', role: 'Action', art: 'assets/cards/WantedPoster.webp', ability: 'Reduce an enemy fighter’s attack by 1 until your next turn.' },
   { id: 'ww-planting', title: 'General', name: 'Planting', type: 'Action', cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/Planting.webp', ability: 'Summon a Vegcritter from your deck or Pandemonium Zone.' },
-  { id: 'cactus-creek', title: 'Pocket World', name: 'Cactus Creek', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/PocketWorldCactusCreek.webp', ability: 'Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.' },
+  { id: 'cactus-creek', title: 'Pocket World', name: 'Cactus Creek', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Terra', role: 'Action', art: 'assets/cards/PocketWorldCactusCreek.webp', ability: 'Wild West cards in Battle Zones gain +1 attack during the opponent’s turn.' },
   cardLibrary.find((card) => card.id === 'avatar-gem'),
   cardLibrary.find((card) => card.id === 'cooking'),
   { ...cardLibrary.find((card) => card.id === 'zodiac-egg'), deckCopies: 1 },
@@ -71,7 +71,7 @@ const wildWestLibrary = [
 const islandParadiseLibrary = [
   { id: 'ip-brody', title: 'Island Paradise', name: 'Brody', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseBrody.webp', ability: 'Gain 1 attack after each card destroyed by this card.' },
   { id: 'ip-natsuki', title: 'Island Paradise', name: 'Natsuki', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseNatsuki.webp', ability: 'On summon, protect an adjacent ally from attacks. It cannot defend its lane’s Life Zone while protected.' },
-  { id: 'ip-jet', title: 'Island Paradise', name: 'Jet', cost: 4, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/IslandParadiseJet.webp', ability: 'Gains 1 attack at the beginning of each of your turns while in the Fighter Zone.' },
+  { id: 'ip-jet', title: 'Island Paradise', name: 'Jet', cost: 4, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/IslandParadiseJet.webp', ability: 'Gains 1 attack at the beginning of each of your turns while in the Battle Zone.' },
   { id: 'ip-sabrina', title: 'Island Paradise', name: 'Sabrina', cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/IslandParadiseSabrina.webp', ability: 'Gains 1 attack for each adjacent Brawler.' },
   { id: 'ip-coyote', title: 'Island Paradise', name: 'Coyote', cost: 5, attack: 4, element: 'Aqua', role: 'Brawler', art: 'assets/cards/IslandParadiseCoyote.webp', ability: 'Can make 2 attacks each turn, except the turn it is summoned.' },
   { id: 'ip-chase', title: 'Island Paradise', name: 'Chase', cost: 4, attack: 3, element: 'Aqua', role: 'Healer', art: 'assets/cards/IslandParadiseChase.webp', ability: 'Each turn, give 1 attack to an adjacent Brawler. Choose one if there are several.' },
@@ -92,18 +92,18 @@ const islandParadiseLibrary = [
   { ...cardLibrary.find((card) => card.id === 'locker-room'), maxCopies: 3, deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'mana-potion'), deckCopies: 1 },
   { ...cardLibrary.find((card) => card.id === 'health-potion'), deckCopies: 1 },
-  { id: 'ip-ride-the-wave', title: 'General', name: 'Ride the Wave', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/RideTheWave.webp', ability: 'Move one of your fighters to an adjacent empty Fighter Zone.' },
+  { id: 'ip-ride-the-wave', title: 'General', name: 'Ride the Wave', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/RideTheWave.webp', ability: 'Move one of your fighters to an adjacent empty Battle Zone.' },
   { id: 'ip-no-pain-no-gain', title: 'General', name: 'No Pain, No Gain', type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/NoPainNoGain.webp', ability: 'Discard a card to give one of your fighters +1 attack.' },
   { id: 'ip-swim-dont-sink', title: 'General', name: "Swim, Don't Sink", type: 'Action', maxCopies: 3, cost: 1, attack: 0, element: 'Aqua', role: 'Action', art: 'assets/cards/SwimDontSink.webp', ability: 'Choose an Aqua Island Paradise fighter to become immune to Island Paradise field effects.' },
 ];
 const livingToyLibrary = [
   { id: 'lt-scribble', title: 'Living Toy', name: 'Scribble', type: 'Creature', maxCopies: 1, cost: 2, attack: 1, element: 'Solar', role: 'Enchanter', art: 'assets/cards/LivingToyScribble.webp', ability: 'On summon, draw an Avatar Gem.' },
   { id: 'lt-clary', title: 'Dollmaster', name: 'Clary', cost: 3, attack: 3, element: 'Dark', role: 'Blader', art: 'assets/cards/DollmasterClary.webp', ability: 'Gains +1 attack for each adjacent Living Toy or Dollmaster card.' },
-  { id: 'lt-fritz', title: 'Dollmaster', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterFritz.webp', ability: 'Give 1 attack point to each 1-cost Dark card in the Fighter Zone for each Living Toy card in your hand.' },
+  { id: 'lt-fritz', title: 'Dollmaster', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterFritz.webp', ability: 'Give 1 attack point to each 1-cost Dark card in the Battle Zone for each Living Toy card in your hand.' },
   { id: 'lt-rat-king', title: 'Dollmaster', name: 'Rat King', cost: 5, attack: 2, element: 'Dark', role: 'Summoner', art: 'assets/cards/DollmasterRatKing.webp', ability: 'Gains +1 attack for each Dark card with a different name in your Pandemonium Zone.' },
   { id: 'lt-boxy', title: 'Tsukumogami', name: 'Boxy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Enchanter', art: 'assets/cards/TsukumogamiBoxy.webp', ability: 'On summon, send a Dark card from your deck to the Pandemonium Zone.' },
   { id: 'lt-teddy', title: 'Tsukumogami', name: 'Teddy', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Blader', art: 'assets/cards/TsukumogamiTeddy.webp', ability: 'On summon, discard a card to gain 1 attack.' },
-  { id: 'lt-broomy', title: 'Tsukumogami', name: 'Broomy', type: 'Creature', deckCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/TsukumogamiBroomy.webp', ability: 'On summon, return a card from your Fighter Zone to your hand and gain Mana equal to its cost.' },
+  { id: 'lt-broomy', title: 'Tsukumogami', name: 'Broomy', type: 'Creature', deckCopies: 1, cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/TsukumogamiBroomy.webp', ability: 'On summon, return a card from your Battle Zone to your hand and gain Mana equal to its cost.' },
   { id: 'lt-melodoll', title: 'Living Toy', name: 'Melodoll', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Healer', art: 'assets/cards/LivingToyMelodoll.webp', ability: 'On summon, return a Dark card from your Pandemonium Zone to your hand.' },
   { id: 'lt-clapster', title: 'Living Toy', name: 'Clapster', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Shooter', art: 'assets/cards/LivingToyClapster.webp', ability: 'On summon, send the top card of your deck to the Pandemonium Zone to randomly discard a card from the enemy’s hand.' },
   { id: 'lt-beatcracker', title: 'Living Toy', name: 'Beatcracker', type: 'Creature', cost: 1, attack: 1, element: 'Dark', role: 'Brawler', art: 'assets/cards/LivingToyBeatCracker.webp', ability: 'If sent to the Pandemonium Zone from your hand or deck, summon this card.' },
@@ -125,16 +125,16 @@ const winterBallLibrary = [
   { id: 'academy-diamond', title: 'Academy', name: 'Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Aer', role: 'Healer', art: 'assets/cards/AcademyDiamond.webp', ability: 'If Topaz is on the field, summon this card with no Mana cost.' },
   { id: 'academy-topaz', title: 'Academy', name: 'Topaz', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/AcademyTopaz.webp', ability: 'If Diamond is on the field, summon this card with no Mana cost.' },
   { id: 'academy-dimitri', title: 'Academy', name: 'Dimitri', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 3, attack: 3, element: 'Glacial', role: 'Blader', art: 'assets/cards/AcademyDimitri.webp', ability: 'On summon, draw an Academy card that costs 3 or 4.' },
-  { id: 'wb-topaz-diamond', title: 'Winter Ball', name: 'Topaz & Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/WinterBallTopazDiamond.webp', ability: 'Once per turn, move one of your fighters to any empty Fighter Zone. Counts as both Topaz and Diamond.' },
+  { id: 'wb-topaz-diamond', title: 'Winter Ball', name: 'Topaz & Diamond', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Enchanter', art: 'assets/cards/WinterBallTopazDiamond.webp', ability: 'Once per turn, move one of your fighters to any empty Battle Zone. Counts as both Topaz and Diamond.' },
   { id: 'wb-bearnardo', title: 'Winter Ball', name: 'Bearnardo', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Brawler', art: 'assets/cards/WinterBallBearnardo.webp', ability: 'On summon, reduce the cost of a Glacial card in your hand by 1.' },
   { id: 'wb-dimitri', title: 'Winter Ball', name: 'Dimitri', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallDimitri.webp', ability: 'Gains +1 attack whenever it moves to another lane.' },
-  { id: 'wb-gillusion', title: 'Winter Ball', name: 'Gillusion', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Aqua', role: 'Shielder', art: 'assets/cards/WinterBallGillusion.webp', ability: 'On summon, move a non-adjacent card to a free Fighter Zone adjacent to its current lane.' },
-  { id: 'wb-ladyfeather', title: 'Winter Ball', name: 'Ladyfeather', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Aer', role: 'Shooter', art: 'assets/cards/WinterBallLeadyfeather.webp', ability: 'On summon, move the opposing card to a free adjacent Fighter Zone.' },
-  { id: 'wb-merryhound', title: 'Winter Ball', name: 'Merryhound', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallMerryhound.webp', ability: 'On summon, move an adjacent ally to another free Fighter Zone.' },
-  { id: 'wb-rebeccah', title: 'Winter Ball', name: 'Rebeccah', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallRebeccah.webp', ability: 'Once per turn, move Dimitri to a free adjacent Fighter Zone.' },
+  { id: 'wb-gillusion', title: 'Winter Ball', name: 'Gillusion', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Aqua', role: 'Shielder', art: 'assets/cards/WinterBallGillusion.webp', ability: 'On summon, move a non-adjacent card to a free Battle Zone adjacent to its current lane.' },
+  { id: 'wb-ladyfeather', title: 'Winter Ball', name: 'Ladyfeather', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Aer', role: 'Shooter', art: 'assets/cards/WinterBallLeadyfeather.webp', ability: 'On summon, move the opposing card to a free adjacent Battle Zone.' },
+  { id: 'wb-merryhound', title: 'Winter Ball', name: 'Merryhound', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallMerryhound.webp', ability: 'On summon, move an adjacent ally to another free Battle Zone.' },
+  { id: 'wb-rebeccah', title: 'Winter Ball', name: 'Rebeccah', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallRebeccah.webp', ability: 'Once per turn, move Dimitri to a free adjacent Battle Zone.' },
   { id: 'wb-magnus', title: 'Winter Ball', name: 'Magnus', maxCopies: 1, deckCopies: 1, cost: 5, attack: 4, element: 'Glacial', role: 'Blader', art: 'assets/cards/WinterBallMagnus.webp', ability: 'Gains +1 attack whenever any card moves on the field.' },
-  { id: 'wb-sageape', title: 'Winter Ball', name: 'Sageape', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallSageape.webp', ability: 'Discard this card from your hand to move a Glacial card to another Fighter Zone.' },
-  { id: 'wb-steepod', title: 'Winter Ball', name: 'Steepod', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Healer', art: 'assets/cards/WinterBallSteepod.webp', ability: 'Once per turn, move this card to an adjacent Fighter Zone.' },
+  { id: 'wb-sageape', title: 'Winter Ball', name: 'Sageape', type: 'Creature', maxCopies: 3, deckCopies: 3, cost: 1, attack: 1, element: 'Glacial', role: 'Enchanter', art: 'assets/cards/WinterBallSageape.webp', ability: 'Discard this card from your hand to move a Glacial card to another Battle Zone.' },
+  { id: 'wb-steepod', title: 'Winter Ball', name: 'Steepod', type: 'Creature', maxCopies: 3, deckCopies: 2, cost: 1, attack: 1, element: 'Glacial', role: 'Healer', art: 'assets/cards/WinterBallSteepod.webp', ability: 'Once per turn, move this card to an adjacent Battle Zone.' },
   { id: 'zodiac-swordtiger', title: 'Zodiac', name: 'Swordtiger', type: 'Creature', maxCopies: 1, deckCopies: 1, cost: 2, attack: 2, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacSwordtiger.webp', ability: 'On summon, if Dimitri is on the field, draw an Avatar Gem.' },
   { id: 'wb-zodiac-topaz', title: 'Zodiac Guardian', name: 'Topaz', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacGuardianTopaz.webp', ability: 'Gains +1 attack for each Aer card on the field or in your hand.' },
   { id: 'wb-zodiac-dimitri', title: 'Zodiac Guardian', name: 'Dimitri', type: 'Transformation', cost: 0, attack: 5, element: 'Glacial', role: 'Blader', art: 'assets/cards/ZodiacGuardianDimitri.webp', ability: 'Gains +1 attack for each Glacial card on the field or in your hand.' },
@@ -151,21 +151,21 @@ const valhallaLibrary = [
   { id: 'zodiac-valkyrie-chicken', title: 'Zodiac', name: 'Valkyrie Chicken', type: 'Creature', maxCopies: 1, cost: 2, attack: 2, element: 'Aer', role: 'Enchanter', art: 'assets/cards/ZodiacValkyrieChicken.webp', ability: 'If Sabrina is on the field, draw an Avatar Gem.' },
   { id: 'zodiac-guardian-sabrina', title: 'Zodiac Guardian', name: 'Sabrina', type: 'Transformation', cost: 0, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ZodiacGuardianSabrina.webp', ability: 'Gains +1 attack for each Aer card in your Pandemonium Zone.' },
   { id: 'valhalla-axir', title: 'Valhalla', name: 'Axir', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Neutral', role: 'Blader', art: 'assets/cards/ValhallaAxir.webp', ability: 'While another Valhalla Creature is on your field, Axir gains +1 attack.' },
-  { id: 'valhalla-barfy', title: 'Valhalla', name: 'Barfy', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/ValhallaBarfy.webp', ability: 'On summon, give Euphoria to adjacent allies: their attack doubles for one turn, then they are destroyed after attacking.' },
+  { id: 'valhalla-barfy', title: 'Valhalla', name: 'Barfy', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Aqua', role: 'Shooter', art: 'assets/cards/ValhallaBarfy.webp', ability: 'On summon, give Euphoria to adjacent allies until the start of the next turn. Their attack doubles, but they are destroyed after attacking.' },
   { id: 'valhalla-khendal', title: 'Valhalla', name: 'Khendal', maxCopies: 1, deckCopies: 1, cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ValhallaKhendal.webp', ability: 'Gains +1 attack for each card with Euphoria on the field.' },
-  { id: 'valhalla-bar', title: '', name: 'Valhalla Bar', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValhallaBar.webp', ability: 'Shared Field: when a card with Euphoria attacks, flip a coin. Heads: it is not destroyed by Euphoria.' },
+  { id: 'valhalla-bar', title: '', name: 'Valhalla Bar', type: 'Action', maxCopies: 3, deckCopies: 1, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValhallaBar.webp', ability: 'Shared Field: when a Battle Card with Euphoria attacks, flip a coin. Heads: it is not destroyed by Euphoria.' },
   { id: 'valhalla-miss-ragna', title: 'Valhalla', name: 'Miss Ragna', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Terra', role: 'Trickster', art: 'assets/cards/ValhallaMissRagna.webp', ability: 'The first time an adjacent ally would be destroyed by an enemy card effect, destroy Miss Ragna instead.' },
   { id: 'valhalla-mjolknir', title: 'Valhalla', name: 'Mjölknir', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Aer', role: 'Shooter', art: 'assets/cards/ValhallaMjölknir.webp', ability: 'Can attack the opposing fighter directly across from it.' },
   { id: 'valhalla-morrikyn', title: 'Valhalla', name: 'Morrikyn', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/ValhallaMorrikyn.webp', ability: 'On summon, reveal the top card of the opposing deck.' },
   { id: 'valhalla-pryce', title: 'Valhalla', name: 'Pryce', maxCopies: 1, deckCopies: 1, cost: 5, attack: 5, element: 'Solar', role: 'Blader', art: 'assets/cards/ValhallaPryce.webp', ability: 'On summon, draw a Golden Egg Flatbread.' },
   { id: 'valhalla-ryota', title: 'Valhalla', name: 'Ryota', maxCopies: 1, deckCopies: 1, cost: 4, attack: 3, element: 'Solar', role: 'Shooter', art: 'assets/cards/ValhallaRyota.webp', ability: 'On summon, destroy an enemy fighter.' },
   { id: 'valhalla-sabrina', title: 'Valhalla', name: 'Sabrina', maxCopies: 1, deckCopies: 1, cost: 5, attack: 5, element: 'Aer', role: 'Brawler', art: 'assets/cards/ValhallaSabrina.webp', ability: 'Cannot be destroyed by card effects, including Euphoria.' },
-  { id: 'valhalla-sloetunn', title: 'Valhalla', name: 'Sloetunn', type: 'Creature', maxCopies: 3, cost: 1, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/ValhallaSloetunn.webp', ability: 'Cannot attack during its first two turns after being summoned.' },
-  { id: 'valhalla-wendy', title: 'Valhalla', name: 'Wendy', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Dark', role: 'Trickster', art: 'assets/cards/ValhallaWendy.webp', ability: 'At the start of your turn, draw a Valkyrie’s Mead while Wendy is on your field.' },
-  { id: 'valhalla-meadsting', title: 'Valhalla', name: 'Meadsting', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/ValhallaMeadsting.webp', ability: 'On summon, give Euphoria to the opposing fighter in this lane: its attack doubles for one turn, then it is destroyed after attacking.' },
-  { id: 'valkyries-mead', title: 'General', name: "Valkyrie's Mead", type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValkyriesMead.webp', ability: 'Give a Fighter Euphoria: its attack doubles for one turn, then it is destroyed after attacking.' },
-  { id: 'golden-egg-flatbread', title: 'General', name: 'Golden Egg Flatbread', type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/GoldenEggFlatbread.webp', ability: 'Choose a Fighter with Euphoria. It will not be destroyed by Euphoria after attacking.' },
-  { id: 'training', title: 'General', name: 'Training', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/Training.webp', ability: 'Give a Fighter +1 attack.' },
+  { id: 'valhalla-sloetunn', title: 'Valhalla', name: 'Sloetunn', type: 'Creature', maxCopies: 3, cost: 1, attack: 3, element: 'Ignis', role: 'Brawler', art: 'assets/cards/ValhallaSloetunn.webp', ability: 'Cannot attack on the turn it is summoned or its next turn.' },
+  { id: 'valhalla-wendy', title: 'Valhalla', name: 'Wendy', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Dark', role: 'Trickster', art: 'assets/cards/ValhallaWendy.webp', ability: 'On summon, draw a Valkyrie’s Mead.' },
+  { id: 'valhalla-meadsting', title: 'Valhalla', name: 'Meadsting', type: 'Creature', maxCopies: 3, cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/ValhallaMeadsting.webp', ability: 'On summon, give Euphoria to the opposing Battle Card in this lane until the start of the next turn. Its attack doubles, but it is destroyed after attacking.' },
+  { id: 'valkyries-mead', title: 'General', name: "Valkyrie's Mead", type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/ValkyriesMead.webp', ability: 'Give a Battle Card Euphoria until the start of the next turn. Its attack doubles, but it is destroyed after attacking.' },
+  { id: 'golden-egg-flatbread', title: 'General', name: 'Golden Egg Flatbread', type: 'Action', maxCopies: 3, cost: 3, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/GoldenEggFlatbread.webp', ability: 'Choose a Battle Card with Euphoria. It will not be destroyed by Euphoria after attacking.' },
+  { id: 'training', title: 'General', name: 'Training', type: 'Action', maxCopies: 3, cost: 2, attack: 0, element: 'Neutral', role: 'Action', art: 'assets/cards/Training.webp', ability: 'Give a Battle Card +1 attack.' },
 ];
 cardLibrary.push({ id: 'academy-sabrina', title: 'Academy', name: 'Sabrina', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Brawler', art: 'assets/cards/AcademySabrina.webp', ability: 'On summon, stun the opposing fighter. It cannot attack during its next turn.' });
 const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', valhalla: 'Valhalla', fun: 'Fun Deck', collection: 'My Collection' };
@@ -422,6 +422,7 @@ function showDeckSelect() {
 }
 function escapeHTML(value = '') { return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]); }
 function displayedCardType(card) { return ['academy-grounds', 'toy-store', 'ip-field', 'christmas-mall', 'cactus-creek', 'valhalla-bar'].includes(card.id) ? 'Field' : card.type || 'Fighter'; }
+function isBattleCard(card) { return ['Fighter', 'Creature', 'Transformation'].includes(card?.type || 'Fighter'); }
 function displayedCardName(card) { return card.name || (displayedCardType(card) === 'Field' ? 'Field' : card.title); }
 function cardTypeIcon(card, extraClass = '') { return displayedCardType(card) === 'Field' ? `<svg class="field-type-icon ${extraClass}" viewBox="0 0 48 48" role="img" aria-label="Field card"><circle cx="24" cy="24" r="18"/><path d="M6 24h36M24 6c6 5 9 11 9 18s-3 13-9 18M24 6c-6 5-9 11-9 18s3 13 9 18M9 15h30M9 33h30"/></svg>` : ''; }
 function hasCardClass(card) { return !!card.role && card.role !== 'Action' && card.type !== 'Action'; }
@@ -499,7 +500,7 @@ function cardMarkup(card, enemy = false, compact = false) {
     const filename = cleanArt.split('/').pop();
     const naturalArtClass = { 'ww-hopkin': 'natural-art-hopkin', 'ww-blake': 'natural-art-blake', 'ww-purrnip': 'natural-art-purrnip' }[card.id];
     if (naturalArtClass) return `<img class="card-art ${naturalArtClass}${handArtClass}" src="${cleanArt}?v=20261122-natural-card-art" alt="${card.name}" />`;
-    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261124-mobile-art-fallback`;
+    const crop = (variant) => `assets/cards/crops/${variant}/${filename.replace(/\.[^.]+$/, '.jpg')}?v=20261124-valhalla-crops`;
     const size = compact ? 'battle' : 'hand';
     const mobileArt = window.matchMedia?.('(max-width: 520px)').matches || false;
     const mobileCrop = crop(`${size}-mobile`);
@@ -514,7 +515,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const details = compact ? `<div class="card-bottom"><span class="card-element"></span><span class="card-stats" title="Base ${card.attack}${attackInfo.sources.length ? ` · ${attackInfo.sources.join(' · ')}` : ''}">${attackValueMarkup}${attackBadge} ATK</span></div>` : card.type === 'Action' ? `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${card.cost} MANA</span></div>` : `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${attackValueMarkup}${attackBadge} ATK</span></div>`;
   const summonLocked = !compact && card.id === 'vishnu' && !owner?.lanes.some((unit) => unit?.name === 'Peppermint');
   const displayName = displayedCardName(card);
-  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, ${card.ready && !card.attacked ? 'click to attack' : 'fighter'}" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Fighter Zone' : ''}"`}>
+  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, ${card.ready && !card.attacked ? 'click to attack' : 'fighter'}" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Battle Zone' : ''}"`}>
     ${art}<span class="art-shade"></span>${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
     ${actionButton}${handAbilityButton}${freezeBadge}${euphoriaBubbles}${details}</div>`;
 }
@@ -803,7 +804,7 @@ function playCard(cardId, laneIndex) {
   const cost = playCost(match.player, card);
   if (!card || card.type === 'Action' || match.active !== 'player' || match.player.lanes[laneIndex] || cost > match.energy) return;
   if (match.tutorialMode && !tutorialCanSummon(card,laneIndex)) { tutorialWrongAction('Summon only the highlighted card into the lane named in the message.'); return; }
-  if (!canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; }
+  if (!canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Battle Zone.'); return; }
   match.attackMode = false; match.attackerLane = null;
   match.energy -= cost; match.player.hand.splice(match.player.hand.indexOf(card), 1); card.ready = false; match.player.lanes[laneIndex] = card; match.selected = null; render(); animateSummon(match.player, laneIndex, card).then(() => { triggerOnSummon(card, match.player, laneIndex); tutorialAdvanceAfterSummon(card,laneIndex); });
 }
@@ -947,7 +948,7 @@ function usePlanting(owner, actionInstance) {
     ...owner.deck.flatMap((card) => card.title === 'Vegcritter' ? openLanes.map((lane) => ({ value: `deck:${card.instance}:${lane}`, label: `${card.name} · lane ${lane + 1}`, detail: 'From your deck' })) : []),
     ...owner.destroyed.flatMap((card) => card.title === 'Vegcritter' ? openLanes.map((lane) => ({ value: `destroyed:${card.instance}:${lane}`, label: `${card.name} · lane ${lane + 1}`, detail: 'From your destroyed zone' })) : []),
   ];
-  if (!openLanes.length) { announceEffect('Planting needs an open fighter zone.'); return; }
+  if (!openLanes.length) { announceEffect('Planting needs an open battle zone.'); return; }
   chooseEffect(owner, 'Planting: summon a Vegcritter', 'Choose a Vegcritter from your deck or destroyed zone and an open lane.', targets, (selection) => {
     const [source, instance, laneText] = selection.split(':'); const laneIndex = Number(laneText);
     const pile = source === 'deck' ? owner.deck : owner.destroyed;
@@ -1002,6 +1003,12 @@ function setSharedField(owner, id, card = null) {
   match.fieldCard = { id, owner: owner === match.player ? 'player' : 'opponent', card };
 }
 function applyEuphoria(card, owner = cardOwner(card)) { if (!card) return; const currentAttack = owner ? effectiveAttack(card, owner, {}) : Math.max(0, card.attack + (card.attackBonus || 0)); card.euphoriaAttackBonus = currentAttack; card.euphoria = true; card.euphoriaProtected = false; render(); }
+function expireEuphoriaAtTurnStart() {
+  [match.player, match.opponent].forEach((owner) => owner?.lanes.forEach((card) => {
+    if (!card?.euphoria) return;
+    card.euphoria = false; card.euphoriaProtected = false; card.euphoriaAttackBonus = 0;
+  }));
+}
 function refreshAttackStatuses(owner) {
   owner.lanes.forEach((card) => {
     if (!card) return;
@@ -1036,16 +1043,16 @@ function activateAction(owner, actionInstance) {
   else if (action?.id === 'cooking') useCooking(owner, actionInstance);
   else if (action?.id === 'locker-room') useLockerRoom(owner, actionInstance);
   else if (action?.id === 'valkyries-mead' && match.energy >= action.cost) {
-    const targets = owner.lanes.flatMap((unit, lane) => unit && unit.type !== 'Creature' ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · double attack, then destroy after attacking` }] : []);
-    chooseEffect(owner, "Valkyrie's Mead · choose a Fighter", 'Give a Fighter Euphoria.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, owner); playSpecialFx(owner, Number(lane), 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`); });
+    const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · double attack, then destroy after attacking` }] : []);
+    chooseEffect(owner, "Valkyrie's Mead · choose a Battle Card", 'Give a Battle Card Euphoria.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; applyEuphoria(target, owner); playSpecialFx(owner, Number(lane), 'euphoria', 'EUPHORIA', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained Euphoria.`); });
   }
   else if (action?.id === 'golden-egg-flatbread' && match.energy >= action.cost) {
     const targets = owner.lanes.flatMap((unit, lane) => unit?.euphoria ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · protected from Euphoria` }] : []);
-    chooseEffect(owner, 'Golden Egg Flatbread · protect a Fighter', 'Choose a Fighter with Euphoria. It will survive Euphoria after attacking.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!target?.euphoria || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.euphoriaProtected = true; render(); announceEffect(`${target.name} is protected from Euphoria’s destruction.`); });
+    chooseEffect(owner, 'Golden Egg Flatbread · protect a Battle Card', 'Choose a Battle Card with Euphoria. It will survive Euphoria after attacking.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !target.euphoria || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; target.euphoriaProtected = true; render(); announceEffect(`${target.name} is protected from Euphoria’s destruction.`); });
   }
   else if (action?.id === 'training' && match.energy >= action.cost) {
-    const targets = owner.lanes.flatMap((unit, lane) => unit && unit.type !== 'Creature' ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · permanent +1 attack` }] : []);
-    chooseEffect(owner, 'Training · choose a Fighter', 'Give a Fighter +1 attack.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; addPermanentAttack(target, 1, 'Training'); render(); announceEffect(`${target.name} gained +1 attack from Training.`); });
+    const targets = owner.lanes.flatMap((unit, lane) => isBattleCard(unit) ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · permanent +1 attack` }] : []);
+    chooseEffect(owner, 'Training · choose a Battle Card', 'Give a Battle Card +1 attack.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!isBattleCard(target) || !owner.hand.includes(action) || match.energy < action.cost) return; owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; addPermanentAttack(target, 1, 'Training'); render(); announceEffect(`${target.name} gained +1 attack from Training.`); });
   }
   else if (action?.id === 'drinking-tea' && match.energy >= action.cost) {
     const choices = owner.lanes.flatMap((unit, lane) => unit?.element === 'Glacial' && !unit.ready ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · may act this turn` }] : []);
@@ -1082,7 +1089,7 @@ function activateAction(owner, actionInstance) {
   }
   else if (action?.id === 'lt-doll-chorus' && match.energy >= action.cost) {
     const hasLivingToyCreature = owner.lanes.some((unit) => unit?.title === 'Living Toy' && unit.type === 'Creature');
-    if (!hasLivingToyCreature) { announceEffect('Doll Chorus needs a Living Toy Creature in your Fighter Zones.'); return; }
+    if (!hasLivingToyCreature) { announceEffect('Doll Chorus needs a Living Toy Creature in your Battle Zones.'); return; }
     const targets = owner.lanes.flatMap((unit, lane) => unit?.title === 'Living Toy' ? [{ value: lane, label: unit.name, detail: `Lane ${lane + 1} · gain +1 attack` }] : []);
     chooseEffect(owner, 'Doll Chorus · choose a Living Toy', 'Give a Living Toy fighter +1 attack.', targets, (lane) => { const target = owner.lanes[Number(lane)]; if (!target || !owner.hand.includes(action) || match.energy < action.cost) return; addPermanentAttack(target, 1, 'Doll Chorus'); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); playSpecialFx(owner, Number(lane), 'doll-chorus', 'DOLL CHORUS · AWAKEN', { generatedOnly: true, silent: true }); announceEffect(`${target.name} gained 1 attack.`); });
   }
@@ -1110,7 +1117,7 @@ function activateAction(owner, actionInstance) {
     const cards = owner.hand.filter((card) => card !== action && card.title === 'Wild West' && card.type !== 'Action' && canSummonCard(owner, card));
     chooseEffect(owner, 'Quick Draw · choose a fighter', 'Summon a Wild West fighter from your hand without paying its Mana cost.', cards.map((card) => ({ value: card.instance, label: card.name, detail: `${card.cost} Mana · ${card.role}` })), (instance) => {
       const card = owner.hand.find((unit) => unit.instance === instance); const lane = owner.lanes.findIndex((unit) => !unit);
-      if (!card || lane < 0 || !owner.hand.includes(action) || match.energy < action.cost) { announceEffect('Quick Draw needs an open Fighter Zone and a Wild West fighter in hand.'); return; }
+      if (!card || lane < 0 || !owner.hand.includes(action) || match.energy < action.cost) { announceEffect('Quick Draw needs an open Battle Zone and a Wild West fighter in hand.'); return; }
       owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.hand.splice(owner.hand.indexOf(card), 1); match.energy -= action.cost; card.ready = false; owner.lanes[lane] = card; render(); animateSummon(owner, lane, card).then(() => triggerOnSummon(card, owner, lane)); announceEffect(`${card.name} was summoned by Quick Draw.`);
     });
   }
@@ -1141,9 +1148,9 @@ function activateAction(owner, actionInstance) {
   else if (action?.id === 'academy-grounds' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'academy-grounds', action); render(); playFieldActivationFx('academy-grounds'); announceEffect('Academy Hall is now the shared field. Academy cards gain +1 attack while at least one Academy card is on the field.'); if (match.tutorialMode && owner===match.player && tutorialLessonIndex===7) { tutorialPhase='field-reveal'; tutorialBubbleDismissed=true; renderTutorialLesson(); window.setTimeout(()=>{ if(match.tutorialMode&&tutorialLessonIndex===7){ tutorialPhase='attack'; tutorialPromptCopy='Academy Hall is active. Fritz and Bandito each started at 1 ATK; the field raises Academy Fritz to 2 ATK. Click Fritz, then attack Bandito in Lane 1 (or drag Fritz onto it).'; tutorialBubbleDismissed=false; render(); renderTutorialLesson(); } },1600); } }
   else if (action?.id === 'ip-field' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'ip-field', action); render(); playFieldActivationFx('ip-field'); announceEffect('Island Paradise is now the shared field. Its fighters on both sides cannot be targeted, but do not defend their Life Zones.'); }
   else if (action?.id === 'toy-store' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'toy-store', action); render(); playFieldActivationFx('toy-store'); announceEffect('Toy Store is now the shared field. All 1-cost Fighters and Creatures on both sides gain +1 attack.'); }
-  else if (action?.id === 'cactus-creek' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'cactus-creek', action); render(); playFieldActivationFx('cactus-creek'); announceEffect('Cactus Creek is now the shared field. Wild West cards in Fighter Zones gain +1 attack during the opponent’s turn.'); }
+  else if (action?.id === 'cactus-creek' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'cactus-creek', action); render(); playFieldActivationFx('cactus-creek'); announceEffect('Cactus Creek is now the shared field. Wild West cards in Battle Zones gain +1 attack during the opponent’s turn.'); }
   else if (action?.id === 'christmas-mall' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'christmas-mall', action); match.fieldCard.usedTurnKeys = []; render(); playFieldActivationFx('christmas-mall'); announceEffect('Christmas Mall is now the shared field. Swap two fighters once per turn if one is Glacial.'); }
-  else if (action?.id === 'valhalla-bar' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'valhalla-bar', action); render(); playFieldActivationFx('valhalla-bar'); announceEffect('Valhalla Bar is now the shared field. Euphoria coin flips can save attacking fighters.'); }
+  else if (action?.id === 'valhalla-bar' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'valhalla-bar', action); render(); playFieldActivationFx('valhalla-bar'); announceEffect('Valhalla Bar is now the shared field. Euphoria coin flips can save attacking Battle Cards.'); }
 }
 function useLockerRoom(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
@@ -1417,7 +1424,7 @@ function triggerOnSummon(card, owner, laneIndex) {
   }  if (card.id === 'zodiac-swordtiger' && [...match.player.lanes, ...match.opponent.lanes].some((unit) => unit?.name === 'Dimitri')) drawMatching(owner, (unit) => unit.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'dharma') {
     const choices = owner.destroyed.map((held) => ['Fighter', 'Creature'].includes(held.type) ? { value: held.instance, label: held.name, detail: `${held.title} · ${held.element} · returns next turn` } : null).filter(Boolean);
-    chooseEffect(owner, 'Dharma: choose a card to revive', 'Choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, it returns to an open Fighter Zone if Dharma is still on the field.', choices, (instance) => {
+    chooseEffect(owner, 'Dharma: choose a card to revive', 'Choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, it returns to an open Battle Zone if Dharma is still on the field.', choices, (instance) => {
       if (!owner.destroyed.some((held) => held.instance === instance)) return;
       match.pendingDharmaRevives.push({ owner, dharmaInstance: card.instance, revivedInstance: instance });
       render();
@@ -1445,7 +1452,8 @@ function triggerOnSummon(card, owner, laneIndex) {
   if (card.id === 'valhalla-pryce') drawMatching(owner, (candidate) => candidate.id === 'golden-egg-flatbread', 'Golden Egg Flatbread');
   if (card.id === 'valhalla-morrikyn') { const top = opponent.deck[0]; announceEffect(top ? `Morrikyn revealed ${opponent.isAI ? 'the rival’s' : 'your'} top card: ${top.title} · ${top.name || top.title}.` : 'Morrikyn checked the opposing deck; it is empty.'); }
   if (card.id === 'valhalla-ryota') { const targets = opponent.lanes.flatMap((unit, lane) => unit && !isEffectProtected(unit) ? [{ value: lane, label: unit.name, detail: `Enemy lane ${lane + 1}` }] : []); if (targets.length) chooseEffect(owner, 'Valhalla Ryota · destroy an enemy', 'Choose an enemy fighter to destroy.', targets, (lane) => { playSpecialFx(opponent, Number(lane), 'solar-explosion', 'RYOTA · SOLAR EXPLOSION'); if (destroyUnit(opponent, Number(lane))) render(); }); else announceEffect('Valhalla Ryota has no enemy fighter to destroy.'); }
-  if (card.id === 'valhalla-sloetunn') card.skipAttackTurns = 2;
+  if (card.id === 'valhalla-wendy') drawMatching(owner, (candidate) => candidate.id === 'valkyries-mead', "Valkyrie's Mead");
+  if (card.id === 'valhalla-sloetunn') card.skipAttackTurns = 1;
   if (card.id === 'berry') {
     let options=owner.lanes.map((unit,i)=>unit&&i!==laneIndex?{value:i,label:unit.name,detail:'Lane '+(i+1)}:null).filter(Boolean);
     if(owner.isAI){options=options.filter((choice)=>Boolean(findAiReplacementCard(owner,owner.lanes[choice.value],choice.value,match.energy))).sort((a,b)=>aiCardStrength(owner.lanes[a.value])-aiCardStrength(owner.lanes[b.value]));if(!options.length)return;}
@@ -1531,7 +1539,7 @@ function resolveDharmaRevives(owner) {
     const reviveIndex = owner.destroyed.findIndex((unit) => unit.instance === entry.revivedInstance && ['Fighter', 'Creature'].includes(unit.type));
     const openLane = owner.lanes.findIndex((unit) => !unit);
     if (!dharmaPresent || reviveIndex < 0 || openLane < 0) {
-      if (dharmaPresent && reviveIndex >= 0 && openLane < 0) announceEffect('Dharma could not revive the chosen card because all Fighter Zones are occupied.');
+      if (dharmaPresent && reviveIndex >= 0 && openLane < 0) announceEffect('Dharma could not revive the chosen card because all Battle Zones are occupied.');
       continue;
     }
     const [revived] = owner.destroyed.splice(reviveIndex, 1);
@@ -1544,14 +1552,6 @@ function resolveDharmaRevives(owner) {
     playSfx('special', 'Terra');
     animateSummon(owner, openLane, revived).then(() => triggerOnSummon(revived, owner, openLane));
   }
-}
-function activateValhallaTurnEffects(owner) {
-  owner.lanes.forEach((card) => {
-    if (card?.id === 'valhalla-wendy' && card.abilityUsedTurn !== match.turn) {
-      card.abilityUsedTurn = match.turn;
-      drawMatching(owner, (candidate) => candidate.id === 'valkyries-mead', "Valkyrie's Mead");
-    }
-  });
 }
 function activateIslandTurnEffects(owner) {
   owner.lanes.forEach((card, laneIndex) => {
@@ -1600,19 +1600,19 @@ function activateZoya(owner, laneIndex) {
 function activateSteepod(owner, laneIndex) {
   const card = owner.lanes[laneIndex]; if (!card || card.id !== 'wb-steepod' || card.abilityUsedTurn === match.turn) return;
   if (owner.isAI) { const plan = findAiBestMove(owner, { canMove: (unit) => unit.id === 'wb-steepod', adjacentOnly: true }); if (plan && moveWinterCard(owner, plan.from, plan.to)) card.abilityUsedTurn = match.turn; return; }
-  const choices = [laneIndex - 1, laneIndex + 1].filter((to) => to >= 0 && to < 3 && !owner.lanes[to]).map((to) => ({ value: to, label: `Move to lane ${to + 1}`, detail: 'Adjacent free Fighter Zone' }));
+  const choices = [laneIndex - 1, laneIndex + 1].filter((to) => to >= 0 && to < 3 && !owner.lanes[to]).map((to) => ({ value: to, label: `Move to lane ${to + 1}`, detail: 'Adjacent free Battle Zone' }));
   chooseEffect(owner, 'Steepod: slip away', 'Move Steepod to an adjacent free lane once per turn.', choices, (to) => { if (moveWinterCard(owner, laneIndex, Number(to))) card.abilityUsedTurn = match.turn; });
 }
 function activateTopazDiamond(owner, laneIndex) {
   const card = owner.lanes[laneIndex]; if (!card || card.id !== 'wb-topaz-diamond' || card.abilityUsedTurn === match.turn) return;
   if (owner.isAI) { const plan = findAiBestMove(owner); if (plan && moveWinterCard(owner, plan.from, plan.to)) card.abilityUsedTurn = match.turn; return; }
-  const choices = owner.lanes.flatMap((unit, from) => unit ? owner.lanes.flatMap((slot, to) => !slot ? [{ value: `${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: 'Move to an empty Fighter Zone' }] : []) : []);
-  chooseEffect(owner, 'Topaz & Diamond: glide across the floor', 'Once per turn, move one of your fighters to any empty Fighter Zone.', choices, (key) => { const [from, to] = key.split(':').map(Number); if (moveWinterCard(owner, from, to)) card.abilityUsedTurn = match.turn; });
+  const choices = owner.lanes.flatMap((unit, from) => unit ? owner.lanes.flatMap((slot, to) => !slot ? [{ value: `${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: 'Move to an empty Battle Zone' }] : []) : []);
+  chooseEffect(owner, 'Topaz & Diamond: glide across the floor', 'Once per turn, move one of your fighters to any empty Battle Zone.', choices, (key) => { const [from, to] = key.split(':').map(Number); if (moveWinterCard(owner, from, to)) card.abilityUsedTurn = match.turn; });
 }
 function activateSageape(instance) {
   const cardIndex = match.player.hand.findIndex((card) => card.instance === instance); if (cardIndex < 0) return;
   const targets = [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((unit, from) => unit?.element === 'Glacial' ? side.lanes.flatMap((slot, to) => !slot && to !== from ? [{ value: `${side === match.player ? 'p' : 'o'}:${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: side === match.player ? 'Move your Glacial fighter' : 'Move rival Glacial fighter' }] : []) : []));
-  chooseEffect(match.player, 'Sageape: shift the ice', 'Discard Sageape to move a Glacial fighter to another free Fighter Zone.', targets, (key) => { const [sideKey, from, to] = key.split(':'); const [discarded] = match.player.hand.splice(cardIndex, 1); match.player.destroyed.push(discarded); moveWinterCard(sideKey === 'p' ? match.player : match.opponent, Number(from), Number(to)); render(); announceEffect('Sageape was discarded to move a Glacial fighter.'); });
+  chooseEffect(match.player, 'Sageape: shift the ice', 'Discard Sageape to move a Glacial fighter to another free Battle Zone.', targets, (key) => { const [sideKey, from, to] = key.split(':'); const [discarded] = match.player.hand.splice(cardIndex, 1); match.player.destroyed.push(discarded); moveWinterCard(sideKey === 'p' ? match.player : match.opponent, Number(from), Number(to)); render(); announceEffect('Sageape was discarded to move a Glacial fighter.'); });
 }
 function activateAiSageape(owner) {
   const sageape = owner.hand.find((card) => card.id === 'wb-sageape');
@@ -1889,13 +1889,13 @@ function rivalTurn() {
   if (match.tutorialMode) { tutorialWrongAction('The tutorial is arranging the next practice move.'); return; }
   logBattleEvent('Enemy turn began.', 'enemy');
   match.active = 'opponent'; match.drawn = false;
+  expireEuphoriaAtTurnStart();
   if (match.secondPlayerBonusPending) { match.energy = match.maxEnergy + 1; match.secondPlayerBonusPending = false; }
   else match.energy = match.maxEnergy;
   match.turnEnergyCap = match.energy;
   drawCard(match.opponent);
   refreshAttackStatuses(match.opponent);
   resolveDharmaRevives(match.opponent);
-  activateValhallaTurnEffects(match.opponent);
   activateIslandTurnEffects(match.opponent);
   runNpcRepositioning(match.opponent);
   match.opponent.aiReplacementPlan=null;
@@ -1944,9 +1944,9 @@ function startPlayerTurn() {
   clearTemporaryAttackModifiers(match.player); clearTemporaryAttackModifiers(match.opponent);
   logBattleEvent('Your turn began.', 'player');
   match.active = 'player'; match.drawn = false; match.maxEnergy = Math.min(10, match.maxEnergy + 1); match.energy = match.maxEnergy; match.turnEnergyCap = match.maxEnergy;
+  expireEuphoriaAtTurnStart();
   refreshAttackStatuses(match.player);
   resolveDharmaRevives(match.player);
-  activateValhallaTurnEffects(match.player);
   activateIslandTurnEffects(match.player);
   drawCard(match.player); match.drawn = true; render();
 }
@@ -2138,7 +2138,7 @@ document.addEventListener('click', (event) => {
     return;
   }
   const handCard = event.target.closest('.hand-card');
-  if (handCard) { if (match.attackMode) { match.attackMode = false; match.attackerLane = null; } const card = match.player.hand.find((c) => c.instance === handCard.dataset.id); if (card && card.type !== 'Action' && !canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Fighter Zone.'); return; } if (card?.type === 'Action') { activateAction(match.player, card.instance); return; } if (card?.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds') { useCotton(match.player, card.instance); return; } if (card && playCost(match.player, card) <= match.energy) match.selected = match.selected === card.instance ? null : card.instance; render(); return; }
+  if (handCard) { if (match.attackMode) { match.attackMode = false; match.attackerLane = null; } const card = match.player.hand.find((c) => c.instance === handCard.dataset.id); if (card && card.type !== 'Action' && !canSummonCard(match.player, card)) { announceEffect('Vishnu can only be summoned while Peppermint is in your Battle Zone.'); return; } if (card?.type === 'Action') { activateAction(match.player, card.instance); return; } if (card?.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds') { useCotton(match.player, card.instance); return; } if (card && playCost(match.player, card) <= match.energy) match.selected = match.selected === card.instance ? null : card.instance; render(); return; }
   const lane = event.target.closest('.lane');
   if (lane && match.attackMode && lane.dataset.side === 'player') {
     selectAttackerFromClick(Number(lane.dataset.lane));
