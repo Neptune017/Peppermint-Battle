@@ -863,7 +863,7 @@ function queueDrawAnimation(owner, card) { if(owner&&card) pendingDrawAnimations
 function drawCard(player, count = 1) {
   for (let i = 0; i < count; i++) { if (player.deck.length) { const card=player.deck.shift(); player.hand.push(card); queueDrawAnimation(player,card); if (player.isAI && player.hand.length > MAX_HAND_SIZE) player.destroyed.push(player.hand.pop()); } }
 }
-const MAX_HAND_SIZE = 7;
+const MAX_HAND_SIZE = 8;
 let handOverflowOpen = false;
 let pendingEndTurnAfterDiscard = false;
 function enforceHandLimit() {

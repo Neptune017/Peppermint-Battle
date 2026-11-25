@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="effects.css?v=20261125-life-chain-visibility-v3" />
   <link rel="stylesheet" href="auth.css?v=20261121-auth-start" />
   <link rel="stylesheet" href="boosters.css?v=20261125-featured-mobile-center-v2" />
-  <link rel="stylesheet" href="ui-tweaks.css?v=20261125-mobile-hand-card-size-v4" />
+  <link rel="stylesheet" href="ui-tweaks.css?v=20261125-mobile-hand-cap-eight-v5" />
 </head>
 <body>
   <video id="island-paradise-background" class="field-background-video" muted loop playsinline preload="none" poster="assets/backgrounds/island-paradise.webp" aria-hidden="true" tabindex="-1"><source src="assets/backgrounds/island-paradise-field-loop.webm" type="video/webm" /></video>
@@ -31,7 +31,7 @@
         <div class="deck-stack transformation-stack inspect-zone" data-zone-kind="transform" data-zone-side="opponent" role="button" tabindex="0" aria-label="Inspect rival Ascendance Deck" title="Deck-specific Zodiac Guardian cards"><div class="deck-card transformation-back"><img class="ui-icon" src="assets/ui-icons/ascendance-stack.webp" alt="" /></div><span><b id="opponent-transform-deck">3</b><small>ASCENDANCE DECK</small></span></div>
         <div class="discard-count inspect-zone" data-zone-kind="destroyed" data-zone-side="opponent" role="button" tabindex="0" aria-label="Inspect rival Pandemonium Zone"><span class="discard-icon"><img class="ui-icon" src="assets/ui-icons/pandemonium-portal.webp" alt="" /></span><span><b id="opponent-discard">0</b><small>PANDEMONIUM ZONE</small></span></div>
         <div id="opponent-world" class="world-status hidden"></div>
-        <section class="battle-history" aria-label="Battle history"><header><strong>BATTLE HISTORY</strong><span id="history-count">0</span></header><ol id="battle-history-list" aria-live="polite"></ol></section><button id="tutorial-reopen" class="tutorial-reopen hidden" type="button">VIEW TUTORIAL</button>
+        <button id="tutorial-reopen" class="tutorial-reopen hidden" type="button">VIEW TUTORIAL</button>
       </aside>
 
       <section class="battlefield">
@@ -63,6 +63,7 @@
         <div id="hand" class="hand" aria-label="Your hand"></div>
       </div>
     </footer>
+    <section class="battle-history" aria-label="Battle history"><header><strong>BATTLE HISTORY</strong><span id="history-count">0</span></header><ol id="battle-history-list" aria-live="polite"></ol></section>
     <div id="effect-toast" class="effect-toast" role="status" aria-live="polite"></div>
     <div id="card-tooltip" class="card-tooltip" role="tooltip" popover="manual" aria-hidden="true"></div>
     <dialog id="zone-dialog" class="rules-dialog zone-dialog"><button class="close-dialog" id="close-zone" aria-label="Close">×</button><span class="eyebrow" id="zone-kicker">CARD ZONE</span><h2 id="zone-title">Destroyed cards</h2><div id="zone-cards" class="zone-cards"></div></dialog>
@@ -83,7 +84,7 @@
   <div id="tutorial-focus-overlay" class="tutorial-focus-overlay hidden" aria-hidden="true"></div>
   </main>
     <dialog id="account-dialog" class="rules-dialog account-dialog" aria-labelledby="account-title"><button class="close-dialog" id="close-account" aria-label="Close player account">×</button><span class="eyebrow">PLAYER ACCOUNT</span><h2 id="account-title">Sign in</h2><p id="account-description">Sign in to keep your player profile and save data attached to your account.</p><p id="account-status" class="account-status" role="status" aria-live="polite"></p><form id="account-form" class="account-form"><label id="account-nickname-signup-group" class="hidden">Nickname<input id="account-nickname-signup" type="text" autocomplete="nickname" minlength="2" maxlength="24" placeholder="Choose a player name" /></label><label>Email<input id="account-email" type="email" autocomplete="email" required /></label><label>Password<input id="account-password" type="password" autocomplete="current-password" minlength="8" required /></label><button class="end-turn account-submit" id="account-submit" type="submit">SIGN IN</button></form><section id="account-signed-in" class="account-signed-in hidden"><strong id="account-email-label"></strong><span>Manage your player profile and sign-in details.</span><form id="account-profile-form" class="account-profile-form"><label>Nickname<input id="account-profile-nickname" type="text" autocomplete="nickname" minlength="2" maxlength="24" required /></label><label>New password <small>(leave blank to keep current password)</small><input id="account-new-password" type="password" autocomplete="new-password" minlength="8" /></label><button class="end-turn account-submit" id="account-profile-save" type="submit">SAVE PROFILE</button></form><button class="quiet-button" id="account-signout" type="button">SIGN OUT</button></section><button class="account-mode-toggle" id="account-mode-toggle" type="button">Create a new account</button></dialog>
-      <dialog id="card-review-dialog" class="card-review-dialog" aria-labelledby="card-review-name"><button id="card-review-close" class="close-dialog" type="button" aria-label="Close card details">×</button><div class="card-review-content"><img id="card-review-art" alt=""/><div class="card-review-copy"><span id="card-review-kicker" class="eyebrow"></span><h2 id="card-review-name"></h2><p id="card-review-type"></p><div class="card-review-stats"><span id="card-review-attack"></span><span id="card-review-mana"></span></div><section><h3>CARD EFFECT</h3><p id="card-review-ability"></p></section><section id="card-review-class-section"><h3 id="card-review-class-title"></h3><p id="card-review-class-ability"></p></section></div></div></dialog>  <script src="game.js?v=20261125-blader-turn-bonus-v2"></script>
+      <dialog id="card-review-dialog" class="card-review-dialog" aria-labelledby="card-review-name"><button id="card-review-close" class="close-dialog" type="button" aria-label="Close card details">×</button><div class="card-review-content"><img id="card-review-art" alt=""/><div class="card-review-copy"><span id="card-review-kicker" class="eyebrow"></span><h2 id="card-review-name"></h2><p id="card-review-type"></p><div class="card-review-stats"><span id="card-review-attack"></span><span id="card-review-mana"></span></div><section><h3>CARD EFFECT</h3><p id="card-review-ability"></p></section><section id="card-review-class-section"><h3 id="card-review-class-title"></h3><p id="card-review-class-ability"></p></section></div></div></dialog>  <script src="game.js?v=20261125-hand-cap-eight-v5"></script>
   <script src="auth-config.js?v=20261121-auth-start"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="auth.js?v=20261123-deck-delete-v1"></script>
@@ -114,7 +115,7 @@
   </div>
 </dialog>
   <script src="boosters.js?v=20261124-valhalla-rules-and-crops"></script>
-  <script src="language.js?v=20261125-blader-turn-bonus-v2"></script>
+  <script src="language.js?v=20261125-hand-cap-eight-v5"></script>
   <script src="navigation.js?v=20261124-featured-valhalla"></script>
 </body>
 </html>
