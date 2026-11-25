@@ -10,12 +10,17 @@
     { id: 'winter-ball', name: 'Winter Ball', logo: 'assets/deck-logos/winter-ball.webp', pack: 'assets/booster-packs/winter-ball-topaz-diamond-dimitri-booster-pack-cutout.webp', field: 'assets/backgrounds/field-christmas-mall.webp' },
     { id: 'valhalla', name: 'Valhalla', logo: 'assets/deck-logos/valhalla.webp', pack: 'assets/booster-packs/valhalla-booster-pack-cutout.webp', field: 'assets/backgrounds/field-valhalla-bar.webp' },
   ];
-  const STORAGE_KEY = 'peppermint-battle-collection-v1';
+  const STORAGE_KEY = 'peppermint-battle-collection-v2';
   const cardsByDeck = buildBoosterCatalog();
-  let player = loadLocalSave();
+  let profileId = null;
+  let player = readLocalSave(profileId).save;
   let activeDeck = 'wild-west';
-  let activeDeckSlot = 'deck-1';
-  let cloudUserId = null;
+  let editorDraft = null;
+  let pendingCollectionLoad = null;
+  let saveRevision = 0;
+  let decksUnsynced = false;
+  let saveQueue = Promise.resolve();
+  const publishCollectionChange = () => window.dispatchEvent(new Event('peppermint-collection-change'));
   let cloudSaveData = null;
   let opening = false;
   let revealTimer = null;
@@ -91,7 +96,7 @@
       return [deck.id, cards];
     }));
   }
-  function freshSave() {
+  function starterCards() {
     const academy = [...new Map(mainCards('academy').map((card) => [card.id, card])).values()];
     const deckList = academy.flatMap((card) => Array.from({ length: card.deckCopies ?? 1 }, () => card.id)).slice(0, 24);
     const counts = new Map(); deckList.forEach((id) => counts.set(id, (counts.get(id) || 0) + 1));
@@ -100,7 +105,21 @@
       if (!next) break;
       deckList.push(next.id); counts.set(next.id, (counts.get(next.id) || 0) + 1);
     }
-    return { version: 2, diamonds: STARTING_DIAMONDS, cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 }, deckList, ascendanceDeck: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'], deckSlots: [{ id: 'deck-1', name: 'Academy Starter', cards: [...deckList], ascendance: ['zodiac-guardian-kage', 'zodiac-guardian-ryota'] }], activeDeckId: 'deck-1', displays: {}, unlockedBoosters: {}, defeatedDecks: {}, tutorialRewardClaimed: false };
+    return { deckList, counts };
+  }
+  function freshSave() {
+    const { counts } = starterCards();
+    return {
+      version: 3,
+      diamonds: STARTING_DIAMONDS,
+      cards: { ...Object.fromEntries(counts), 'zodiac-guardian-kage': 1, 'zodiac-guardian-ryota': 1 },
+      deckSlots: [],
+      activeDeckId: null,
+      displays: {},
+      unlockedBoosters: {},
+      defeatedDecks: {},
+      tutorialRewardClaimed: false,
+    };
   }
   function collectionCards() {
     const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...valhallaLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
@@ -113,6 +132,9 @@
     return collectionCards().find((card) => card.title === source.title && card.name === source.name)?.id || cardId;
   }
   function aliasesFor(card) { return allCardCatalog().filter((item) => item.title === card.title && item.name === card.name).map((item) => item.id); }
+  function deckSignature(deck) {
+    return JSON.stringify([deck.name.trim().normalize('NFC').toLowerCase(), [...deck.cards].sort(), [...deck.ascendance].sort()]);
+  }
   function normalizeSave(value) {
     const save = value && typeof value === 'object' ? value : freshSave();
     const rawCards = save.cards && typeof save.cards === 'object' ? save.cards : {};
@@ -123,36 +145,76 @@
     }
     cards['zodiac-guardian-kage'] = Math.max(1, cards['zodiac-guardian-kage'] || 0);
     cards['zodiac-guardian-ryota'] = Math.max(1, cards['zodiac-guardian-ryota'] || 0);
-    const ownedAscendance = [...new Map(allCardCatalog().filter((card) => card.type === 'Transformation' && (cards[card.id] || 0) > 0).map((card) => [card.id, card])).keys()].slice(0, 12);
-    const academy = [...new Map(mainCards('academy').map((card) => [card.id, card])).values()];
-    const migratedDeck = academy.flatMap((card) => Array.from({ length: Math.min(Math.max(0, Math.floor(Number(cards[card.id]) || 0)), collectionLimit(card)) }, () => card.id)).slice(0, 40);
+    const ownedAscendance = allCardCatalog().filter((card) => card.type === 'Transformation' && (cards[card.id] || 0) > 0).map((card) => card.id);
+    const catalog = new Map(collectionCards().map((card) => [card.id, card]));
     const clampDeck = (list) => {
       const counts = new Map();
       return list.filter((id) => typeof id === 'string').map(canonicalId).filter((id) => {
-        const card = collectionCards().find((item) => item.id === id);
-        if (!card) return false;
+        const card = catalog.get(id);
+        if (!card || card.type === 'Transformation') return false;
         const count = counts.get(id) || 0;
-        if (count >= collectionLimit(card)) return false;
+        if (count >= Math.min(collectionLimit(card), cards[id] || 0)) return false;
         counts.set(id, count + 1);
         return true;
       }).slice(0, 40);
     };
-    const oldDeck = Array.isArray(save.deckList) ? clampDeck(save.deckList) : migratedDeck;
-    const slots = Array.isArray(save.deckSlots) ? save.deckSlots.slice(0, 20).filter((slot) => slot && typeof slot === 'object').map((slot, index) => ({ id: typeof slot.id === 'string' ? slot.id : `deck-${index + 1}`, name: String(slot.name || `Deck ${index + 1}`).slice(0, 28), cards: Array.isArray(slot.cards) ? clampDeck(slot.cards) : [], ascendance: (Array.isArray(slot.ascendance) ? slot.ascendance : (Array.isArray(save.ascendanceDeck) && slot.id === save.activeDeckId ? save.ascendanceDeck : ownedAscendance)).filter((id) => ownedAscendance.includes(id)).slice(0, 12) })) : [];
-    if (!slots.length) slots.push({ id: 'deck-1', name: 'Academy Starter', cards: oldDeck, ascendance: ownedAscendance });
-    const activeDeckId = slots.some((slot) => slot.id === save.activeDeckId) ? save.activeDeckId : slots[0].id;
-    const active = slots.find((slot) => slot.id === activeDeckId);
-    return { version: 2, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards, deckList: [...active.cards], ascendanceDeck: [...active.ascendance], deckSlots: slots, activeDeckId, displays: save.displays && typeof save.displays === 'object' ? save.displays : {}, unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {}, defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {}, tutorialRewardClaimed: Boolean(save.tutorialRewardClaimed) };
-  }  function loadLocalSave() {
-    try { const saved = localStorage.getItem(STORAGE_KEY); const normalized = saved ? normalizeSave(JSON.parse(saved)) : freshSave(); localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)); return normalized; }
-    catch { return freshSave(); }
+    const legacy = Number(save.version) < 3 || !save.version;
+    const rawSlots = Array.isArray(save.deckSlots) ? save.deckSlots : [];
+    if (legacy && !Array.isArray(save.deckSlots) && Array.isArray(save.deckList)) {
+      rawSlots.push({ id: 'deck-1', name: 'Academy Starter', cards: save.deckList, ascendance: save.ascendanceDeck });
+    }
+    const starter = legacy ? deckSignature({
+      name: 'Academy Starter',
+      cards: clampDeck(starterCards().deckList),
+      ascendance: ownedAscendance.filter((id) => ['zodiac-guardian-kage', 'zodiac-guardian-ryota'].includes(id)),
+    }) : '';
+    const ownedTransformations = new Set(ownedAscendance);
+    const signatures = new Set();
+    const byId = new Map();
+    rawSlots.filter((slot) => slot && typeof slot === 'object').forEach((slot, index) => {
+      const id = typeof slot.id === 'string' && slot.id ? slot.id : `deck-${index + 1}`;
+      const name = (String(slot.name || '').trim() || `Deck ${index + 1}`).slice(0, 28);
+      const deckCards = Array.isArray(slot.cards) ? clampDeck(slot.cards) : [];
+      const savedAscendance = Array.isArray(slot.ascendance) ? slot.ascendance
+        : (slot.id === save.activeDeckId && Array.isArray(save.ascendanceDeck) ? save.ascendanceDeck : ownedAscendance.slice(0, 12));
+      const ascendance = [...new Set(savedAscendance.filter((id) => ownedTransformations.has(id)))].slice(0, 12);
+      byId.set(id, { id, name, cards: deckCards, ascendance });
+    });
+    const slots = [...byId.values()].filter((slot) => {
+      const signature = deckSignature(slot);
+      if (signatures.has(signature) || (legacy && slot.id === 'deck-1' && signature === starter)) return false;
+      if (legacy && !slot.cards.length && /^(Academy Starter|My Deck \d+)$/i.test(slot.name)) return false;
+      signatures.add(signature);
+      return true;
+    }).slice(0, 20);
+    const activeDeckId = slots.some((slot) => slot.id === save.activeDeckId) ? save.activeDeckId : slots[0]?.id || null;
+    return {
+      version: 3, diamonds: Math.max(0, Math.floor(Number(save.diamonds) || 0)), cards,
+      deckSlots: slots, activeDeckId,
+      displays: save.displays && typeof save.displays === 'object' ? save.displays : {},
+      unlockedBoosters: save.unlockedBoosters && typeof save.unlockedBoosters === 'object' ? save.unlockedBoosters : {},
+      defeatedDecks: save.defeatedDecks && typeof save.defeatedDecks === 'object' ? save.defeatedDecks : {},
+      tutorialRewardClaimed: Boolean(save.tutorialRewardClaimed),
+    };
   }
-  function mergeSaves(localValue, cloudValue) {
+  function storageKey(accountId) { return `${STORAGE_KEY}:${accountId || 'guest'}`; }
+  function readLocalSave(accountId) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(storageKey(accountId)));
+      if (cached?.save) return { save: normalizeSave(cached.save), unsynced: Boolean(cached.unsynced) };
+    } catch { /* The local cache may be unavailable. */ }
+    return { save: freshSave(), unsynced: false };
+  }
+  function cacheSave(accountId, save, unsynced) {
+    try { localStorage.setItem(storageKey(accountId), JSON.stringify({ save, unsynced })); }
+    catch { if (!accountId) setMessage('This browser could not save local collection data.', 'error'); }
+  }
+  function mergeSaves(localValue, cloudValue, preferLocalDecks) {
     const local = normalizeSave(localValue);
     const cloud = normalizeSave(cloudValue);
     const cards = { ...cloud.cards };
     Object.entries(local.cards).forEach(([id, count]) => { cards[id] = Math.max(cards[id] || 0, count); });
-    const deckSlots = cloud.deckSlots.map((slot) => ({ ...slot, cards: [...slot.cards], ascendance: [...slot.ascendance] }));
+
     const displays = { ...local.displays, ...cloud.displays };
     for (const [deckId, localStock] of Object.entries(local.displays)) {
       const cloudStock = cloud.displays[deckId];
@@ -160,20 +222,31 @@
       displays[deckId] = { ...localStock, ...cloudStock };
       for (const [cardId, count] of Object.entries(localStock)) if (Number.isFinite(cloudStock[cardId])) displays[deckId][cardId] = Math.min(count, cloudStock[cardId]);
     }
-    return normalizeSave({ ...cloud, cards, deckSlots: deckSlots.slice(0, 20), displays, unlockedBoosters: { ...local.unlockedBoosters, ...cloud.unlockedBoosters }, defeatedDecks: { ...local.defeatedDecks, ...cloud.defeatedDecks }, tutorialRewardClaimed: local.tutorialRewardClaimed || cloud.tutorialRewardClaimed });
+    const decks = preferLocalDecks ? local : cloud;
+    return normalizeSave({ ...cloud, cards, deckSlots: decks.deckSlots, activeDeckId: decks.activeDeckId, displays, unlockedBoosters: { ...local.unlockedBoosters, ...cloud.unlockedBoosters }, defeatedDecks: { ...local.defeatedDecks, ...cloud.defeatedDecks }, tutorialRewardClaimed: local.tutorialRewardClaimed || cloud.tutorialRewardClaimed });
   }
-  function storeSave() {
-    const activeSlot = player.deckSlots?.find((slot) => slot.id === player.activeDeckId);
-    if (activeSlot) activeSlot.cards = [...player.deckList];
-    if (activeSlot) activeSlot.ascendance = [...(player.ascendanceDeck || [])];
-    player.ascendanceDeck = [...(activeSlot?.ascendance || player.ascendanceDeck || [])];
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(player)); } catch { if (!cloudUserId) setMessage('This browser could not save local collection data.', 'error'); }
-    if (cloudUserId && window.peppermintPlayerSave) {
-      const base = cloudSaveData && typeof cloudSaveData === 'object' ? cloudSaveData : {};
-      cloudSaveData = { ...base, boosters: player };
-      window.peppermintPlayerSave.save(cloudSaveData).catch(() => setMessage('Saved on this device; cloud save could not be updated.', 'error'));
+  function storeSave(decksChanged = false) {
+    if (pendingCollectionLoad) return;
+    decksUnsynced ||= decksChanged;
+    const accountId = profileId;
+    const revision = ++saveRevision;
+    const snapshot = JSON.parse(JSON.stringify(player));
+    cacheSave(accountId, snapshot, decksUnsynced);
+    if (accountId && cloudSaveData && window.peppermintPlayerSave) {
+      const payload = { ...cloudSaveData, boosters: snapshot };
+      saveQueue = saveQueue.then(async () => {
+        if (profileId !== accountId || revision !== saveRevision) return;
+        await window.peppermintPlayerSave.save(payload, accountId);
+        if (profileId === accountId && revision === saveRevision) {
+          decksUnsynced = false;
+          cacheSave(accountId, snapshot, false);
+        }
+      }).catch(() => {
+        if (profileId === accountId) setMessage('Saved on this device; cloud save could not be updated.', 'error');
+      });
     }
     renderWallet();
+    publishCollectionChange();
   }
   function getDeck(deckId = activeDeck) { return DECKS.find((deck) => deck.id === deckId) || DECKS[0]; }
   function isUnlocked(deckId) { return Boolean(player.unlockedBoosters[deckId]); }
@@ -288,14 +361,10 @@
     const canonical = canonicalId(chosen.id);
     aliasesFor(chosen).forEach((id) => { delete player.cards[id]; });
     player.cards[canonical] = nextCount;
-    if (chosen.type === 'Transformation') {
-      player.deckSlots.forEach((slot) => { if (slot.ascendance.length < 12 && !slot.ascendance.includes(canonical)) slot.ascendance.push(canonical); });
-      player.ascendanceDeck = [...(player.deckSlots.find((slot) => slot.id === player.activeDeckId)?.ascendance || [])];
-    }
     return { card: chosen, converted: false, reward: 0, count: nextCount, limit, wasNew: oldCount === 0 };
   }
   function openPack(bundle) {
-    if (opening) return;
+    if (opening || !accountCollectionReady()) return;
     const price = bundle ? 150 : 50, pulls = bundle ? 30 : 10, available = remainingCards(activeDeck);
     const guaranteedAvailable = rarityRemaining(activeDeck, 'Super Rare') + rarityRemaining(activeDeck, 'Ultra Rare');
     if (player.diamonds < price) return setMessage(`You need ${price} Diamonds for this purchase.`, 'error');
@@ -312,81 +381,175 @@
     renderWallet(); renderDeckTabs();
     renderDisplay(); renderCollection();
   }
+  function accountCollectionReady() {
+    return Boolean(profileId && profileId === window.peppermintCurrentUser?.id && !pendingCollectionLoad);
+  }
   function handleAuthChange(user) {
-    if (!user) {
-      cloudUserId = null; cloudSaveData = null; player = loadLocalSave(); render(); return;
-    }
-    if (cloudUserId === user.id) return;
-    cloudUserId = user.id;
-    if (!window.peppermintPlayerSave) { setMessage('Account save is unavailable; collection stays on this device.', 'error'); render(); return; }
-    window.peppermintPlayerSave.load().then((data) => {
-      cloudSaveData = data && typeof data === 'object' ? data : {};
-      const localSave = loadLocalSave();
-      // Keep account decks authoritative. Older local-only decks are not imported
-      // when a player signs in; only their collection and progression are merged.
-      player = mergeSaves(localSave, cloudSaveData.boosters || freshSave());
-      storeSave();
+    const accountId = user?.id || null;
+    if (profileId === accountId) return;
+    profileId = accountId;
+    saveRevision++;
+    pendingCollectionLoad = null;
+    cloudSaveData = null;
+    editorDraft = null;
+    const cache = readLocalSave(accountId);
+    player = cache.save;
+    decksUnsynced = cache.unsynced;
+    setEditorStatus('');
+
+    if (!accountId || !window.peppermintPlayerSave) {
       render();
-    }).catch(() => { cloudUserId = null; setMessage('Could not load the account collection. Local collection remains available.', 'error'); render(); });
+      publishCollectionChange();
+      return;
+    }
+    const load = window.peppermintPlayerSave.load();
+    pendingCollectionLoad = load;
+    publishCollectionChange();
+    load.then((data) => {
+      if (pendingCollectionLoad !== load) return;
+      pendingCollectionLoad = null;
+      cloudSaveData = data && typeof data === 'object' ? data : {};
+      if (cloudSaveData.boosters) {
+        player = mergeSaves(cache.save, cloudSaveData.boosters, cache.unsynced);
+      }
+      cacheSave(accountId, player, decksUnsynced);
+      setEditorStatus('');
+      render();
+      publishCollectionChange();
+    }, () => {
+      if (pendingCollectionLoad !== load) return;
+      pendingCollectionLoad = null;
+      setMessage('Could not load the account collection. Local collection remains available.', 'error');
+      setEditorStatus('');
+      render();
+      publishCollectionChange();
+    });
+  }
+  function copyDeck(slot) {
+    return { ...slot, cards: [...slot.cards], ascendance: [...slot.ascendance], dirty: false };
+  }
+  function setEditorStatus(message) {
+    document.getElementById('deck-editor-status').textContent = message;
+  }
+  function canReplaceDraft() {
+    const message = 'Discard the unsaved changes to this deck?';
+    return !editorDraft?.dirty || confirm(window.peppermintLanguage?.translate(message) || message);
+  }
+  function markDeckEdited() {
+    editorDraft.dirty = true;
+    setEditorStatus('Unsaved changes');
+    renderDeckEditor();
   }
   window.peppermintCollection = {
     renderBoosterDisplay() { render(); },
     openBoosterDisplay(deckId) { if (DECKS.some((deck) => deck.id === deckId)) activeDeck = deckId; render(); const dialog = document.getElementById('booster-dialog'); if (!dialog.open) dialog.showModal(); },
-    count(cardId) { return collectionCount({ id: cardId }); },
-    deckList() { return [...player.deckList]; },
-    setDeckList(ids) {
-      const cards = collectionCards(); const catalog = new Map(cards.map((card) => [card.id, card]));
-      if (!Array.isArray(ids) || ids.length > 40) return false;
-      const counts = new Map();
-      for (const id of ids) {
-        const card = catalog.get(id); if (!card) return false;
-        const next = (counts.get(id) || 0) + 1;
-        const limit = Math.min(collectionCount(card), collectionLimit(card));
-        if (next > limit) return false;
-        counts.set(id, next);
-      }
-      player.deckList = ids.map(canonicalId); storeSave(); return true;
+    count(cardId) {
+      if (!accountCollectionReady()) return 0;
+      const card = allCardCatalog().find((entry) => entry.id === cardId);
+      return card ? collectionCount(card) : 0;
     },
     listOwnedCards() {
-      return collectionCards().filter((card) => card.type !== 'Transformation').map((card) => ({ ...card, type: card.title === 'Pocket World' ? 'Field' : card.type, role: card.title === 'Pocket World' ? 'Field' : card.role, owned: collectionCount(card), deckLimit: Math.min(collectionCount(card), collectionLimit(card)), inDeck: player.deckList.filter((id) => canonicalId(id) === card.id).length }));
+      const selected = editorDraft?.cards || [];
+      return collectionCards().filter((card) => card.type !== 'Transformation').map((card) => ({
+        ...card,
+        type: card.title === 'Pocket World' ? 'Field' : card.type,
+        role: card.title === 'Pocket World' ? 'Field' : card.role,
+        owned: collectionCount(card),
+        deckLimit: Math.min(collectionCount(card), collectionLimit(card)),
+        inDeck: selected.filter((id) => id === card.id).length,
+      }));
     },
     listOwnedAscendance() { return allCardCatalog().filter((card) => card.type === 'Transformation').map((card) => ({ ...card, owned: collectionCount(card) })).sort((a, b) => a.name.localeCompare(b.name)); },
-    ascendanceDeck() { return [...(player.ascendanceDeck || [])]; },
     setAscendanceDeck(ids) {
+      if (!editorDraft || !accountCollectionReady()) return false;
       const owned = new Set(this.listOwnedAscendance().filter((card) => card.owned > 0).map((card) => card.id));
-      const next = [...new Set(Array.isArray(ids) ? ids : [])];
+      const next = [...new Set(ids)];
       if (next.length > 12 || next.some((id) => !owned.has(id))) return false;
-      player.ascendanceDeck = next; storeSave(); renderDeckEditor(); return true;
+      editorDraft.ascendance = next;
+      markDeckEdited();
+      return true;
     },
-    deckSlots() { return player.deckSlots.map((slot) => ({ id: slot.id, name: slot.name, count: slot.cards.length, active: slot.id === player.activeDeckId })); },
-    selectDeck(id) { const slot = player.deckSlots.find((entry) => entry.id === id); if (!slot) return false; player.activeDeckId = id; activeDeckSlot = id; player.deckList = [...slot.cards]; player.ascendanceDeck = [...slot.ascendance]; storeSave(); renderDeckEditor(); return true; },
-    createDeck(name) { if (player.deckSlots.length >= 20) return false; const n = player.deckSlots.length + 1; const id = `deck-${Date.now()}-${n}`; const ascendance = this.listOwnedAscendance().filter((card) => card.owned > 0).slice(0, 12).map((card) => card.id); const slot = { id, name: String(name || `My Deck ${n}`).slice(0, 28), cards: [], ascendance }; player.deckSlots.push(slot); player.activeDeckId = id; activeDeckSlot = id; player.deckList = []; player.ascendanceDeck = ascendance; storeSave(); renderDeckEditor(); return true; },
-    renameDeck(name) { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); if (!slot || !String(name || '').trim()) return false; slot.name = String(name).trim().slice(0, 28); storeSave(); renderDeckEditor(); return true; },
-    deleteActiveDeck() {
-      const index = player.deckSlots.findIndex((slot) => slot.id === player.activeDeckId);
-      if (index < 0) return false;
-      if (player.deckSlots.length <= 1) {
-        const slot = player.deckSlots[0]; slot.name = 'My Deck 1'; slot.cards = []; slot.ascendance = [];
-        player.deckList = []; player.ascendanceDeck = [];
-        storeSave(); renderDeckEditor(); return true;
+    deckSlots() {
+      if (!accountCollectionReady()) return [];
+      return player.deckSlots.map((slot) => ({ id: slot.id, name: slot.name, count: slot.cards.length, active: slot.id === player.activeDeckId }));
+    },
+    battleDeckSlots() { return this.deckSlots(); },
+    battleDeck(id) {
+      if (!accountCollectionReady()) return null;
+      const slot = player.deckSlots.find((entry) => entry.id === id && entry.cards.length >= 20 && entry.cards.length <= 40);
+      return slot ? { name: slot.name, cards: [...slot.cards], ascendance: [...slot.ascendance] } : null;
+    },
+    selectDeck(id) {
+      if (!accountCollectionReady()) return false;
+      const slot = player.deckSlots.find((entry) => entry.id === id);
+      if (!slot || !canReplaceDraft()) return false;
+      editorDraft = copyDeck(slot);
+      setEditorStatus('');
+      renderDeckEditor();
+      return true;
+    },
+    createDeck(name) {
+      if (!accountCollectionReady() || player.deckSlots.length >= 20 || !canReplaceDraft()) return false;
+      const label = String(name || '').trim().slice(0, 28);
+      if (!label) return false;
+      editorDraft = { id: null, name: label, cards: [], ascendance: [], dirty: true };
+      markDeckEdited();
+      return true;
+    },
+    renameDeck(name) {
+      const label = String(name || '').trim().slice(0, 28);
+      if (!editorDraft || !accountCollectionReady() || !label || editorDraft.name === label) return false;
+      editorDraft.name = label;
+      markDeckEdited();
+      return true;
+    },
+    saveDeck() {
+      if (!editorDraft?.dirty || !editorDraft.cards.length || !accountCollectionReady()) return false;
+      const { id, name, cards, ascendance } = editorDraft;
+      const index = player.deckSlots.findIndex((slot) => slot.id === id);
+      if (index < 0 && player.deckSlots.length >= 20) return false;
+      const saved = { id: id || crypto.randomUUID(), name, cards: [...cards], ascendance: [...ascendance] };
+      if (player.deckSlots.some((slot) => slot.id !== id && deckSignature(slot) === deckSignature(saved))) {
+        setEditorStatus('This deck is already saved.');
+        return false;
       }
+      if (index < 0) player.deckSlots.push(saved);
+      else player.deckSlots[index] = saved;
+      player.activeDeckId = saved.id;
+      editorDraft = copyDeck(saved);
+      storeSave(true);
+      setEditorStatus('Deck saved.');
+      renderDeckEditor();
+      return true;
+    },
+    deleteActiveDeck() {
+      if (!editorDraft?.id || !accountCollectionReady()) return false;
+      const index = player.deckSlots.findIndex((slot) => slot.id === editorDraft.id);
+      if (index < 0) return false;
       player.deckSlots.splice(index, 1);
-      const next = player.deckSlots[Math.max(0, index - 1)];
-      player.activeDeckId = next.id; activeDeckSlot = next.id; player.deckList = [...next.cards]; player.ascendanceDeck = [...next.ascendance];
-      storeSave(); renderDeckEditor(); return true;
+      if (player.activeDeckId === editorDraft.id) player.activeDeckId = player.deckSlots[Math.max(0, index - 1)]?.id || null;
+      editorDraft = null;
+      storeSave(true);
+      setEditorStatus('Deck deleted.');
+      renderDeckEditor();
+      return true;
     },
     renderDeckEditor() { renderDeckEditor(); },
     editorChange(cardId, delta) {
-      cardId = canonicalId(cardId);
-      const next = [...player.deckList];
+      if (!editorDraft || !accountCollectionReady()) return false;
+      const id = canonicalId(cardId);
+      const deck = editorDraft.cards;
       if (delta > 0) {
-        const card = collectionCards().find((entry) => entry.id === cardId);
-        if (!card || next.length >= 40 || next.filter((id) => id === cardId).length >= Math.min(collectionCount(card), collectionLimit(card))) return false;
-        next.push(cardId);
+        const card = collectionCards().find((entry) => entry.id === id);
+        if (!card || card.type === 'Transformation' || deck.length >= 40 || deck.filter((entry) => entry === id).length >= Math.min(collectionCount(card), collectionLimit(card))) return false;
+        deck.push(id);
       } else {
-        const index = next.lastIndexOf(cardId); if (index < 0) return false; next.splice(index, 1);
+        const index = deck.lastIndexOf(id);
+        if (index < 0) return false;
+        deck.splice(index, 1);
       }
-      player.deckList = next; storeSave(); renderDeckEditor(); return true;
+      markDeckEdited();
+      return true;
     },
     claimTutorialReward() { if (player.tutorialRewardClaimed) return { total:0, base:0, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; player.tutorialRewardClaimed=true; player.diamonds+=100; storeSave(); render(); return { total:100, base:100, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; },
     awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
@@ -406,6 +569,11 @@
     },
   };
   function renderDeckEditor() {
+    const ready = accountCollectionReady();
+    if (ready && !editorDraft) {
+      const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId);
+      if (slot) editorDraft = copyDeck(slot);
+    }
     const cards = window.peppermintCollection.listOwnedCards();
     const query = document.getElementById('deck-editor-search').value.trim().toLowerCase();
     const sort = document.getElementById('deck-editor-sort').value;
@@ -423,37 +591,56 @@
     const cardPacks = (card) => DECKS.filter((entry) => cardsByDeck[entry.id].some((item) => item.id === card.id)).map((entry) => entry.id);
     const hideUnowned = document.getElementById('deck-editor-hide-unowned').checked;
     const shown = cards.filter((card) => (!hideUnowned || card.owned > 0) && (`${card.title} ${card.name || card.title}`.toLowerCase().includes(query) || (window.peppermintLanguage?.translate(`${card.title} ${card.name || card.title}`) || '').toLowerCase().includes(query)) && (!filters.type || displayedCardType(card) === filters.type) && (!filters.element || card.element === filters.element) && (!filters.role || (card.role || '') === filters.role) && (!filters.pack || (filters.pack === 'academy' ? cardPacks(card).length === 0 : cardPacks(card).includes(filters.pack))));
-    const deck = player.deckList;
+    const deck = editorDraft?.cards || [];
     const slotSelect = document.getElementById('deck-editor-slot');
-    slotSelect.innerHTML = player.deckSlots.map((slot) => `<option value="${slot.id}">${slot.name} · ${slot.cards.length}/40</option>`).join('');
-    slotSelect.value = player.activeDeckId;
-    document.getElementById('deck-editor-new').disabled = player.deckSlots.length >= 20;
-    document.getElementById('deck-editor-new').title = player.deckSlots.length >= 20 ? 'Maximum 20 saved decks' : 'Create a new saved deck';
-    document.getElementById('deck-editor-delete').disabled = false;
-    document.getElementById('deck-editor-delete').title = 'Delete the active saved deck';
+    const draftOption = new Option(editorDraft?.id ? 'Choose a saved deck' : editorDraft?.name || 'Choose a saved deck', '');
+    draftOption.disabled = true;
+    slotSelect.replaceChildren(draftOption, ...window.peppermintCollection.deckSlots().map((slot) => new Option(`${slot.name} · ${slot.count}/40`, slot.id)));
+    slotSelect.disabled = !ready || !player.deckSlots.length;
+    slotSelect.value = editorDraft?.id || '';
+    document.getElementById('deck-editor-new').disabled = !ready || player.deckSlots.length >= 20;
+    document.getElementById('deck-editor-new').title = player.deckSlots.length >= 20 ? 'Maximum 20 saved decks' : 'Start a new deck';
+    document.getElementById('deck-editor-rename').disabled = !ready || !editorDraft;
+    document.getElementById('deck-editor-delete').disabled = !ready || !editorDraft?.id;
+    document.getElementById('deck-editor-save').disabled = !ready || !editorDraft?.dirty || !deck.length;
+    if (pendingCollectionLoad) setEditorStatus('Loading saved decks…');
+    else if (editorDraft?.dirty) setEditorStatus('Unsaved changes');
     document.getElementById('deck-editor-count').textContent = `${deck.length} / 40 cards`;
     document.getElementById('deck-editor-list').innerHTML = deck.length ? deck.map((id) => {
       const card = cards.find((entry) => entry.id === canonicalId(id)) || collectionCards().find((entry) => entry.id === canonicalId(id));
       return card ? `<div class="editor-deck-row" draggable="true" data-editor-drag-remove="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt=""/><span><small>${card.title}</small><strong>${displayedCardName(card)}</strong></span>${cardReviewButton(card)}<button type="button" data-editor-card="${card.id}" data-editor-delta="-1" aria-label="Remove ${displayedCardName(card)}">−</button></div>` : '';
     }).join('') : '<p class="editor-empty">Your deck is empty. Drag cards here or add them from the list.</p>';
     document.getElementById('deck-editor-cards').innerHTML = shown.map((card) => {
-      const unavailable = !card.owned || deck.length >= 40 || card.inDeck >= card.deckLimit;
+      const unavailable = !ready || !editorDraft || !card.owned || deck.length >= 40 || card.inDeck >= card.deckLimit;
       return `<article class="editor-card ${unavailable ? 'cannot-add' : ''}" draggable="${!unavailable}" data-editor-drag-add="${card.id}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div class="editor-card-info"><small>${card.title} · ${displayedCardType(card)} · ${card.attack ?? 0} ATK · ${card.cost} Mana</small><strong>${displayedCardName(card)}</strong><span>Owned ${card.owned} · In deck ${card.inDeck} / ${card.deckLimit}</span><button type="button" data-editor-card="${card.id}" data-editor-delta="1" ${unavailable ? 'disabled' : ''}>ADD CARD</button>${cardReviewButton(card)}</div></article>`;
     }).join('') || '<p class="editor-empty">No cards match this search.</p>';
     const ascCards = window.peppermintCollection.listOwnedAscendance();
-    const ascDeck = window.peppermintCollection.ascendanceDeck();
+    const ascDeck = editorDraft?.ascendance || [];
     document.getElementById('ascendance-editor-count').textContent = `${ascDeck.length} / 12 cards`;
     document.getElementById('ascendance-editor-list').innerHTML = ascCards.map((card) => {
-      const inDeck = ascDeck.includes(card.id), unavailable = !card.owned || (!inDeck && ascDeck.length >= 12);
+      const inDeck = ascDeck.includes(card.id), unavailable = !ready || !editorDraft || !card.owned || (!inDeck && ascDeck.length >= 12);
       return `<article class="ascendance-editor-card ${card.owned ? '' : 'cannot-add'}" ${cardPreviewAttrs(card)}><img src="${card.art.split('?')[0]}" alt="" loading="lazy"/><div><small>ZODIAC GUARDIAN · ${card.element}</small><strong>${displayedCardName(card)}</strong><span>${card.owned ? (inDeck ? 'In this Ascendance Deck' : 'Owned') : 'Not owned'}</span></div><button type="button" data-ascendance-card="${card.id}" data-ascendance-action="${inDeck ? 'remove' : 'add'}" ${unavailable ? 'disabled' : ''}>${inDeck ? 'REMOVE' : 'ADD'}</button></article>`;
     }).join('');
   }
   document.getElementById('deck-editor-search').addEventListener('input', renderDeckEditor);
   ['deck-editor-type','deck-editor-element','deck-editor-class','deck-editor-pack','deck-editor-hide-unowned'].forEach((id) => document.getElementById(id).addEventListener('change', renderDeckEditor));
-  document.getElementById('deck-editor-slot').addEventListener('change', (event) => window.peppermintCollection.selectDeck(event.target.value));
-  document.getElementById('deck-editor-new').addEventListener('click', () => { const name = prompt('Name this deck', `My Deck ${player.deckSlots.length + 1}`); if (name !== null && !window.peppermintCollection.createDeck(name)) setMessage('You can save up to 20 decks.', 'error'); });
-  document.getElementById('deck-editor-rename').addEventListener('click', () => { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); const name = prompt('Rename this deck', slot?.name || 'My Deck'); if (name !== null) window.peppermintCollection.renameDeck(name); });
-  document.getElementById('deck-editor-delete').addEventListener('click', () => { const slot = player.deckSlots.find((entry) => entry.id === player.activeDeckId); const message = window.peppermintLanguage?.translate('Delete the active deck? This cannot be undone.') || 'Delete the active deck? This cannot be undone.'; if (slot && confirm(`${message}\n\n${slot.name}`)) window.peppermintCollection.deleteActiveDeck(); });
+  document.getElementById('deck-editor-slot').addEventListener('change', (event) => {
+    if (!window.peppermintCollection.selectDeck(event.target.value)) event.target.value = editorDraft?.id || '';
+  });
+  document.getElementById('deck-editor-new').addEventListener('click', () => {
+    const name = prompt('Name this deck', `My Deck ${player.deckSlots.length + 1}`);
+    if (name !== null) window.peppermintCollection.createDeck(name);
+  });
+  document.getElementById('deck-editor-rename').addEventListener('click', () => {
+    const name = prompt('Rename this deck', editorDraft?.name || '');
+    if (name !== null) window.peppermintCollection.renameDeck(name);
+  });
+  document.getElementById('deck-editor-save').addEventListener('click', () => window.peppermintCollection.saveDeck());
+  document.getElementById('deck-editor-delete').addEventListener('click', () => {
+    const slot = player.deckSlots.find((entry) => entry.id === editorDraft?.id);
+    const message = 'Delete the active deck? This cannot be undone.';
+    if (slot && confirm(`${window.peppermintLanguage?.translate(message) || message}\n\n${slot.name}`)) window.peppermintCollection.deleteActiveDeck();
+  });
   const bindEditorDrag = (container, mode) => {
     container.addEventListener('dragstart', (event) => { const item = event.target.closest(mode === 'add' ? '[data-editor-drag-add]' : '[data-editor-drag-remove]'); if (!item || item.draggable === false) { event.preventDefault(); return; } const id = item.dataset[mode === 'add' ? 'editorDragAdd' : 'editorDragRemove']; event.dataTransfer.setData('text/plain', `${mode}:${id}`); event.dataTransfer.effectAllowed = 'move'; });
   };
@@ -466,7 +653,7 @@
   document.getElementById('deck-editor-list').addEventListener('click', (event) => { const button = event.target.closest('[data-editor-card]'); if (button) window.peppermintCollection.editorChange(button.dataset.editorCard, Number(button.dataset.editorDelta)); });
   document.getElementById('ascendance-editor-list').addEventListener('click', (event) => {
     const button = event.target.closest('[data-ascendance-card]'); if (!button) return;
-    const ids = window.peppermintCollection.ascendanceDeck();
+    const ids = [...(editorDraft?.ascendance || [])];
     if (button.dataset.ascendanceAction === 'add') ids.push(button.dataset.ascendanceCard);
     else ids.splice(ids.indexOf(button.dataset.ascendanceCard), 1);
     window.peppermintCollection.setAscendanceDeck(ids);
@@ -492,6 +679,10 @@
   document.getElementById('collection-back-to-boosters').addEventListener('click', () => document.getElementById('collection-dialog').close());
   document.getElementById('collection-dialog').addEventListener('close', () => { if (document.getElementById('booster-dialog').open) document.getElementById('booster-dialog').focus(); });
   window.addEventListener('peppermint-auth-state', (event) => handleAuthChange(event.detail?.user || null));
+  window.addEventListener('peppermint-collection-change', () => {
+    if (document.getElementById('deck-editor-dialog').open) renderDeckEditor();
+  });
+  if (window.peppermintCurrentUser) handleAuthChange(window.peppermintCurrentUser);
   render();
 })();
 

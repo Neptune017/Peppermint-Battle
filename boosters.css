@@ -187,3 +187,7 @@
   .featured-booster-pack{grid-column:1;justify-self:center;align-self:center;width:clamp(130px,42vw,220px);height:clamp(145px,28vh,220px);margin-inline:auto}
   .featured-booster-copy button{align-self:center;width:min(100%,280px);margin-inline:auto}
 }
+
+.editor-deck-control.editor-deck-save:not(:disabled){color:#14241d;background:#91e2c0;border-color:#91e2c0}
+.deck-editor-status:empty{display:none}
+.deck-editor-status{margin:4px 0 10px;color:#bbdccf}

@@ -148,6 +148,7 @@
   for (const [english,hungarian] of Object.entries(cardAbilityTranslations)) glossary.set(english,reviseHungarian(hungarian));
   Object.assign(translations,{'None':'Semleges','Neutral':'Semleges','Dollmaster':'Bábmester','Vegcritter':'Zöldségszerzet','Zodiac':'Zodiákus','Egg':'Tojás','Avatar Gem':'Avatar Kristály','Avatar Gemet':'Avatar Kristályt','Avatar Gem':'Avatar Kristály','Mana Potion':'Manaital','Health Potion':'Gyógyital','Academy Hall':'Akadémia Csarnok','Cooking':'Főzés','Locker Room':'Öltöző','Avatar Gem':'Avatar Kristály','Quick Draw':'Gyorshúzás',"Duelist's Gambit":'Párbajhős csele','Bounty Raid':'Fejvadászroham','Root':'Gyökér','Wanted Poster':'Körözési plakát','Planting':'Ültetés','Cactus Creek':'Cactus Creek','Ride the Wave':'Lovagold meg a hullámot','No Pain, No Gain':'Nincs fájdalom, nincs nyereség',"Swim, Don't Sink":'Ússz, ne süllyedj!','Shopping':'Bevásárlás','Merry Christmas!':'Boldog karácsonyt!','Wedding Proposal':'Házassági ajánlat','Drinking Tea':'Teázás','Island Paradise':'Szigeti Paradicsom','Toy Store':'Játékbolt','Christmas Mall':'Karácsonyi bevásárlóközpont','Doll Chorus':'Babakórus','Wind-Up Toy':'Felhúzható játék','Toy Capsule':'Játékkapszula'});
   Object.assign(translations,{
+    'BATTLE PORTRAIT':'HARCOS PORTRÉ','Choose a fighter profile picture':'Válassz harcost profilképnek',
     "Your hand contains 5 cards. You can hold up to 8 cards. If you have more than 8, immediately choose cards to send to your Pandemonium Zone until you have 8.":"A kezdő kezed 5 kártyából áll. Legfeljebb 8 kártyát tarthatsz a kezedben. Ha 8-nál több kerül bele, azonnal válassz ki annyi kártyát, amennyit a Pandémonium zónába küldesz, hogy 8 maradjon.",
     "HAND LIMIT":"KÉZLIMIT",
     "Choose cards to discard":"Válaszd ki az eldobandó kártyákat",
@@ -892,9 +893,23 @@
     const elements=root.nodeType===Node.ELEMENT_NODE?[root,...root.querySelectorAll('*')]:[...root.querySelectorAll('*')];
     for(const el of elements){for(const attr of ['aria-label','title','placeholder','alt'])if(el.hasAttribute(attr)){let saved=originalAttrs.get(el);if(!saved){saved={};originalAttrs.set(el,saved)}if(!(attr in saved))saved[attr]=el.getAttribute(attr);if(lastTranslatedAttrs.get(el)?.[attr]!==undefined&&el.getAttribute(attr)!==lastTranslatedAttrs.get(el)[attr])saved[attr]=el.getAttribute(attr);const translated=language==='hu'?translate(saved[attr]):saved[attr];if(el.getAttribute(attr)!==translated)el.setAttribute(attr,translated);const last=lastTranslatedAttrs.get(el)||{};last[attr]=translated;lastTranslatedAttrs.set(el,last);}}
   }
+  glossary.set('SAVE DECK', 'PAKLI MENTÉSE');
+  glossary.set('Build a 20–40 card Standard deck from cards you own.', 'Állíts össze egy 20–40 lapos Normál paklit a megszerzett kártyáidból.');
+  glossary.set('Choose a saved deck', 'Válassz egy mentett paklit');
+  glossary.set('Start a new deck', 'Kezdj egy új paklit');
+  glossary.set('Loading saved decks…', 'Mentett paklik betöltése…');
+  glossary.set('Unsaved changes', 'Nem mentett módosítások');
+  glossary.set('Discard the unsaved changes to this deck?', 'Elveted a pakli nem mentett módosításait?');
+  glossary.set('This deck is already saved.', 'Ez a pakli már el van mentve.');
+  glossary.set('Deck saved.', 'A pakli mentve.');
+  glossary.set('Deck deleted.', 'A pakli törölve.');
+  glossary.set('Account settings', 'Fiókbeállítások');
+  glossary.set('CONTINUE', 'TOVÁBB');
+  glossary.set('Unlock the matching card to use this avatar.', 'Az avatár használatához szerezd meg a hozzá tartozó kártyát.');
+  glossary.set('Standard decks must contain 20–40 gained cards.', 'A Normál pakliban 20–40 megszerzett kártyának kell lennie.');
   function setLanguage(next){language=next==='hu'?'hu':'en';localStorage.setItem('peppermint-battle-language',language);document.documentElement.lang=language;const select=document.getElementById('language-select');if(select)select.value=language;apply();}
   window.peppermintLanguage={set:setLanguage,get:()=>language,translate};
-  document.addEventListener('DOMContentLoaded',()=>{const header=document.querySelector('.main-menu-header>div');if(header&&!document.getElementById('language-select')){const label=document.createElement('label');label.className='menu-language-selector';label.innerHTML='<span>LANGUAGE / NYELV</span><select id="language-select" aria-label="Language / Nyelv"><option value="en">English</option><option value="hu">Magyar</option></select>';header.append(label);label.querySelector('select').addEventListener('change',e=>setLanguage(e.target.value));} setLanguage(language);});
+  document.addEventListener('DOMContentLoaded',()=>{const header=document.querySelector('.main-menu-copy');if(header&&!document.getElementById('language-select')){const label=document.createElement('label');label.className='menu-language-selector';label.innerHTML='<span>LANGUAGE / NYELV</span><select id="language-select" aria-label="Language / Nyelv"><option value="en">English</option><option value="hu">Magyar</option></select>';const row=header.querySelector('.menu-language-profile-row')||header;row.prepend(label);}const select=document.getElementById('language-select');if(select)select.addEventListener('change',e=>setLanguage(e.target.value));setLanguage(language);});
   new MutationObserver(records=>{if(language!=='hu')return;for(const r of records){if(r.type==='characterData')apply(r.target);for(const node of r.addedNodes)if(node.nodeType===Node.ELEMENT_NODE||node.nodeType===Node.TEXT_NODE)apply(node);}}).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
 })();
 
