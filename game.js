@@ -220,6 +220,95 @@ const animatingDrawInstances = new Set();
 const match = { turn: 1, turnSerial: 0, active: 'player', energy: 1, maxEnergy: 1, turnEnergyCap: 1, secondPlayerBonusPending: true, player: null, opponent: null, playerDeckId: 'academy', opponentDeckId: 'wild-west', fieldCard: null, pendingDharmaRevives: [], selected: null, attackerLane: null, attackMode: false, attackResolving: false, firstPlayer: 'player', over: false, battleDestroyedCards: 0 };
 let mainLifeChainState = { player: null, opponent: null };
 const battleHistory = [];
+let activeCombatCue = null;
+
+function combatSide(owner) { return owner === match.player ? 'player' : 'opponent'; }
+function combatLane(owner, lane) {
+  const zone = document.querySelector(`[data-side="${combatSide(owner)}"][data-lane="${lane}"]`);
+  return zone?.querySelector('.battle-card') || zone;
+}
+function combatSource(card, owner, lane) {
+  if (lane >= 0) return combatLane(owner, lane);
+  if (owner === match.player) {
+    const hand = [...document.querySelectorAll('#hand .hand-card')].find((element) => element.dataset.id === card.instance);
+    if (hand) return hand;
+  }
+  return document.getElementById(`${combatSide(owner)}-board`);
+}
+function showCombatCue(card, owner, lane, targets = [], kind = 'skill') {
+  if (!card || !owner) return false;
+  return window.peppermintCombatEffects?.play({ card, kind, source: combatSource(card, owner, lane), targets, audio: soundContext });
+}
+function combatCardStamp(card) {
+  if (!card) return '';
+  return [
+    card.instance, card.cost, card.ready, card.attackBonus, card.euphoria, card.euphoriaProtected,
+    card.protectedBy, card.ignoresIslandField, card.skipAttackThisTurn, card.skipAttackNext,
+    card.cannotMoveUntilTurn, card.abilityUsedTurn, card.usedIntercept,
+  ].join('/');
+}
+function combatSnapshot() {
+  return {
+    lanes: [match.player, match.opponent].flatMap((owner) => owner.lanes.map(combatCardStamp)),
+    life: [match.player, match.opponent].flatMap((owner) => owner.life.middle.map(combatCardStamp)),
+    field: JSON.stringify([match.fieldCard?.id, match.fieldCard?.usedTurnKeys]),
+    piles: [match.player, match.opponent].flatMap((owner) => [
+      owner.hand.map(combatCardStamp).join(','),
+      owner.deck.map((card) => card.instance).join(','),
+      owner.destroyed.map((card) => card.instance).join(','),
+      owner.transformationDeck.length,
+    ]).join('|'),
+    pending: match.pendingDharmaRevives.length,
+    energy: match.energy,
+  };
+}
+function followCombatCue(cue, perform) {
+  if (activeCombatCue === cue || cue.owner !== match.player && cue.owner !== match.opponent) return perform();
+  const previous = activeCombatCue;
+  const before = combatSnapshot();
+  const source = combatSource(cue.card, cue.owner, cue.lane)?.getBoundingClientRect?.();
+  activeCombatCue = cue;
+  try {
+    return perform();
+  } finally {
+    activeCombatCue = previous;
+    if (!cue.shown) {
+      const after = combatSnapshot();
+      const teams = [match.player, match.opponent];
+      const targets = after.lanes.flatMap((stamp, index) => stamp !== before.lanes[index]
+        ? [combatLane(teams[Math.floor(index / 3)], index % 3)] : []);
+      for (const [index, stamp] of after.life.entries()) {
+        if (stamp !== before.life[index]) targets.push(lifeTargetElement(combatSide(teams[Math.floor(index / 3)]), index % 3));
+      }
+      if (before.field !== after.field) targets.push(document.getElementById('field-zone'));
+      if (cue.card.id === 'mana-potion' && before.energy !== after.energy) targets.push(document.querySelector('.energy'));
+      if (targets.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
+        cue.shown = true;
+        window.peppermintCombatEffects.play({
+          card: cue.card, source, kind: cue.kind, targets: targets.filter(Boolean), audio: soundContext,
+        });
+      }
+    }
+  }
+}
+function trackCombatCue(card, owner, lane, perform, { kind = 'skill', reveal = false } = {}) {
+  if (!card || !window.peppermintCombatEffects || !match.player || !match.opponent || activeCombatCue?.card === card) return perform();
+  return followCombatCue({ card, owner, lane, kind, reveal, shown: false }, perform);
+}
+function cardCombatStatus(card, owner, attackInfo) {
+  if (!window.peppermintCombatEffects) return '';
+  const statuses = [];
+  if (card.skipAttackThisTurn || card.skipAttackNext) statuses.push(card.skipAttackReason === 'stun' ? 'stun' : 'freeze');
+  if (card.cannotMoveUntilTurn > match.turn) statuses.push('root');
+  if ((card.protectedBy && owner?.lanes.some((unit) => unit?.instance === card.protectedBy)) ||
+      (match.fieldCard?.id === 'ip-field' && card.title === 'Island Paradise' && !card.ignoresIslandField) ||
+      isEffectProtected(card)) statuses.push('guard');
+  if (card.euphoria) statuses.push(card.euphoriaProtected ? 'shieldedEuphoria' : 'euphoria');
+  if (attackInfo.modifiers?.some((modifier) => modifier.amount > 0 && modifier.source !== 'Element Advantage')) statuses.push('boon');
+  if (attackInfo.modifiers?.some((modifier) => modifier.amount < 0)) statuses.push('bane');
+  if (match.pendingDharmaRevives.some((pending) => pending.dharmaInstance === card.instance)) statuses.push('revive');
+  return window.peppermintCombatEffects.status(statuses);
+}
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
 const battleHistoryPanel = document.getElementById('battle-history');
 const battleHistoryToggle = document.getElementById('battle-history-toggle');
@@ -336,6 +425,7 @@ function newPlayer(isAI, deckId, savedDeck = null, randomizeAvatar = false) {
   return { avatar: rival?.card || null, hand, deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
 function beginMatch({ playerDeckId, opponentDeckId, collectionOnly, tutorialMode, playerAvatar, opponent }, savedDeck) {
+  window.peppermintCombatEffects?.clear();
   mainLifeChainState = { player: null, opponent: null };
   handOverflowOpen = false;
   pendingEndTurnAfterDiscard = false;
@@ -605,7 +695,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const summonLocked = !compact && card.id === 'vishnu' && !owner?.lanes.some((unit) => unit?.name === 'Peppermint');
   const displayName = displayedCardName(card);
   return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, drag to attack" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Battle Zone' : ''}"`}>
-    ${art}<span class="art-shade"></span>${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
+    ${art}<span class="art-shade"></span>${compact ? cardCombatStatus(card, owner, attackInfo) : ''}${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
     ${actionButton}${handAbilityButton}${freezeBadge}${euphoriaBubbles}${details}</div>`;
 }
 function lifeCount(player) { return player.life.middle.filter(Boolean).length + (player.life.main ? 1 : 0); }
@@ -1004,6 +1094,7 @@ function playPendingDrawAnimations() {
 let pendingEffectChoice = null;
 const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.webp',runny:'30FPS_FA02_04_Impulse.webp',berry:'30FPS_FA01_09_Barrier.webp',frosty:'30FPS_FA01_08_Shield.webp',den:'30FPS_FA01_04_Buff.webp',ryota:'30FPS_FA01_01_Slash.webp',healer:'30FPS_FA01_07_Cure.webp',summoner:'30FPS_FA02_01_EnergyBurst.webp',gummy:'30FPS_FA02_03_CrystalBlossom.webp',zoya:'30FPS_FA02_02_Smokescreen.webp',cooking:'30FPS_FA02_03_CrystalBlossom.webp',cotton:'30FPS_FA02_03_CrystalBlossom.webp',kage:'30FPS_FA02_02_Smokescreen.webp',amethyst:'30FPS_FA01_10_Burst.webp',shielder:'30FPS_FA01_08_Shield.webp',shooter:'30FPS_FA01_02_Thrust.webp',enchanter:'30FPS_FA01_04_Buff.webp',trickster:'30FPS_FA01_05_Debuff.webp',blader:'30FPS_FA01_01_Slash.webp',brawler:'30FPS_FA01_03_Punch.webp',peppermint:'30FPS_FA01_04_Buff.webp','avatar-gem':'30FPS_FA02_07_HyperCharge.webp','dharma-revival':'30FPS_FA02_03_CrystalBlossom.webp' };
 function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, silent = false } = {}) {
+  if (activeCombatCue) return;
   const side = owner === match.player ? 'player' : 'opponent';
   window.setTimeout(() => {
     const host = laneIndex >= 0 ? document.querySelector(`[data-side="${side}"][data-lane="${laneIndex}"]`) : document.getElementById(`${side}-board`);
@@ -1029,6 +1120,7 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, si
 }
 let fieldFxSequence = 0;
 function playFieldActivationFx(fieldId) {
+  if (activeCombatCue) return;
   const host = document.body;
   const names = { 'ip-field':'ISLAND PARADISE', 'toy-store':'TOY STORE', 'christmas-mall':'CHRISTMAS MALL', 'academy-grounds':'ACADEMY HALL', 'cactus-creek':'CACTUS CREEK', 'valhalla-bar':'VALHALLA BAR' };
   const id = `field-flow-${++fieldFxSequence}`;
@@ -1039,6 +1131,7 @@ function playFieldActivationFx(fieldId) {
   window.setTimeout(() => fx.remove(), 1750);
 }
 function playHealthPotionFx(owner, index) {
+  if (activeCombatCue) return;
   const side = owner === match.player ? 'player' : 'opponent';
   const host = document.querySelector(`#${side}-life .life-middle .life-card:nth-child(${index + 1})`);
   if (!host) return;
@@ -1074,6 +1167,7 @@ function playChainTransitionSound(mode) {
   } catch (_) { /* The visual chain effect still plays if audio is unavailable. */ }
 }
 function playManaPotionFx() {
+  if (activeCombatCue) return;
   const host = document.querySelector('.energy');
   if (!host) return;
   const fx = document.createElement('span'); fx.className = 'mana-crystal-fx'; fx.innerHTML = '<svg viewBox="0 0 80 100" aria-hidden="true"><path d="M40 4 70 39 40 94 10 39Z"/><path d="m40 4 0 90M10 39h60M40 4 25 39l15 55 15-55Z"/><circle cx="40" cy="47" r="34"/></svg>';
@@ -1097,7 +1191,9 @@ function chooseEffect(owner, title, copy, choices, callback) {
     const stats = card ? `<span class="effect-option-stats">${card.type === 'Action' ? `${escapeHTML(displayedCardType(card))} · ${card.cost} Mana` : `${card.attack} ATK · ${card.cost} Mana`}</span>` : '';
     return `<button class="effect-option" data-choice="${index}">${art}<span class="effect-option-copy"><strong>${escapeHTML(choice.label)}</strong><small>${escapeHTML(choice.detail || '')}</small></span>${stats}</button>`;
   }).join('');
-  pendingEffectChoice = callback; chooseEffect.choices = choices; document.getElementById('effect-dialog').showModal();
+  const cue = activeCombatCue;
+  pendingEffectChoice = cue ? (value) => followCombatCue(cue, () => callback(value)) : callback;
+  chooseEffect.choices = choices; document.getElementById('effect-dialog').showModal();
 }
 function cardForEffectChoice(choice, owner = null, context = '') {
   if (!choice) return null;
@@ -1148,6 +1244,9 @@ function drawMatching(owner, predicate, label) {
   const [card] = owner.deck.splice(index, 1); owner.hand.push(card); queueDrawAnimation(owner,card); render(); announceEffect(`${card.name} drawn by effect.`); return true;
 }
 function summonBeatcracker(owner, card) {
+  return trackCombatCue(card?.id === 'lt-beatcracker' ? card : null, owner, -1, () => resolveSummonBeatcracker(owner, card));
+}
+function resolveSummonBeatcracker(owner, card) {
   const lane = owner.lanes.findIndex((unit) => !unit);
   if (card?.id !== 'lt-beatcracker' || lane < 0) return false;
   const inPandemonium = owner.destroyed.findIndex((unit) => unit.instance === card.instance);
@@ -1158,6 +1257,9 @@ function summonBeatcracker(owner, card) {
   return true;
 }
 function useCooking(owner, actionInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.instance === actionInstance), owner, -1, () => resolveUseCooking(owner, actionInstance));
+}
+function resolveUseCooking(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (!action || match.energy < action.cost) { announceEffect('Cooking needs 3 energy.'); return; }
   const choices = owner.destroyed.filter((card) => card.type === 'Fighter' || card.type === 'Creature').map((card) => ({ value: card.instance, label: card.name, detail: `${card.title} · ${card.element}` }));
@@ -1168,6 +1270,9 @@ function useCooking(owner, actionInstance) {
   });
 }
 function usePlanting(owner, actionInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.instance === actionInstance), owner, -1, () => resolveUsePlanting(owner, actionInstance));
+}
+function resolveUsePlanting(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (!action || match.energy < action.cost) { announceEffect('Planting needs 2 energy.'); return; }
   const openLanes = owner.lanes.map((unit, index) => unit ? -1 : index).filter((index) => index >= 0);
@@ -1187,6 +1292,9 @@ function usePlanting(owner, actionInstance) {
   });
 }
 function activateMedusa(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateMedusa(owner, laneIndex));
+}
+function resolveActivateMedusa(owner, laneIndex) {
   const medusa = owner.lanes[laneIndex];
   if (!medusa || medusa.id !== 'ww-medusa' || medusa.abilityUsedTurn === match.turn) return;
   if (match.energy < 1) { announceEffect('Medusa needs 1 energy.'); return; }
@@ -1196,12 +1304,18 @@ function activateMedusa(owner, laneIndex) {
   chooseEffect(owner, 'Medusa · top card', 'The top card of your deck is revealed.', [{ value: true, label: top.name, detail: `${top.title} · ${top.element === 'None' ? 'Neutral' : top.element}` }], () => announceEffect(`Medusa revealed ${top.name}.`));
 }
 function activateBlake(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateBlake(owner, laneIndex));
+}
+function resolveActivateBlake(owner, laneIndex) {
   const blake = owner.lanes[laneIndex], enemy = owner === match.player ? match.opponent : match.player;
   if (!blake || blake.id !== 'ww-blake' || blake.abilityUsedTurn === match.turn) return;
   if (!enemy.lanes[laneIndex]) { announceEffect('Blake needs an opposing fighter in the same lane.'); return; }
   blake.abilityUsedTurn = match.turn; returnFighterToHand(owner, laneIndex); returnFighterToHand(enemy, laneIndex); render(); announceEffect('Blake and the opposing fighter returned to their owners’ hands.');
 }
 function useAvatarGem(owner, actionInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.instance === actionInstance), owner, -1, () => resolveUseAvatarGem(owner, actionInstance));
+}
+function resolveUseAvatarGem(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (!action || match.energy < action.cost) { announceEffect('Avatar Gem needs 4 energy.'); return; }
   const choices = owner.lanes.map((card, laneIndex) => card && owner.transformationDeck.some((transform) => matchesTransformation(card, transform))
@@ -1260,7 +1374,11 @@ function resolveEuphoriaAfterAttack(owner, laneIndex) {
   const protectedByCard = Boolean(card.euphoriaProtected || isEffectProtected(card));
   const hasValhallaBar = match.fieldCard?.id === 'valhalla-bar';
   const survivesCoin = hasValhallaBar && Math.random() < 0.5;
-  if (hasValhallaBar && !protectedByCard) playCoinFlipFx(survivesCoin);
+  if (hasValhallaBar && !protectedByCard) {
+    playCoinFlipFx(survivesCoin);
+    showCombatCue(match.fieldCard.card, match[match.fieldCard.owner], -1, [combatLane(owner, laneIndex)]);
+  }
+  if (isEffectProtected(card)) showCombatCue(card, owner, laneIndex);
   card.euphoria = false; card.euphoriaProtected = false; card.euphoriaAttackBonus = 0;
   if (protectedByCard || survivesCoin) {
     render();
@@ -1271,12 +1389,15 @@ function resolveEuphoriaAfterAttack(owner, laneIndex) {
   match.eventActor = owner; match.eventSource = 'Euphoria'; destroyUnit(owner, laneIndex); render();
 }
 function activateAction(owner, actionInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.instance === actionInstance), owner, -1, () => resolveActivateAction(owner, actionInstance));
+}
+function resolveActivateAction(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (match.tutorialMode && owner===match.player && action && !tutorialCanUseAction(action)) { tutorialWrongAction('Play the Action or Field card named in the lesson.'); return; }
   if (action?.type === 'Action' && match.energy < action.cost) { announceEffect(`${action.name || action.title} needs ${action.cost} Mana.`); return; }
   if (['valkyries-mead', 'training'].includes(action?.id) && !owner.lanes.some(isBattleCard)) { announceEffect(`${action.name} needs one of your Battle Cards in a Battle Zone.`); return; }
   if (action) { match.eventActor = owner; match.eventSource = action.name || action.title; logBattleEvent(`${battleSideName(owner)} activated ${action.name || action.title}.`, owner === match.player ? 'player' : 'enemy'); }
-  if (action?.type === 'Action' && match.energy >= action.cost) playActionSfx(action);
+  if (!window.peppermintCombatEffects && action?.type === 'Action' && match.energy >= action.cost) playActionSfx(action);
   if (action?.id === 'avatar-gem') useAvatarGem(owner, actionInstance);
   else if (action?.id === 'mana-potion' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy = Math.min(match.turnEnergyCap, match.energy - action.cost + 2); render(); playManaPotionFx(); announceEffect('Mana Potion restored up to 2 Mana, without exceeding this turn’s maximum.'); }
   else if (action?.id === 'health-potion' && match.energy >= action.cost) { const openLifeIndex = owner.life.middle.findIndex((lifeCard) => !lifeCard); if (openLifeIndex < 0 || !owner.deck.length) { announceEffect('Health Potion needs an empty Life Zone and a card in your deck.'); return; } owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); owner.life.middle[openLifeIndex] = owner.deck.shift(); match.energy -= action.cost; render(); playHealthPotionFx(owner, openLifeIndex); announceEffect('Health Potion restored a Life Zone.'); }
@@ -1408,6 +1529,9 @@ function activateAction(owner, actionInstance) {
   else if (action?.id === 'valhalla-bar' && match.energy >= action.cost) { owner.hand.splice(owner.hand.indexOf(action), 1); match.energy -= action.cost; setSharedField(owner, 'valhalla-bar', action); render(); playFieldActivationFx('valhalla-bar'); announceEffect('Valhalla Bar is now the shared field. Euphoria coin flips can save attacking Battle Cards.'); }
 }
 function useLockerRoom(owner, actionInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.instance === actionInstance), owner, -1, () => resolveUseLockerRoom(owner, actionInstance));
+}
+function resolveUseLockerRoom(owner, actionInstance) {
   const action = owner.hand.find((card) => card.instance === actionInstance);
   if (!action || match.energy < action.cost) { announceEffect('Locker Room needs 2 energy.'); return; }
   const fieldOptions = owner.lanes.flatMap((unit, lane) => unit && [...owner.hand, ...owner.deck].some((candidate) => candidate.name === unit.name && candidate.title !== unit.title && canSummonCard(owner, candidate))
@@ -1432,6 +1556,9 @@ function useLockerRoom(owner, actionInstance) {
   });
 }
 function useCotton(owner, cardInstance) {
+  return trackCombatCue(owner.hand.find((card) => card.id === 'peppermint-ally' && card.instance === cardInstance), owner, -1, () => resolveUseCotton(owner, cardInstance));
+}
+function resolveUseCotton(owner, cardInstance) {
   const cotton = owner.hand.find((card) => card.id === 'peppermint-ally' && card.instance === cardInstance);
   if (!cotton) return;
   const hallIndex = owner.deck.findIndex((card) => card.id === 'academy-grounds');
@@ -1481,7 +1608,7 @@ function animateLifeShatter(owner, laneIndex, main = false) {
 function returnFighterToHand(owner, laneIndex) {
   const target = owner.lanes[laneIndex];
   if (!target) return;
-  if (isEffectProtected(target)) { announceEffect('Academy Rick is protected from card effects.'); return null; }
+  if (isEffectProtected(target)) { showCombatCue(target, owner, laneIndex); announceEffect('Academy Rick is protected from card effects.'); return null; }
   owner.lanes[laneIndex] = null; owner.hand.push(target);
   if (target.id === 'ip-natsuki') [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.protectedBy === target.instance) delete unit.protectedBy; }));
   render(); announceEffect(`${target.name} returned to hand.`);
@@ -1491,10 +1618,10 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
   const card = owner.lanes[laneIndex];
   if (!card) return null;
   const actor = match.eventActor || (inBattle ? (owner === match.player ? match.opponent : match.player) : null);
-  if (!inBattle && isEffectProtected(card)) { announceEffect(card.id === 'valhalla-sabrina' ? 'Valhalla Sabrina is immune to destruction by card effects.' : 'Academy Rick is protected from card effects.'); return null; }
+  if (!inBattle && isEffectProtected(card)) { showCombatCue(card, owner, laneIndex); announceEffect(card.id === 'valhalla-sabrina' ? 'Valhalla Sabrina is immune to destruction by card effects.' : 'Academy Rick is protected from card effects.'); return null; }
   if (!inBattle && card.id !== 'valhalla-miss-ragna' && actor && actor !== owner) {
     const protectorLane = [laneIndex - 1, laneIndex + 1].find((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.id === 'valhalla-miss-ragna' && !owner.lanes[slot].usedIntercept);
-    if (protectorLane !== undefined) { const protector = owner.lanes[protectorLane]; protector.usedIntercept = true; announceEffect(`Miss Ragna intercepted the effect and protected ${card.name}.`); destroyUnit(owner, protectorLane); return null; }
+    if (protectorLane !== undefined) { const protector = owner.lanes[protectorLane]; protector.usedIntercept = true; showCombatCue(protector, owner, protectorLane, [combatLane(owner, laneIndex)]); announceEffect(`Miss Ragna intercepted the effect and protected ${card.name}.`); destroyUnit(owner, protectorLane); return null; }
   }
   const actorText = actor ? battleSideName(actor) : 'An effect';
   const cause = inBattle ? ' in battle' : match.eventSource ? ` ${match.eventSource}'s effect` : '';
@@ -1505,17 +1632,20 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
   owner.lanes[laneIndex] = null;
   const familiarIndex = owner.life.familiars?.findIndex((familiar) => familiar?.attachedTo === card.instance) ?? -1;
   if (familiarIndex >= 0) { owner.destroyed.push(owner.life.familiars[familiarIndex]); owner.life.familiars[familiarIndex] = null; announceEffect(`${card.name}’s Familiar was destroyed with its owner.`); }
-  if (zombyReturns) { card.cost += 1; owner.hand.push(card); announceEffect(`Zomby returned to its owner’s hand and its cost increased to ${card.cost} Mana.`); }
-  else if (galactaSaves) { owner.hand.push(card); announceEffect(`${card.name} returned to your hand through GaLacta.`); }
+  if (zombyReturns) { card.cost += 1; owner.hand.push(card); showCombatCue(card, owner, laneIndex); announceEffect(`Zomby returned to its owner’s hand and its cost increased to ${card.cost} Mana.`); }
+  else if (galactaSaves) { owner.hand.push(card); const sourceLane = owner.lanes.findIndex((unit) => unit?.id === 'ww-galacta'); showCombatCue(owner.lanes[sourceLane], owner, sourceLane, [combatLane(owner, laneIndex)]); announceEffect(`${card.name} returned to your hand through GaLacta.`); }
   else { owner.destroyed.push(card); if (inBattle) match.battleDestroyedCards = (match.battleDestroyedCards || 0) + 1; }
-  if (!galactaSaves && card.id === 'kage') { playSpecialFx(owner, laneIndex, 'kage', 'KAGE · LAST VEIL'); drawMatching(owner, (candidate) => candidate.name === 'Zoya', 'Zoya'); }
-  if (card.id === 'amethyst') { const opponent = owner === match.player ? match.opponent : match.player; if (opponent.lanes[laneIndex]) { playSpecialFx(owner, laneIndex, 'amethyst', 'AMETHYST · SHATTER'); if (destroyUnit(opponent, laneIndex)) announceEffect('Amethyst destroys the fighter opposite it.'); } }
-  if (!galactaSaves && card.id === 'ww-eggscythe') {
-    const candidates = owner.destroyed.filter((unit) => unit.instance !== card.instance && unit.element === 'Dark').map((unit) => ({ value: unit.instance, label: unit.name, detail: `${unit.title} · Dark` }));
-    chooseEffect(owner, 'Eggscythe: return a Dark card', 'Choose a different Dark card from your destroyed zone to return to your hand.', candidates, (instance) => { const i = owner.destroyed.findIndex((unit) => unit.instance === instance); if (i >= 0) { const [returned] = owner.destroyed.splice(i, 1); owner.hand.push(returned); render(); announceEffect(`${returned.name} returned to your hand.`); } });
-  }
-  if (!galactaSaves && card.id === 'ww-rosaluna') drawMatching(owner, (candidate) => candidate.title === 'Wild West' && candidate.element === 'Mind', 'Mind Wild West card');
-  if (!galactaSaves && card.id === 'ip-banaphin') drawMatching(owner, (candidate) => candidate.title === 'Island Paradise' && candidate.type === 'Creature', 'Island Paradise Creature');
+  const hasDeathCue = ['kage', 'amethyst', 'ww-eggscythe', 'ww-rosaluna', 'ip-banaphin'].includes(card.id);
+  if (hasDeathCue) trackCombatCue(card, owner, laneIndex, () => {
+    if (!galactaSaves && card.id === 'kage') { playSpecialFx(owner, laneIndex, 'kage', 'KAGE · LAST VEIL'); drawMatching(owner, (candidate) => candidate.name === 'Zoya', 'Zoya'); }
+    if (card.id === 'amethyst') { const opponent = owner === match.player ? match.opponent : match.player; if (opponent.lanes[laneIndex]) { playSpecialFx(owner, laneIndex, 'amethyst', 'AMETHYST · SHATTER'); if (destroyUnit(opponent, laneIndex)) announceEffect('Amethyst destroys the fighter opposite it.'); } }
+    if (!galactaSaves && card.id === 'ww-eggscythe') {
+      const candidates = owner.destroyed.filter((unit) => unit.instance !== card.instance && unit.element === 'Dark').map((unit) => ({ value: unit.instance, label: unit.name, detail: `${unit.title} · Dark` }));
+      chooseEffect(owner, 'Eggscythe: return a Dark card', 'Choose a different Dark card from your destroyed zone to return to your hand.', candidates, (instance) => { const i = owner.destroyed.findIndex((unit) => unit.instance === instance); if (i >= 0) { const [returned] = owner.destroyed.splice(i, 1); owner.hand.push(returned); render(); announceEffect(`${returned.name} returned to your hand.`); } });
+    }
+    if (!galactaSaves && card.id === 'ww-rosaluna') drawMatching(owner, (candidate) => candidate.title === 'Wild West' && candidate.element === 'Mind', 'Mind Wild West card');
+    if (!galactaSaves && card.id === 'ip-banaphin') drawMatching(owner, (candidate) => candidate.title === 'Island Paradise' && candidate.type === 'Creature', 'Island Paradise Creature');
+  });
   if (card.id === 'ip-natsuki') [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.protectedBy === card.instance) delete unit.protectedBy; }));
   return card;
 }
@@ -1525,8 +1655,14 @@ function moveWinterCard(owner, from, to) {
   owner.lanes[to] = card; owner.lanes[from] = null;
   const familiar = owner.life.familiars?.find((item) => item?.attachedTo === card.instance);
   if (familiar) { const old = owner.life.familiars.indexOf(familiar); owner.life.familiars[old] = null; owner.life.familiars[to] = familiar; }
-  if (card.id === 'wb-dimitri') addPermanentAttack(card, 1, 'Dimitri moved');
-  [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.id === 'wb-magnus') addPermanentAttack(unit, 1, 'Magnus witnessed a move'); }));
+  if (card.id === 'wb-dimitri') {
+    addPermanentAttack(card, 1, 'Dimitri moved');
+    showCombatCue(card, owner, to);
+  }
+  [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.id === 'wb-magnus') {
+    addPermanentAttack(unit, 1, 'Magnus witnessed a move');
+    showCombatCue(unit, side, side.lanes.indexOf(unit));
+  } }));
   logBattleEvent(`${card.name} moved from lane ${from + 1} to lane ${to + 1}.`); render(); return true;
 }
 function swapChristmasMallFighters(owner, first, second) {
@@ -1536,7 +1672,10 @@ function swapChristmasMallFighters(owner, first, second) {
   [familiars[first], familiars[second]] = [familiars[second], familiars[first]];
   if (a.id === 'wb-dimitri') addPermanentAttack(a, 1, 'Dimitri moved');
   if (b.id === 'wb-dimitri') addPermanentAttack(b, 1, 'Dimitri moved');
-  [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.id === 'wb-magnus') addPermanentAttack(unit, 2, 'Christmas Mall swapped two fighters'); }));
+  [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.id === 'wb-magnus') {
+    addPermanentAttack(unit, 2, 'Christmas Mall swapped two fighters');
+    showCombatCue(unit, side, side.lanes.indexOf(unit));
+  } }));
   logBattleEvent(`${a.name} and ${b.name} swapped lanes ${first + 1} and ${second + 1}.`); render(); return true;
 }
 function aiPositionScore(owner) {
@@ -1616,6 +1755,9 @@ function findAiBestMallSwap(owner) {
   return best;
 }
 function activateChristmasMall(owner) {
+  return trackCombatCue(match.fieldCard?.card, owner, -1, () => resolveActivateChristmasMall(owner));
+}
+function resolveActivateChristmasMall(owner) {
   const field = match.fieldCard; if (field?.id !== 'christmas-mall') return;
   const turnKey = `${match.turn}-${owner === match.player ? 'player' : 'opponent'}`;
   if (field.usedTurnKeys?.includes(turnKey)) return;
@@ -1642,6 +1784,9 @@ function clearTemporaryAttackModifiers(owner) {
   });
 }
 function triggerOnSummon(card, owner, laneIndex) {
+  return trackCombatCue(card, owner, laneIndex, () => resolveTriggerOnSummon(card, owner, laneIndex), { reveal: card.id === 'valhalla-morrikyn' && Boolean((owner === match.player ? match.opponent : match.player).deck.length) });
+}
+function resolveTriggerOnSummon(card, owner, laneIndex) {
   const opponent = owner === match.player ? match.opponent : match.player;
   match.eventActor = owner; match.eventSource = card.name;
   logBattleEvent(`${battleSideName(owner)} summoned ${card.name}.`, owner === match.player ? 'player' : 'enemy');
@@ -1778,6 +1923,9 @@ function triggerOnSummon(card, owner, laneIndex) {
   if (card.id === 'gummy') { playSpecialFx(owner, laneIndex, 'gummy', 'GUMMY · SWEET RECIPE', { generatedOnly: true }); drawMatching(owner, (candidate) => candidate.id === 'cooking', 'Cooking action'); }
 }
 function activateCroaktail(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateCroaktail(owner, laneIndex));
+}
+function resolveActivateCroaktail(owner, laneIndex) {
   const card = owner.lanes[laneIndex];
   if (card?.id !== 'ip-croaktail' || card.abilityUsedTurn === match.turn) return;
   const targets = [laneIndex - 1, laneIndex + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` }));
@@ -1803,13 +1951,15 @@ function resolveDharmaRevives(owner) {
     match.eventActor = owner; match.eventSource = 'Dharma';
     render();
     logBattleEvent(`${battleSideName(owner)} Dharma revived ${revived.name} from the Pandemonium Zone.`, owner === match.player ? 'player' : 'enemy');
-    playSpecialFx(owner, openLane, 'dharma-revival', 'DHARMA · REVIVAL', { silent: true });
-    playSfx('special', 'Terra');
+    const dharmaLane = owner.lanes.findIndex((unit) => unit?.instance === entry.dharmaInstance);
+    if (!showCombatCue(owner.lanes[dharmaLane], owner, dharmaLane, [combatLane(owner, openLane)])) {
+      playSpecialFx(owner, openLane, 'dharma-revival', 'DHARMA · REVIVAL');
+    }
     animateSummon(owner, openLane, revived).then(() => triggerOnSummon(revived, owner, openLane));
   }
 }
 function activateIslandTurnEffects(owner) {
-  owner.lanes.forEach((card, laneIndex) => {
+  owner.lanes.forEach((card, laneIndex) => trackCombatCue(card, owner, laneIndex, () => {
     if (!card) return;
     if (card.id === 'wb-rebeccah') {
       const targets = owner.lanes.flatMap((unit, from) => unit?.id === 'wb-dimitri' ? [from - 1, from + 1].filter((to) => to >= 0 && to < 3 && !owner.lanes[to]).map((to) => ({ value: `${from}:${to}`, label: `Dimitri · lane ${from + 1} → ${to + 1}`, detail: 'Move to an adjacent free zone' })) : []);
@@ -1828,7 +1978,7 @@ function activateIslandTurnEffects(owner) {
         if (owner.isAI) apply(targets[0].value); else chooseEffect(owner, 'Chase: boost a Brawler', 'Choose an adjacent Brawler to gain +1 attack.', targets, apply);
       }
     }
-  });
+  }));
 }
 function aiCardStrength(card) { return (card?.attack || 0) + (card?.attackBonus || 0); }
 function findAiReplacementCard(owner, returnedCard, laneIndex, energy = match.energy) {
@@ -1845,6 +1995,9 @@ function summonAiReplacement(owner, laneIndex, returnedCard) {
   animateSummon(owner,laneIndex,candidate).then(()=>triggerOnSummon(candidate,owner,laneIndex)); return true;
 }
 function activateZoya(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateZoya(owner, laneIndex));
+}
+function resolveActivateZoya(owner, laneIndex) {
   const zoya=owner.lanes[laneIndex];
   if(!zoya||zoya.id!=='zoya'||zoya.abilityUsedTurn===match.turn||(owner.isAI&&owner.aiReplacementPlan))return;
   let candidates=[match.player,match.opponent].flatMap((side)=>side.lanes.map((unit,index)=>unit?.title==='Academy'&&!isEffectProtected(unit)&&!(owner.isAI&&side===owner&&unit.id==='zoya')?{value:(side===match.player?'p':'o')+':'+index,label:unit.name,detail:'Return from '+(side===match.player?'your':'rival')+' lane '+(index+1)}:null).filter(Boolean));
@@ -1853,23 +2006,35 @@ function activateZoya(owner, laneIndex) {
   chooseEffect(owner,'Zoya: return an Academy card','Choose an Academy fighter on either field to return to its owner’s hand.',candidates,(key)=>{const parts=key.split(':'),side=parts[0]==='p'?match.player:match.opponent,position=Number(parts[1]),target=side.lanes[position];if(target&&returnFighterToHand(side,position)){playSpecialFx(owner,laneIndex,'zoya','RETURN TO HAND');zoya.abilityUsedTurn=match.turn;render();if(owner.isAI){const replacement=replacementByTarget.get(key);if(replacement)owner.aiReplacementPlan={lane:position,instance:replacement.instance,strength:aiCardStrength(replacement)};}}});
 }
 function activateSteepod(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateSteepod(owner, laneIndex));
+}
+function resolveActivateSteepod(owner, laneIndex) {
   const card = owner.lanes[laneIndex]; if (!card || card.id !== 'wb-steepod' || card.abilityUsedTurn === match.turn) return;
   if (owner.isAI) { const plan = findAiBestMove(owner, { canMove: (unit) => unit.id === 'wb-steepod', adjacentOnly: true }); if (plan && moveWinterCard(owner, plan.from, plan.to)) card.abilityUsedTurn = match.turn; return; }
   const choices = [laneIndex - 1, laneIndex + 1].filter((to) => to >= 0 && to < 3 && !owner.lanes[to]).map((to) => ({ value: to, label: `Move to lane ${to + 1}`, detail: 'Adjacent free Battle Zone' }));
   chooseEffect(owner, 'Steepod: slip away', 'Move Steepod to an adjacent free lane once per turn.', choices, (to) => { if (moveWinterCard(owner, laneIndex, Number(to))) card.abilityUsedTurn = match.turn; });
 }
 function activateTopazDiamond(owner, laneIndex) {
+  return trackCombatCue(owner.lanes[laneIndex], owner, laneIndex, () => resolveActivateTopazDiamond(owner, laneIndex));
+}
+function resolveActivateTopazDiamond(owner, laneIndex) {
   const card = owner.lanes[laneIndex]; if (!card || card.id !== 'wb-topaz-diamond' || card.abilityUsedTurn === match.turn) return;
   if (owner.isAI) { const plan = findAiBestMove(owner); if (plan && moveWinterCard(owner, plan.from, plan.to)) card.abilityUsedTurn = match.turn; return; }
   const choices = owner.lanes.flatMap((unit, from) => unit ? owner.lanes.flatMap((slot, to) => !slot ? [{ value: `${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: 'Move to an empty Battle Zone' }] : []) : []);
   chooseEffect(owner, 'Topaz & Diamond: glide across the floor', 'Once per turn, move one of your fighters to any empty Battle Zone.', choices, (key) => { const [from, to] = key.split(':').map(Number); if (moveWinterCard(owner, from, to)) card.abilityUsedTurn = match.turn; });
 }
 function activateSageape(instance) {
+  return trackCombatCue(match.player.hand.find((card) => card.id === 'wb-sageape' && card.instance === instance), match.player, -1, () => resolveActivateSageape(instance));
+}
+function resolveActivateSageape(instance) {
   const cardIndex = match.player.hand.findIndex((card) => card.instance === instance); if (cardIndex < 0) return;
   const targets = [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((unit, from) => unit?.element === 'Glacial' ? side.lanes.flatMap((slot, to) => !slot && to !== from ? [{ value: `${side === match.player ? 'p' : 'o'}:${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: side === match.player ? 'Move your Glacial fighter' : 'Move rival Glacial fighter' }] : []) : []));
   chooseEffect(match.player, 'Sageape: shift the ice', 'Discard Sageape to move a Glacial fighter to another free Battle Zone.', targets, (key) => { const [sideKey, from, to] = key.split(':'); const [discarded] = match.player.hand.splice(cardIndex, 1); match.player.destroyed.push(discarded); moveWinterCard(sideKey === 'p' ? match.player : match.opponent, Number(from), Number(to)); render(); announceEffect('Sageape was discarded to move a Glacial fighter.'); });
 }
 function activateAiSageape(owner) {
+  return trackCombatCue(owner.hand.find((card) => card.id === 'wb-sageape'), owner, -1, () => resolveActivateAiSageape(owner));
+}
+function resolveActivateAiSageape(owner) {
   const sageape = owner.hand.find((card) => card.id === 'wb-sageape');
   if (!sageape) return false;
   const plan = findAiBestMove(owner, { canMove: (card) => card.element === 'Glacial' });
@@ -1879,6 +2044,9 @@ function activateAiSageape(owner) {
   announceEffect(`The rival discarded Sageape to move ${plan.card.name} into a stronger lane.`); return true;
 }
 function activateAiRebeccah(owner, card) {
+  return trackCombatCue(card, owner, owner.lanes.indexOf(card), () => resolveActivateAiRebeccah(owner, card));
+}
+function resolveActivateAiRebeccah(owner, card) {
   if (!card || card.id !== 'wb-rebeccah' || card.abilityUsedTurn === match.turn) return false;
   const plan = findAiBestMove(owner, { canMove: (unit) => unit.id === 'wb-dimitri', adjacentOnly: true });
   if (!plan || !moveWinterCard(owner, plan.from, plan.to)) return false;
@@ -1916,7 +2084,11 @@ function collectLifeCard(owner, laneIndex, main = false) {
 }
 function resolvePurrnipLifeDraw(attacker, owner) {
   if (attacker?.id !== 'ww-purrnip' || !owner.deck.length) return false;
-  drawCard(owner); render(); announceEffect('Purrnip destroyed a Life Zone and drew a card.'); return true;
+  drawCard(owner);
+  render();
+  showCombatCue(attacker, owner, owner.lanes.indexOf(attacker));
+  announceEffect('Purrnip destroyed a Life Zone and drew a card.');
+  return true;
 }
 function dealLifeHit(defender, laneIndex) {
   if (defender.life.middle[laneIndex]) { collectLifeCard(defender, laneIndex); return; }
@@ -1932,7 +2104,7 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
     const hopkinIndex = defender.hand.findIndex((card) => card.id === 'ww-hopkin'); const lane = target.main ? index : target.index;
     if (hopkinIndex >= 0 && lane >= 0 && lane < 3 && !defender.lanes[lane]) {
       const [hopkin] = defender.hand.splice(hopkinIndex, 1); hopkin.ready = false; defender.lanes[lane] = hopkin; target = { type: 'lane', index: lane };
-      render(); animateSummon(defender, lane, hopkin).then(() => triggerOnSummon(hopkin, defender, lane)); announceEffect('Hopkin jumped in to defend the Life Zone.');
+      render(); showCombatCue(hopkin, defender, lane); animateSummon(defender, lane, hopkin).then(() => triggerOnSummon(hopkin, defender, lane)); announceEffect('Hopkin jumped in to defend the Life Zone.');
     }
   }
   const targetLane = target.type === 'lane' ? target.index : -1;
@@ -1961,14 +2133,14 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   const tie = attackPower === defensePower;
   const loseDefender = attackPower > defensePower || tie;
   const loseAttacker = attackPower < defensePower || tie;
-  if (opposing?.id === 'ip-octospray') { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; announceEffect(`${attacker.name} loses 1 attack to Octospray.`); }
-  if (opposing?.id === 'ww-sunnythorn' && loseDefender) { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; announceEffect(`${attacker.name} loses 1 attack to Sunnythorn.`); }
-  if (attacker.id === 'ww-sunnythorn' && loseAttacker && opposing) { opposing.attackBonus = (opposing.attackBonus || 0) - 1; opposing.attackBonusSources = [...(opposing.attackBonusSources || []), attacker.name]; opposing.attackBonusModifiers = [...(opposing.attackBonusModifiers || []), { amount: -1, source: attacker.name }]; announceEffect(`${opposing.name} loses 1 attack to Sunnythorn.`); }
+  if (opposing?.id === 'ip-octospray') { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; showCombatCue(opposing, defender, targetLane, [combatLane(from, index)]); announceEffect(`${attacker.name} loses 1 attack to Octospray.`); }
+  if (opposing?.id === 'ww-sunnythorn' && loseDefender) { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; showCombatCue(opposing, defender, targetLane, [combatLane(from, index)]); announceEffect(`${attacker.name} loses 1 attack to Sunnythorn.`); }
+  if (attacker.id === 'ww-sunnythorn' && loseAttacker && opposing) { opposing.attackBonus = (opposing.attackBonus || 0) - 1; opposing.attackBonusSources = [...(opposing.attackBonusSources || []), attacker.name]; opposing.attackBonusModifiers = [...(opposing.attackBonusModifiers || []), { amount: -1, source: attacker.name }]; showCombatCue(attacker, from, index, [combatLane(defender, targetLane)]); announceEffect(`${opposing.name} loses 1 attack to Sunnythorn.`); }
   if (loseDefender) {
     destroyUnit(defender, targetLane, true);
     if (from===match.player && match.tutorialMode && ((tutorialLessonIndex===2)||(tutorialLessonIndex===3)||(tutorialLessonIndex===7)||(tutorialLessonIndex===9)||(tutorialLessonIndex===14)||(tutorialLessonIndex===15))) window.setTimeout(completeTutorialObjective,120);
-    if (attacker.id === 'ip-brody') { attacker.attackBonus = (attacker.attackBonus || 0) + 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), attacker.name]; announceEffect('Brody gained 1 attack for destroying a card.'); }
-    if (attacker.id === 'ip-floatbite') { const owner = from; const targets = [index - 1, index + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler' && owner.lanes[slot]?.element === 'Aqua').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` })); if (targets.length) chooseEffect(owner, 'Floatbite: tide of strength', 'Choose an adjacent Aqua Brawler to gain +1 attack.', targets, (slot) => { const ally = owner.lanes[slot]; ally.attackBonus = (ally.attackBonus || 0) + 1; ally.attackBonusModifiers = [...(ally.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; ally.attackBonusSources = [...(ally.attackBonusSources || []), attacker.name]; render(); }); }
+    if (attacker.id === 'ip-brody') { attacker.attackBonus = (attacker.attackBonus || 0) + 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), attacker.name]; showCombatCue(attacker, from, index); announceEffect('Brody gained 1 attack for destroying a card.'); }
+    if (attacker.id === 'ip-floatbite') { const owner = from; const targets = [index - 1, index + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler' && owner.lanes[slot]?.element === 'Aqua').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` })); if (targets.length) trackCombatCue(attacker, owner, index, () => chooseEffect(owner, 'Floatbite: tide of strength', 'Choose an adjacent Aqua Brawler to gain +1 attack.', targets, (slot) => { const ally = owner.lanes[slot]; ally.attackBonus = (ally.attackBonus || 0) + 1; ally.attackBonusModifiers = [...(ally.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; ally.attackBonusSources = [...(ally.attackBonusSources || []), attacker.name]; render(); })); }
   }
   if (loseAttacker) { match.eventActor = defender; match.eventSource = opposing.name; destroyUnit(from, index, true); }
   if (tie) announceEffect(`Both fighters were destroyed in the ${attackPower}–${defensePower} clash.`);
@@ -2081,15 +2253,9 @@ function animateAttack(from, index, done, target = { type: 'lane', index }) {
   const defender = from === match.player ? match.opponent : match.player;
   const finalTarget = resolveAttackTarget(defender, target, index);
   const attacker = from.lanes[index];
-  if (finalTarget.redirected) playSpecialFx(defender, finalTarget.index, 'shielder', 'SHIELDER · INTERCEPT');
-  if (attacker?.role === 'Shooter' && finalTarget.type === 'life') playSpecialFx(from, index, 'shooter', 'SHOOTER · DIRECT HIT');
-  if (attacker) {
-    const reasons = attackBreakdown(attacker, from, { attacking: true, targetIndex: finalTarget.type === 'lane' ? finalTarget.index : -1 }).reasons;
-    if (reasons.some((reason) => reason.startsWith('Enchanter'))) playSpecialFx(from, index, 'enchanter', 'ENCHANTER AURA');
-    if (reasons.some((reason) => reason.startsWith('Brawler'))) playSpecialFx(from, index, 'brawler', 'BRAWLER · OPEN LANE');
-    if (reasons.some((reason) => reason.startsWith('Blader'))) playSpecialFx(from, index, 'blader', 'BLADER · STRIKE');
-    if (reasons.some((reason) => reason.startsWith('Academy allies'))) playSpecialFx(from, index, 'peppermint', 'ACADEMY ALLIES');
-    if (reasons.some((reason) => reason.startsWith('Trickster'))) playSpecialFx(defender, finalTarget.type === 'lane' ? finalTarget.index : index, 'trickster', 'TRICKSTER · WEAKEN');
+  if (finalTarget.redirected) {
+    const shield = defender.lanes[finalTarget.index];
+    if (!showCombatCue(shield, defender, finalTarget.index)) playSpecialFx(defender, finalTarget.index, 'shielder', 'SHIELDER · INTERCEPT');
   }
   if (attacker) { attacker.attacking = true; attacker.attackTargetIndex = finalTarget.type === 'lane' ? finalTarget.index : -1; }
   render();
@@ -2098,20 +2264,25 @@ function animateAttack(from, index, done, target = { type: 'lane', index }) {
   const sourceCard = sourceLane?.querySelector('.battle-card');
   const targetCard = targetLane?.querySelector('.battle-card');
   const element = attacker?.element || 'Mind';
-  const glyphs = { Ignis: '✹', Glacial: '❄', Terra: '✿', Aer: '〰', Aqua: '◉', Mind: '✧', Dark: '◐', Solar: '☼' };
-  sourceCard?.classList.add(from === match.player ? 'attack-lunge-up' : 'attack-lunge-down');
-  targetCard?.classList.add('damage-shake');
-  const impact = targetCard || lifeTargetElement(targetSide, finalTarget.index, !!finalTarget.main);
-  impact?.classList.add(targetCard ? 'impact-glow' : 'life-hit');
-  const effectHost = targetCard?.parentElement || impact;
-  if (effectHost) { const burst = document.createElement('div'); burst.className = `element-burst effect-${element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[element] || '✧'}</span><i></i><i></i><i></i><i></i>`; effectHost.appendChild(burst); window.setTimeout(() => burst.remove(), 1050); }
+  const impact = targetCard || lifeTargetElement(targetSide, finalTarget.index, !!finalTarget.main) || targetLane;
+  const vectorStrike = window.peppermintCombatEffects?.play({
+    card: attacker, kind: 'strike', source: sourceCard || sourceLane, targets: [impact], audio: soundContext,
+  });
+  const ranged = vectorStrike && window.peppermintCombatEffects.isRanged(attacker);
+  sourceCard?.classList.add(ranged ? 'combat-ranged-release' : from === match.player ? 'attack-lunge-up' : 'attack-lunge-down');
+  if (vectorStrike) {
+    impact?.classList.add('combat-impact');
+  } else {
+    targetCard?.classList.add('damage-shake');
+    impact?.classList.add(targetCard ? 'impact-glow' : 'life-hit');
+  }
   if (from === match.opponent) document.getElementById('phase-label').textContent = 'RIVAL ATTACK';
-  playSfx('attack', element);
+  if (!vectorStrike) playSfx('attack', element);
   window.setTimeout(() => {
     const hitPlayer = from === match.player ? match.opponent : match.player;
     const hadTarget = finalTarget.type === 'lane' && !!hitPlayer.lanes[finalTarget.index];
     done(target);
-    playSfx(hadTarget ? 'impact' : 'life', element);
+    if (!vectorStrike) playSfx(hadTarget ? 'impact' : 'life', element);
     render();
   }, 740);
 }

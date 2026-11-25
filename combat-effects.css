@@ -1,0 +1,75 @@
+.combat-fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 480;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.combat-fx-layer g, .combat-fx-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.combat-fx-motif {
+  fill: color-mix(in srgb, var(--combat-color) 16%, transparent);
+  stroke: color-mix(in srgb, var(--combat-color) 66%, white);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px var(--combat-color));
+}
+.combat-fx-trail, .combat-fx-ring {
+  fill: none;
+  stroke: var(--combat-color);
+  stroke-width: calc(3px * var(--combat-power));
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 8px var(--combat-color));
+}
+.combat-fx-trail { stroke-dasharray: .85 .15; }
+.combat-fx-haze { fill: var(--combat-color); filter: blur(50px); }
+.combat-fx-status {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+.combat-fx-status > g { opacity: .69; }
+.combat-fx-status path {
+  fill: none;
+  stroke: var(--combat-state);
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px var(--combat-state));
+}
+.combat-state-freeze path { fill: #9ae5ff31; }
+.combat-state-guard, .combat-state-shieldedEuphoria { animation: combat-state-breathe 2.5s ease-in-out infinite alternate; }
+.combat-state-euphoria { animation: combat-state-breathe 1.7s ease-in-out infinite alternate; }
+@keyframes combat-state-breathe {
+  to { opacity: .98; }
+}
+.battle-card.combat-impact, .life-card.combat-impact {
+  animation: combat-impact .31s 560ms ease-out both;
+}
+.battle-card.combat-ranged-release {
+  animation: combat-ranged-release .36s .1s ease-out both;
+}
+.battle-card.attack-lunge-up, .battle-card.attack-lunge-down { z-index: 10; }
+@keyframes combat-ranged-release {
+  0%, 100% { transform: scale(1); }
+  36% { transform: scale(.965); filter: brightness(1.27); }
+}
+@keyframes combat-impact {
+  0% { filter: brightness(1); transform: translateX(0); }
+  23% { filter: brightness(1.55); transform: translateX(5px) scale(.985); }
+  56% { transform: translateX(-3px); }
+  100% { filter: brightness(1); transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .battle-card.combat-impact, .life-card.combat-impact, .battle-card.combat-ranged-release,
+  .battle-card.attack-lunge-up, .battle-card.attack-lunge-down,
+  .combat-fx-status > g { animation: none; }
+}
