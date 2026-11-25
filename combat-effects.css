@@ -7,26 +7,10 @@
   overflow: hidden;
   pointer-events: none;
 }
-.combat-fx-layer g, .combat-fx-ring {
+.combat-fx-layer g {
   transform-box: fill-box;
   transform-origin: center;
 }
-.combat-fx-motif {
-  fill: color-mix(in srgb, var(--combat-color) 16%, transparent);
-  stroke: color-mix(in srgb, var(--combat-color) 66%, white);
-  stroke-width: 2.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px var(--combat-color));
-}
-.combat-fx-trail, .combat-fx-ring {
-  fill: none;
-  stroke: var(--combat-color);
-  stroke-width: calc(3px * var(--combat-power));
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 8px var(--combat-color));
-}
-.combat-fx-trail { stroke-dasharray: .85 .15; }
 .combat-fx-haze { fill: var(--combat-color); filter: blur(50px); }
 .combat-fx-status {
   position: absolute;
@@ -46,8 +30,7 @@
   filter: drop-shadow(0 0 2px var(--combat-state));
 }
 .combat-state-freeze path { fill: #9ae5ff31; }
-.combat-state-guard, .combat-state-shieldedEuphoria { animation: combat-state-breathe 2.5s ease-in-out infinite alternate; }
-.combat-state-euphoria { animation: combat-state-breathe 1.7s ease-in-out infinite alternate; }
+.combat-state-guard { animation: combat-state-breathe 2.5s ease-in-out infinite alternate; }
 @keyframes combat-state-breathe {
   to { opacity: .98; }
 }
@@ -72,4 +55,91 @@
   .battle-card.combat-impact, .life-card.combat-impact, .battle-card.combat-ranged-release,
   .battle-card.attack-lunge-up, .battle-card.attack-lunge-down,
   .combat-fx-status > g { animation: none; }
+}
+
+.combat-flight-ribbon {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: .38 .62;
+  filter: drop-shadow(0 0 5px var(--combat-color));
+}
+.combat-painted { filter: drop-shadow(0 2px 3px #10091b66); }
+.shatter-overlay {
+  position: fixed;
+  z-index: 500;
+  pointer-events: none;
+  isolation: isolate;
+}
+.shatter-overlay .shatter-fragment {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  pointer-events: none;
+  overflow: hidden;
+  animation: combat-shatter-crack .78s linear both;
+}
+.shatter-overlay.life-shatter-overlay { filter: drop-shadow(0 0 9px #ff8f9dbf); }
+@keyframes combat-shatter-crack {
+  0% { opacity: 1; transform: none; filter: brightness(1.45); }
+  17% { opacity: 1; transform: translate(calc(var(--shard-x) * .13), calc(var(--shard-y) * .13)); filter: brightness(1.75); }
+  57% { opacity: .85; transform: translate(var(--shard-x), calc(var(--shard-y) * .88)) rotate(var(--shard-rotation)); }
+  100% { opacity: 0; transform: translate(calc(var(--shard-x) * 1.38), calc(var(--shard-y) + 24px)) rotate(calc(var(--shard-rotation) * 1.9)) scale(.64); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shatter-overlay .shatter-fragment { animation-name: combat-shatter-reduced !important; animation-duration: .36s !important; }
+}
+@keyframes combat-shatter-reduced {
+  0% { opacity: 1; filter: brightness(1.25); }
+  100% { opacity: 0; }
+}
+
+.battle-card .euphoria-bubbles {
+  top: -31px;
+  width: min(82px, 76%);
+  height: 37px;
+  z-index: 14;
+  overflow: visible;
+  --bubble-edge: #ffc672;
+  --bubble-light: #ffe8b6;
+  --bubble-mid: #cc77cf;
+  --bubble-dark: #633878;
+}
+.battle-card .euphoria-bubbles.is-protected {
+  --bubble-edge: #ffedb1;
+  --bubble-light: #fff5d5;
+  --bubble-mid: #e9a650;
+  --bubble-dark: #905f5b;
+}
+.battle-card .euphoria-bubbles i {
+  left: var(--bubble-left);
+  bottom: 0;
+  width: var(--bubble-size);
+  height: var(--bubble-size);
+  border: 1px solid var(--bubble-edge);
+  transform: none;
+  background:
+    radial-gradient(ellipse at 32% 25%, #fffdf3 0 9%, transparent 20%),
+    radial-gradient(ellipse at 70% 76%, var(--bubble-light) 0, transparent 26%),
+    radial-gradient(ellipse at 34% 30%, var(--bubble-mid) 3%, var(--bubble-dark) 67%, var(--bubble-edge) 98%);
+  box-shadow: inset 0 0 4px #fff5cd85, 0 0 5px #e5ad9a77;
+  animation: combat-mead-rise var(--bubble-duration) ease-out var(--bubble-delay) infinite;
+}
+.battle-card .euphoria-bubbles i:nth-child(1) { --bubble-left: 12%; --bubble-size: 8px; --bubble-drift: -7px; --bubble-duration: 1.86s; --bubble-delay: -.83s; }
+.battle-card .euphoria-bubbles i:nth-child(2) { --bubble-left: 26%; --bubble-size: 14px; --bubble-drift: -5px; --bubble-duration: 2.3s; --bubble-delay: -1.31s; }
+.battle-card .euphoria-bubbles i:nth-child(3) { --bubble-left: 47%; --bubble-size: 11px; --bubble-drift: 6px; --bubble-duration: 1.91s; --bubble-delay: -.24s; }
+.battle-card .euphoria-bubbles i:nth-child(4) { --bubble-left: 67%; --bubble-size: 15px; --bubble-drift: 10px; --bubble-duration: 2.46s; --bubble-delay: -1.85s; }
+.battle-card .euphoria-bubbles i:nth-child(5) { --bubble-left: 82%; --bubble-size: 7px; --bubble-drift: 14px; --bubble-duration: 1.64s; --bubble-delay: -.62s; }
+.battle-card .euphoria-bubbles i:nth-child(6) { --bubble-left: 40%; --bubble-size: 5px; --bubble-drift: -11px; --bubble-duration: 1.55s; --bubble-delay: -1.09s; }
+@keyframes combat-mead-rise {
+  0% { opacity: 0; transform: translate(0, 14px) scale(.43); }
+  23% { opacity: .97; }
+  73% { opacity: .92; transform: translate(var(--bubble-drift), -18px) scale(1.05); }
+  80% { opacity: 1; transform: translate(var(--bubble-drift), -22px) scale(1.16); }
+  86%, 100% { opacity: 0; transform: translate(var(--bubble-drift), -25px) scale(1.24); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .battle-card .euphoria-bubbles i { animation: none; transform: translateY(-9px); }
+  .battle-card .euphoria-bubbles i:nth-child(even) { transform: translateY(-17px); }
 }

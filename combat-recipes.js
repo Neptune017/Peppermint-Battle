@@ -6,7 +6,7 @@ peppermint staff+gem gem+orbit chime e194ff
 aemi arrow+flame book+arrow string fba444
 kage scythe+veil veil+mask blade fb507b
 ryota sun+lion lion+shatter brass ffd55e
-zoya chain+star portal+chain choir b452ff
+zoya staff+veil portal+chain choir e66079
 berry drop+wave drop+portal water 6de8f2
 frosty ice+shield ice+cage glass b6eaff
 gummy candy+flame pot+candy bubble ff8c83

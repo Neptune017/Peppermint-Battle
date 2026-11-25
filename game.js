@@ -295,7 +295,7 @@ function trackCombatCue(card, owner, lane, perform, { kind = 'skill', reveal = f
   if (!card || !window.peppermintCombatEffects || !match.player || !match.opponent || activeCombatCue?.card === card) return perform();
   return followCombatCue({ card, owner, lane, kind, reveal, shown: false }, perform);
 }
-function cardCombatStatus(card, owner, attackInfo) {
+function cardCombatStatus(card, owner) {
   if (!window.peppermintCombatEffects) return '';
   const statuses = [];
   if (card.skipAttackThisTurn || card.skipAttackNext) statuses.push(card.skipAttackReason === 'stun' ? 'stun' : 'freeze');
@@ -303,9 +303,6 @@ function cardCombatStatus(card, owner, attackInfo) {
   if ((card.protectedBy && owner?.lanes.some((unit) => unit?.instance === card.protectedBy)) ||
       (match.fieldCard?.id === 'ip-field' && card.title === 'Island Paradise' && !card.ignoresIslandField) ||
       isEffectProtected(card)) statuses.push('guard');
-  if (card.euphoria) statuses.push(card.euphoriaProtected ? 'shieldedEuphoria' : 'euphoria');
-  if (attackInfo.modifiers?.some((modifier) => modifier.amount > 0 && modifier.source !== 'Element Advantage')) statuses.push('boon');
-  if (attackInfo.modifiers?.some((modifier) => modifier.amount < 0)) statuses.push('bane');
   if (match.pendingDharmaRevives.some((pending) => pending.dharmaInstance === card.instance)) statuses.push('revive');
   return window.peppermintCombatEffects.status(statuses);
 }
@@ -658,7 +655,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const attacking = compact && (card.attacking || (!enemy && match.attackMode && laneIndex === match.attackerLane));
   const attackInfo = compact ? attackBreakdown(card, owner, { attacking, targetIndex: card.attackTargetIndex ?? (attacking ? laneIndex : null) }) : { total: card.attack + (card.attackBonus || 0), change: card.attackBonus || 0, reasons: card.attackBonus ? ['Card effect'] : [], sources: card.attackBonusSources || (card.attackBonus ? [card.name] : []) };
   const attackBadge = attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
-  const actionButton = compact && !enemy && ['zoya','ww-medusa','ww-blake','ip-croaktail','wb-steepod','wb-topaz-diamond'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Drag this button onto the battlefield to use ${card.name}’s once-per-turn effect">DRAG</button>` : '';
+  const actionButton = compact && !enemy && ['ww-medusa','ww-blake','ip-croaktail','wb-steepod','wb-topaz-diamond'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Drag this button onto the battlefield to use ${card.name}’s once-per-turn effect">DRAG</button>` : '';
   const handAbilityButton = !compact && card.id === 'wb-sageape' ? '<button class="hand-ability-trigger" data-hand-ability="wb-sageape" title="Drag this button onto the battlefield to discard Sageape and move a Glacial fighter">DRAG</button>' : '';
   const frozen = compact && Boolean(card.skipAttackThisTurn || card.skipAttackNext);
   const stunned = frozen && card.skipAttackReason === 'stun';
@@ -666,7 +663,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const euphoric = compact && Boolean(card.euphoria);
   const statusClass = `${frozen ? (stunned ? ' status-stunned' : ' status-frozen') : ''}${rooted ? ' status-rooted' : ''}`;
   const freezeBadge = frozen ? `<span class="freeze-mark ${stunned ? 'stun-mark' : ''}" title="${stunned ? 'Stunned: cannot attack next turn' : card.skipAttackNext && !card.skipAttackThisTurn ? 'Cannot attack next turn' : 'Cannot attack this turn'}">${stunned ? '✦' : '❄'}</span>` : '';
-  const euphoriaBubbles = euphoric ? '<span class="euphoria-bubbles" aria-hidden="true"><i></i><i></i><i></i></span>' : '';
+  const euphoriaBubbles = euphoric ? `<span class="euphoria-bubbles${card.euphoriaProtected ? ' is-protected' : ''}" aria-hidden="true">${'<i></i>'.repeat(6)}</span>` : '';
   const handArtClass = !compact && ['ww-academy-rick'].includes(card.id) ? ' hand-art-rick' : !compact && ['academy-lynda', 'ww-academy-lynda'].includes(card.id) ? ' hand-art-lynda' : '';
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
@@ -695,7 +692,7 @@ function cardMarkup(card, enemy = false, compact = false) {
   const summonLocked = !compact && card.id === 'vishnu' && !owner?.lanes.some((unit) => unit?.name === 'Peppermint');
   const displayName = displayedCardName(card);
   return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, drag to attack" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Battle Zone' : ''}"`}>
-    ${art}<span class="art-shade"></span>${compact ? cardCombatStatus(card, owner, attackInfo) : ''}${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
+    ${art}<span class="art-shade"></span>${compact ? cardCombatStatus(card, owner) : ''}${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
     ${actionButton}${handAbilityButton}${freezeBadge}${euphoriaBubbles}${details}</div>`;
 }
 function lifeCount(player) { return player.life.middle.filter(Boolean).length + (player.life.main ? 1 : 0); }
@@ -1571,7 +1568,9 @@ function isEffectProtected(card) { return card?.id === 'ww-academy-rick' || card
 function animateShatter(source, element, variant = '') {
   if (!source) return;
   const bounds = source.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
   const overlay = document.createElement('div');
+  overlay.setAttribute('aria-hidden', 'true');
   overlay.className = `shatter-overlay ${variant} element-${(element || 'None').toLowerCase()}`;
   overlay.style.left = `${bounds.left}px`;
   overlay.style.top = `${bounds.top}px`;
@@ -1586,6 +1585,9 @@ function animateShatter(source, element, variant = '') {
   pieces.forEach(([clip, x, y, rotation], index) => {
     const shard = source.cloneNode(true);
     shard.classList.add('shatter-fragment');
+    shard.removeAttribute('tabindex');
+    shard.inert = true;
+    if (variant === 'life-shatter-overlay') shard.querySelector('.life-familiar')?.remove();
     shard.style.clipPath = `polygon(${clip})`;
     shard.style.setProperty('--shard-x', `${x}px`);
     shard.style.setProperty('--shard-y', `${y}px`);
@@ -1595,6 +1597,7 @@ function animateShatter(source, element, variant = '') {
   });
   document.body.appendChild(overlay);
   window.setTimeout(() => overlay.remove(), 900);
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 680;
 }
 function animateCardShatter(owner, laneIndex, card) {
   const side = owner === match.player ? 'player' : 'opponent';
@@ -1603,7 +1606,7 @@ function animateCardShatter(owner, laneIndex, card) {
 function animateLifeShatter(owner, laneIndex, main = false) {
   const side = owner === match.player ? 'player' : 'opponent';
   const selector = main ? `#${side}-life .main-life-back .life-card` : `#${side}-life .life-middle .life-card:nth-child(${laneIndex + 1})`;
-  animateShatter(document.querySelector(selector), 'Solar', 'life-shatter-overlay');
+  return animateShatter(document.querySelector(selector), 'Solar', 'life-shatter-overlay');
 }
 function returnFighterToHand(owner, laneIndex) {
   const target = owner.lanes[laneIndex];
@@ -2069,7 +2072,7 @@ function collectLifeCard(owner, laneIndex, main = false) {
   if (!card) return false;
   const breaksMainChain = !main && Boolean(owner.life.main) && owner.life.middle.filter(Boolean).length === 1;
   const side = owner === match.player ? 'player' : 'opponent';
-  animateLifeShatter(owner, laneIndex, main);
+  const revealDelay = animateLifeShatter(owner, laneIndex, main);
   if (main) owner.life.main = null;
   else owner.life.middle[laneIndex] = null;
   if (breaksMainChain) {
@@ -2080,7 +2083,7 @@ function collectLifeCard(owner, laneIndex, main = false) {
   }
   owner.hand.push(card);
   queueDrawAnimation(owner, card);
-  return true;
+  return revealDelay;
 }
 function resolvePurrnipLifeDraw(attacker, owner) {
   if (attacker?.id !== 'ww-purrnip' || !owner.deck.length) return false;
@@ -2093,8 +2096,8 @@ function resolvePurrnipLifeDraw(attacker, owner) {
 function dealLifeHit(defender, laneIndex) {
   if (defender.life.middle[laneIndex]) { collectLifeCard(defender, laneIndex); return; }
   if (!defender.life.main || !allMiddleLifeGone(defender)) return;
-  collectLifeCard(defender, -1, true);
-  endMatch(defender === match.opponent);
+  const revealDelay = collectLifeCard(defender, -1, true);
+  endMatch(defender === match.opponent, revealDelay);
 }
 function battle(attacker, index, from, target = { type: 'lane', index }) {
   const defender = from === match.player ? match.opponent : match.player;
@@ -2124,7 +2127,12 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   attacker.attacking = false; attacker.attackTargetIndex = null;
   if (target.type === 'life') {
     if (from===match.player && match.tutorialMode && tutorialLessonIndex===4) window.setTimeout(completeTutorialObjective,120);
-    if (target.main) { collectLifeCard(defender, -1, true); resolveEuphoriaAfterAttack(from, index); resolvePurrnipLifeDraw(attacker, from); endMatch(defender === match.opponent); }
+    if (target.main) {
+      const revealDelay = collectLifeCard(defender, -1, true);
+      resolveEuphoriaAfterAttack(from, index);
+      resolvePurrnipLifeDraw(attacker, from);
+      endMatch(defender === match.opponent, revealDelay);
+    }
     else { collectLifeCard(defender, target.index); resolveEuphoriaAfterAttack(from, index); resolvePurrnipLifeDraw(attacker, from); }
     return;
   }
@@ -2404,7 +2412,7 @@ function startPlayerTurn() {
   drawCard(match.player); match.drawn = true; render(); enforceHandLimit();
 }
 function endPlayerTurn() { if (match.active !== 'player' || match.over || match.attackResolving) return; if (match.tutorialMode) { if ([1,8].includes(tutorialLessonIndex) || (tutorialLessonIndex===3&&tutorialPhase==='wait')) tutorialEndTurn(); else tutorialWrongAction('Do the action shown in the center message before ending your turn.'); return; } if (match.player.hand.length > MAX_HAND_SIZE) { pendingEndTurnAfterDiscard = true; enforceHandLimit(); return; } clearTemporaryAttackModifiers(match.player); match.active = 'transition'; match.attackMode = false; match.attackerLane = null; match.selected = null; render(); window.setTimeout(rivalTurn, 500); }
-function endMatch(won) {
+function endMatch(won, revealDelay = 0) {
   match.over = true;
   if (match.tutorialMode) { document.getElementById('tutorial-bubble').classList.add('hidden'); document.getElementById('tutorial-reopen').classList.add('hidden'); }
   const sameProfile = match.profileId === (window.peppermintCurrentUser?.id || null);
@@ -2413,7 +2421,12 @@ function endMatch(won) {
   document.getElementById('result-title').textContent = match.tutorialMode&&won ? 'Tutorial complete!' : won ? 'Victory!' : 'The rival wins';
   document.getElementById('result-copy').textContent = match.tutorialMode&&won ? (tutorialReward?.total ? 'You earned 100 Diamonds for completing the tutorial.' : 'Tutorial complete. Your one-time 100 Diamond reward was already claimed.') : won ? 'You broke through the rival’s last life card.' : 'Your main life was broken. Give it another try.';
   renderBattleRewards(tutorialReward || settleCollectionBattle(won));
-  document.getElementById('result-dialog').showModal();
+  const result = document.getElementById('result-dialog');
+  if (!revealDelay) { result.showModal(); return; }
+  const finishedPlayer = match.player;
+  window.setTimeout(() => {
+    if (match.over && match.player === finishedPlayer && !document.querySelector('dialog[open]')) result.showModal();
+  }, revealDelay);
 }
 function setResultCharacterArt(playerWon) {
   const playerCard = match.playerProfileAvatar || profileResultCharacter('peppermint');
