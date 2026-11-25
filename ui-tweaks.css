@@ -331,5 +331,5 @@ h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055e
   .hand-mana-cell .energy b { font-size: 13px; }
   .hand-mana-cell .energy small { font-size: 5px; }
   .hand-content .hand-title { padding: 0; }
-  .hand-card { flex: 0 0 clamp(62px, 16vw, 74px); width: clamp(62px, 16vw, 74px); height: clamp(88px, 22vw, 102px); }
+  .hand-card { flex: 0 0 clamp(50px, 13vw, 60px); width: clamp(50px, 13vw, 60px); height: clamp(78px, 20vw, 90px); }
 }

@@ -1006,26 +1006,55 @@ function chooseEffect(owner, title, copy, choices, callback) {
   document.getElementById('effect-title').textContent = title;
   document.getElementById('effect-copy').textContent = copy;
   document.getElementById('effect-options').innerHTML = choices.map((choice, index) => {
-    const card = cardForEffectChoice(choice);
+    const card = cardForEffectChoice(choice, owner, `${title} ${copy}`);
     const art = card?.art ? `<span class="effect-option-art"><img src="${escapeHTML(card.art)}" alt=""/><b>${card.cost}</b></span>` : '<span class="effect-option-art effect-option-art-fallback">✦</span>';
     const stats = card ? `<span class="effect-option-stats">${card.type === 'Action' ? `${escapeHTML(displayedCardType(card))} · ${card.cost} Mana` : `${card.attack} ATK · ${card.cost} Mana`}</span>` : '';
     return `<button class="effect-option" data-choice="${index}">${art}<span class="effect-option-copy"><strong>${escapeHTML(choice.label)}</strong><small>${escapeHTML(choice.detail || '')}</small></span>${stats}</button>`;
   }).join('');
   pendingEffectChoice = callback; chooseEffect.choices = choices; document.getElementById('effect-dialog').showModal();
 }
-function cardForEffectChoice(choice) {
+function cardForEffectChoice(choice, owner = null, context = '') {
   if (!choice) return null;
-  const activeCards = [match.player, match.opponent].filter(Boolean).flatMap((side) => [
+  const sides = [match.player, match.opponent].filter(Boolean);
+  const activeCards = sides.flatMap((side) => [
     ...side.hand, ...side.deck, ...side.destroyed, ...side.transformationDeck,
     ...side.lanes.filter(Boolean), ...side.life.middle.filter(Boolean), side.life.main,
     ...(side.life.familiars || []).filter(Boolean),
   ]).filter(Boolean);
   const activeMatch = activeCards.find((card) => card.instance === choice.value);
   if (activeMatch) return activeMatch;
-  const name = String(choice.label || '').split(' · ')[0].trim();
-  const candidates = [...activeCards, ...allCardCatalog()].filter((card) => card.name === name || `${card.title} ${card.name}` === name);
+  const label = String(choice.label || '').trim();
+  const name = label.split(' · ')[0].trim();
   const detail = String(choice.detail || '');
-  return candidates.find((card) => detail.includes(card.title) || detail.includes(`${card.cost} Mana`)) || candidates[0] || null;
+  const hint = `${context} ${detail}`;
+  const matchesLabel = (card) => card && (card.name === name || `${card.title} ${card.name}` === name);
+  const numericValue = Number(choice.value);
+  if (Number.isInteger(numericValue) && numericValue >= 0) {
+    const preferredSources = /discard|from your hand|in your hand/i.test(hint) ? ['hand']
+      : /pandemonium|destroyed zone/i.test(hint) ? ['destroyed']
+      : /from your deck|your deck|deck/i.test(hint) ? ['deck', 'transformationDeck']
+      : /lane/i.test(detail) ? ['lanes']
+      : ['hand', 'destroyed', 'deck', 'transformationDeck', 'lanes', 'life.middle'];
+    for (const key of preferredSources) {
+      const sourceSides = /enemy|rival/i.test(detail) ? sides.filter((side) => side !== owner) : [owner, ...sides.filter((side) => side !== owner)].filter(Boolean);
+      for (const side of sourceSides) {
+        const list = key === 'life.middle' ? side.life.middle : side[key];
+        if (Array.isArray(list) && matchesLabel(list[numericValue])) return list[numericValue];
+      }
+    }
+  }
+  const laneMatch = label.match(/lane\s+(\d+)/i) || detail.match(/lane\s+(\d+)/i);
+  if (laneMatch) {
+    const lane = Number(laneMatch[1]) - 1;
+    const targetSide = /enemy|rival/i.test(detail) ? sides.find((side) => side !== owner) : owner;
+    const laneCard = targetSide?.lanes[lane];
+    if (matchesLabel(laneCard)) return laneCard;
+  }
+  const candidates = [...activeCards, ...allCardCatalog()].filter((card) => card.name === name || `${card.title} ${card.name}` === name);
+  return candidates.find((card) => detail.includes(card.title) && detail.includes(card.element))
+    || candidates.find((card) => detail.includes(card.title))
+    || candidates.find((card) => detail.includes(`${card.cost} Mana`))
+    || candidates[0] || null;
 }
 function drawMatching(owner, predicate, label) {
   const index = owner.deck.findIndex(predicate);

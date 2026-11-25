@@ -176,3 +176,14 @@
 /* Center the featured booster action directly above its pack art */
 .featured-booster-copy button{align-self:center}
 @media(max-width:760px){.featured-booster-copy{grid-column:1/-1;width:100%}.featured-booster-copy button{align-self:center}.featured-booster-pack{grid-column:1/-1;grid-row:auto;width:min(76%,290px);height:clamp(145px,28vh,220px)}}@media(min-width:761px){.featured-booster-copy button{position:relative;left:clamp(8px,1.1vw,18px)}}
+
+/* Center the featured pack and its action independently of the menu grid. */
+.featured-booster-copy button{position:relative;left:auto;align-self:center;margin-inline:auto;display:block;text-align:center}
+.featured-booster-copy button b{position:absolute;right:14px;top:50%;transform:translateY(-50%)}
+@media(max-width:760px){
+  .featured-booster{grid-template-columns:minmax(0,1fr);justify-items:center}
+  .featured-booster-copy{grid-column:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .featured-booster h2,.featured-booster p{text-align:center}
+  .featured-booster-pack{grid-column:1;justify-self:center;align-self:center;width:clamp(130px,42vw,220px);height:clamp(145px,28vh,220px);margin-inline:auto}
+  .featured-booster-copy button{align-self:center;width:min(100%,280px);margin-inline:auto}
+}
