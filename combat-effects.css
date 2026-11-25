@@ -35,10 +35,10 @@
   to { opacity: .98; }
 }
 .battle-card.combat-impact, .life-card.combat-impact {
-  animation: combat-impact .31s 560ms ease-out both;
+  animation: combat-impact .37s var(--combat-impact-delay, 716ms) ease-out both;
 }
 .battle-card.combat-ranged-release {
-  animation: combat-ranged-release .36s .1s ease-out both;
+  animation: combat-ranged-release .46s .15s ease-out both;
 }
 .battle-card.attack-lunge-up, .battle-card.attack-lunge-down { z-index: 10; }
 @keyframes combat-ranged-release {
@@ -78,7 +78,7 @@
   margin: 0;
   pointer-events: none;
   overflow: hidden;
-  animation: combat-shatter-crack .78s linear both;
+  animation: combat-shatter-crack var(--shatter-duration, .89s) linear both;
 }
 .shatter-overlay.life-shatter-overlay { filter: drop-shadow(0 0 9px #ff8f9dbf); }
 @keyframes combat-shatter-crack {
@@ -88,7 +88,7 @@
   100% { opacity: 0; transform: translate(calc(var(--shard-x) * 1.38), calc(var(--shard-y) + 24px)) rotate(calc(var(--shard-rotation) * 1.9)) scale(.64); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .shatter-overlay .shatter-fragment { animation-name: combat-shatter-reduced !important; animation-duration: .36s !important; }
+  .shatter-overlay .shatter-fragment { animation-name: combat-shatter-reduced !important; }
 }
 @keyframes combat-shatter-reduced {
   0% { opacity: 1; filter: brightness(1.25); }

@@ -29,6 +29,8 @@
     const lead = window.peppermintCombatRecipes[card?.id]?.strike.split('+')[0];
     return card?.role === 'Shooter' || rangedMotifs.has(lead);
   }
+  const attackImpactTime = 740;
+  const attackResolutionTime = attackImpactTime + 190;
   const layers = new Set();
   const noiseByContext = new WeakMap();
 
@@ -54,7 +56,7 @@
     node.animate?.(frames, { delay, duration, easing, fill: 'both' });
   }
 
-  function sound(audio, recipe, seed, attack, impactTime, power, candy) {
+  function sound(audio, recipe, seed, attack, releaseTime, impactTime, power, candy) {
     if (!audio || audio.state !== 'running') return;
     const [wave, pitch, cutoff, resonance] = voices[recipe.voice];
     const now = audio.currentTime + .012;
@@ -80,7 +82,7 @@
       osc.stop(t + length + .008);
     };
     sweep('sine', note * .44, note * .82, 0, .16, .025);
-    sweep(wave, note, note * (attack ? .36 : 1.38), .17, .16 + (seed % 4) * .024, .038);
+    sweep(wave, note, note * (attack ? .36 : 1.38), releaseTime / 1000 - .07, .18 + (seed % 4) * .024, .038);
     sweep(wave, note * (attack ? .66 : 1.24), note * .25, hit, .24, .075 * power);
     sweep('sine', note * (1.73 + (seed % 4) * .1), note * 1.2, hit + .045, .29, .029);
     sweep('sine', note * 2, note * 1.49, hit + .16, .24, .015);
@@ -137,10 +139,16 @@
     const theme = reference.describe(card, kind, lead, mark);
     const candy = theme.impact === 'candy';
     const sharedField = !attack && sharedFields.has(card.id);
-    const power = sharedField ? 1.12 : 1;
-    const impactAt = attack ? 590 : sharedField ? 530 : 405;
-    const weaponScale = Math.min(1.24, Math.max(.60, origin.h / 146));
-    const prepared = Math.max(135, impactAt * .43);
+    const baseAttack = Number.isFinite(card.attack) ? Math.max(0, Math.min(8, card.attack)) : 0;
+    const power = (sharedField ? 1.12 : 1) + baseAttack * .038;
+    const viewportScale = Math.max(.78, Math.min(1, window.innerWidth / 450, window.innerHeight / 680));
+    const effectScale = (1.21 + baseAttack * .085) * viewportScale;
+    const projectileScale = (1.20 + baseAttack * .074) * viewportScale;
+    const impactAt = attack ? attackImpactTime : sharedField ? 665 : 520;
+    const weaponScale = Math.min(1.27, Math.max(.74, origin.h / 146)) * effectScale;
+    const prepared = Math.round(impactAt * .45);
+    const moveDuration = attackResolutionTime - 23;
+    const burstDuration = reduced ? 360 : (candy ? 1100 : 715) + baseAttack * 22;
     const color = candy ? '#fc57a9' : recipe.color;
     const layer = svgNode('svg', { class: 'combat-fx-layer', 'aria-hidden': 'true', viewBox: `0 0 ${window.innerWidth} ${window.innerHeight}` }, document.body);
     layer.style.setProperty('--combat-color', color);
@@ -150,7 +158,8 @@
       old.remove();
     }
     layers.add(layer);
-    window.setTimeout(() => { layers.delete(layer); layer.remove(); }, impactAt + (reduced ? 340 : candy ? 1110 : 770));
+    const duration = impactAt + burstDuration + 155;
+    window.setTimeout(() => { layers.delete(layer); layer.remove(); }, duration);
     const palette = reference.mount(layer, svgNode, color, theme.dark, theme.hot);
     const weapon = theme.key ? palette.weapon(theme.key) : '';
     const first = destinations[0].box;
@@ -162,7 +171,7 @@
 
     if (sharedField && !reduced) {
       const haze = svgNode('ellipse', { cx: first.x, cy: first.y, rx: Math.min(window.innerWidth * .28, 380), ry: Math.min(window.innerHeight * .23, 200), class: 'combat-fx-haze' }, layer);
-      motion(haze, [{ opacity: 0 }, { opacity: .17 }, { opacity: 0 }], 885);
+      motion(haze, [{ opacity: 0 }, { opacity: .17 }, { opacity: 0 }], 1080);
     }
     if (weapon && !melee) {
       const prop = painted(layer, weapon, origin.x, origin.y, weaponAngle);
@@ -171,15 +180,15 @@
         { opacity: 1, transform: `translateY(0) scale(${weaponScale})`, offset: .35 },
         { opacity: .94, transform: `translateY(0) scale(${weaponScale})`, offset: .73 },
         { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
-      ], Math.max(240, prepared + 185));
+      ], prepared + 240);
     }
     if (!weapon && !reduced) {
       const swell = painted(layer, palette.paint(theme.flight, 'projectile', signature, lead), origin.x, origin.y, facing);
       motion(swell, [
-        { opacity: 0, transform: 'scale(.30)' },
-        { opacity: .79, transform: 'scale(.93)', offset: .6 },
-        { opacity: 0, transform: 'scale(1.27)' },
-      ], prepared + 65);
+        { opacity: 0, transform: `scale(${projectileScale * .30})` },
+        { opacity: .86, transform: `scale(${projectileScale})`, offset: .6 },
+        { opacity: 0, transform: `scale(${projectileScale * 1.24})` },
+      ], prepared + 90);
     }
 
     destinations.forEach(({ box: target, element: cardElement }, index) => {
@@ -196,9 +205,9 @@
         source?.animate?.([
           { transform: 'translate(0, 0)', filter: 'brightness(1)' },
           { transform: `translate(${-dx * .045}px, ${-dy * .045}px)`, offset: .36 },
-          { transform: `${thrust} scale(1.06)`, filter: 'brightness(1.26)', offset: impactAt / 735 },
+          { transform: `${thrust} scale(1.06)`, filter: 'brightness(1.26)', offset: impactAt / moveDuration },
           { transform: 'translate(0, 0)', filter: 'brightness(1)' },
-        ], { duration: 735, easing: 'cubic-bezier(.3,.69,.34,1)' });
+        ], { duration: moveDuration, easing: 'cubic-bezier(.3,.69,.34,1)' });
         if (weapon) {
           const carried = svgNode('g', { class: 'combat-carried' }, layer);
           const prop = painted(carried, weapon, origin.x, origin.y, weaponAngle);
@@ -207,11 +216,11 @@
             { opacity: 1, transform: `rotate(${-spread * 2}deg) scale(${weaponScale})`, offset: .44 },
             { opacity: 1, transform: `rotate(${spread * 1.1}deg) scale(${weaponScale})`, offset: .82 },
             { opacity: 0, transform: `rotate(${spread * 2}deg) scale(${weaponScale})` },
-          ], 735);
+          ], moveDuration);
           motion(carried, [
             {transform:'translate(0, 0)'}, {transform:`translate(${-dx*.045}px, ${-dy*.045}px)`,offset:.36},
-            {transform:thrust,offset:impactAt/735},{transform:'translate(0, 0)'},
-          ],735);
+            {transform:thrust,offset:impactAt/moveDuration},{transform:'translate(0, 0)'},
+          ], moveDuration);
         }
       } else if (!reduced && distance > 16) {
         const direct = ['arrow', 'shot', 'bolt'].includes(lead);
@@ -224,7 +233,7 @@
         const mx = travelX*.52 - Math.sin(rotation)*bend;
         const my = travelY*.52 + Math.cos(rotation)*bend;
         const travel = hitAt - prepared - delay;
-        const width = candy ? 6 : direct ? 2.1 : 4.5;
+        const width = (candy ? 6 : direct ? 2.1 : 4.5) * projectileScale;
         const ribbon = svgNode('path', {
           class: 'combat-flight-ribbon', d: `M${x} ${y}Q${x + mx*2 - travelX*.5} ${y + my*2 - travelY*.5} ${target.x} ${target.y}`,
           pathLength: 1, stroke: color, 'stroke-width': width,
@@ -234,7 +243,8 @@
           { opacity: 0, strokeDashoffset: -.25 },
         ],travel+125,prepared+delay,'linear');
         const traveller = svgNode('g', {}, layer);
-        painted(traveller, palette.missile(lead, theme.flight, signature), x, y, deg);
+        painted(traveller, palette.missile(lead, theme.flight, signature), x, y, deg)
+          .setAttribute('transform', `scale(${projectileScale})`);
         motion(traveller, [
           { opacity: 0, transform: 'translate(0, 0)' },
           { opacity: 1, transform: `translate(${mx}px, ${my}px)`, offset: .52 },
@@ -255,7 +265,7 @@
         }
       }
 
-      const scale = Math.min(1.47, Math.max(.63, Math.max(target.w, target.h) / 118)) * power;
+      const scale = Math.min(1.47, Math.max(.76, Math.max(target.w, target.h) / 118)) * effectScale * (sharedField ? 1.12 : 1);
       const rotationAtImpact = candy || ['growth','ice','fire'].includes(theme.impact) ? 0 : deg * .4;
       const burst = painted(layer, palette.paint(theme.impact, 'impact', signature, mark), target.x, target.y, rotationAtImpact);
       const impactMotion = candy ? [
@@ -267,35 +277,36 @@
       ] : [
         {opacity:0, transform:`scale(${scale*.28})`},
         {opacity:1, transform:`scale(${scale})`,offset:.24},
+        {opacity:.85, transform:`scale(${scale*1.1})`,offset:.56},
         {opacity:0, transform:`scale(${scale*1.3})`},
       ];
       const frames = reduced ? [{opacity:0,transform:`scale(${scale})`}, {opacity:.87}, {opacity:0}] : impactMotion;
-      motion(burst, frames, reduced ? 255 : candy ? 900 : 520, hitAt - 22);
+      motion(burst, frames, burstDuration, hitAt - 22);
       if (reduced) return;
       if (!attack && cardElement?.matches?.('.battle-card, .life-card')) {
         cardElement.animate?.([
           { filter: 'brightness(1)', transform: 'scale(1)' },
           { filter: 'brightness(1.29)', transform: `scale(${protecting ? 1.035 : .975})` },
           { filter: 'brightness(1)', transform: 'scale(1)' },
-        ], { duration: 260, delay: hitAt, easing: 'ease-out' });
+        ], { duration: 320, delay: hitAt, easing: 'ease-out' });
       }
-      const particles = candy ? 20 : theme.impact === 'ice' ? 15 : 8 + signature % 5;
+      const particles = (candy ? 20 : theme.impact === 'ice' ? 15 : 8 + signature % 5) + Math.round(baseAttack * 1.65);
       for (let i = 0; i < particles; i++) {
         const angle = i * Math.PI * 2 / particles + (signature % 63) / 10;
         const distance = (34 + ((signature >>> (i % 12)) + (i * 31)) % (candy ? 77 : 53)) * scale;
         const x = Math.cos(angle) * distance;
         const y = Math.sin(angle) * distance;
-        const size = (.30 + ((signature >>> (i % 12)) % 45) / 100) * scale;
+        const sparkScale = (.30 + ((signature >>> (i % 12)) % 45) / 100) * scale;
         const chip = painted(layer, palette.particle(theme.impact, i), target.x, target.y, angle * 180 / Math.PI + 90);
         motion(chip, [
           { opacity: 0, transform: 'translate(0, 0) scale(.16)' },
-          { opacity: .96, transform: `translate(${x*.6}px, ${y*.71}px) scale(${size})`, offset: .23 },
-          { opacity: 0, transform: `translate(${x}px, ${y + (candy ? 42 : 14)}px) scale(${size*.46})` },
-        ], (candy ? 550 : 320) + i * 12, hitAt + i * 4);
+          { opacity: .96, transform: `translate(${x*.6}px, ${y*.71}px) scale(${sparkScale})`, offset: .23 },
+          { opacity: 0, transform: `translate(${x}px, ${y + (candy ? 42 : 14)}px) scale(${sparkScale*.46})` },
+        ], (candy ? 650 : 410) + baseAttack * 15 + i * 8, hitAt + i * 4);
       }
     });
-    try { sound(audio, recipe, signature, attack, impactAt, power, candy); } catch { /* Visual feedback can run on its own. */ }
-    return true;
+    try { sound(audio, recipe, signature, attack, prepared, impactAt, power, candy); } catch { /* Visual feedback can run on its own. */ }
+    return duration;
   }
 
   function status(ids) {
@@ -319,6 +330,6 @@
     play(options) {
       try { return play(options); } catch { return false; }
     },
-    status, clear, isRanged,
+    status, clear, isRanged, attackImpactTime, attackResolutionTime,
   };
 })();

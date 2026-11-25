@@ -222,6 +222,52 @@ let mainLifeChainState = { player: null, opponent: null };
 const battleHistory = [];
 let activeCombatCue = null;
 
+let rivalAnimations = null;
+
+function currentRivalAnimations() {
+  return rivalAnimations?.opponent === match.opponent &&
+    rivalAnimations?.turnSerial === match.turnSerial && match.active === 'opponent' ? rivalAnimations : null;
+}
+
+function queueRivalAnimation(play) {
+  const queue = currentRivalAnimations();
+  if (!queue) return play();
+  const finished = queue.tail.then(() => {
+    if (currentRivalAnimations() !== queue) return;
+    const duration = play();
+    if (typeof duration === 'number' && duration > 0) {
+      return new Promise((resolve) => window.setTimeout(resolve, duration));
+    }
+    return duration;
+  });
+  queue.tail = finished.catch((error) => console.error('Rival animation failed:', error));
+  return queue.tail;
+}
+
+async function finishRivalAnimations(queue) {
+  while (currentRivalAnimations() === queue) {
+    const tail = queue.tail;
+    await tail;
+    if (queue.tail === tail) return;
+  }
+}
+
+function playCombatCue(options) {
+  const effects = window.peppermintCombatEffects;
+  if (!effects) return false;
+  if (!currentRivalAnimations()) return effects.play(options);
+  // A previous animation may outlast the DOM nodes describing a card that just left play.
+  const capture = (element) => {
+    const rect = element?.getBoundingClientRect?.() ?? element;
+    return () => element?.isConnected ? element : rect;
+  };
+  const source = capture(options.source);
+  const targets = options.targets.map(capture);
+  queueRivalAnimation(() => effects.play({ ...options, source: source(), targets: targets.map((target) => target()) }));
+  return true;
+}
+
+
 function combatSide(owner) { return owner === match.player ? 'player' : 'opponent'; }
 function combatLane(owner, lane) {
   const zone = document.querySelector(`[data-side="${combatSide(owner)}"][data-lane="${lane}"]`);
@@ -237,7 +283,7 @@ function combatSource(card, owner, lane) {
 }
 function showCombatCue(card, owner, lane, targets = [], kind = 'skill') {
   if (!card || !owner) return false;
-  return window.peppermintCombatEffects?.play({ card, kind, source: combatSource(card, owner, lane), targets, audio: soundContext });
+  return playCombatCue({ card, kind, source: combatSource(card, owner, lane), targets, audio: soundContext });
 }
 function combatCardStamp(card) {
   if (!card) return '';
@@ -284,7 +330,7 @@ function followCombatCue(cue, perform) {
       if (cue.card.id === 'mana-potion' && before.energy !== after.energy) targets.push(document.querySelector('.energy'));
       if (targets.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
         cue.shown = true;
-        window.peppermintCombatEffects.play({
+        playCombatCue({
           card: cue.card, source, kind: cue.kind, targets: targets.filter(Boolean), audio: soundContext,
         });
       }
@@ -422,6 +468,9 @@ function newPlayer(isAI, deckId, savedDeck = null, randomizeAvatar = false) {
   return { avatar: rival?.card || null, hand, deck, transformationDeck, life: { middle: lifeCards.slice(0, 3), main: lifeCards[3], familiars: [null, null, null] }, lanes: [null, null, null], destroyed: [], isAI };
 }
 function beginMatch({ playerDeckId, opponentDeckId, collectionOnly, tutorialMode, playerAvatar, opponent }, savedDeck) {
+  rivalAnimations = null;
+  pendingAiSummons.clear();
+  aiSummonAnimationTail = Promise.resolve();
   window.peppermintCombatEffects?.clear();
   mainLifeChainState = { player: null, opponent: null };
   handOverflowOpen = false;
@@ -1082,7 +1131,12 @@ function playPendingDrawAnimations() {
       document.querySelector(`#hand .hand-card[data-id="${draw.instance}"]`)?.classList.remove('draw-arriving');
       flight.remove();
     },620);
+    return 620;
   };
+  if (currentRivalAnimations()) {
+    pending.filter((draw) => draw.side === 'player').forEach((draw) => queueRivalAnimation(() => startAnimation(draw)));
+    return;
+  }
   pending.forEach((draw,index)=>{
     if (index === 0) startAnimation(draw);
     else window.setTimeout(()=>startAnimation(draw),index*180);
@@ -1093,7 +1147,7 @@ const specialSprites = { aemi:'30FPS_FA01_06_Shimmer.webp',runny:'30FPS_FA02_04_
 function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, silent = false } = {}) {
   if (activeCombatCue) return;
   const side = owner === match.player ? 'player' : 'opponent';
-  window.setTimeout(() => {
+  const play = () => {
     const host = laneIndex >= 0 ? document.querySelector(`[data-side="${side}"][data-lane="${laneIndex}"]`) : document.getElementById(`${side}-board`);
     if (!host) return;
     const fx = document.createElement('div'); fx.className = `special-fx special-${key}`; fx.innerHTML = `<span>${({ aemi:'⌕',runny:'⌖',berry:'↩',frosty:'❄',den:'✦',ryota:'⚔',healer:'✚',summoner:'✧',gummy:'✹',zoya:'⟲',cooking:'↶',cotton:'⌘',kage:'◐',amethyst:'◆',shielder:'⬟',shooter:'➶',enchanter:'✺',trickster:'♟',blader:'✦',brawler:'✹',peppermint:'✿','avatar-gem':'◇','dharma-revival':'✚','solar-explosion':'☼' })[key] || '✧'}</span><b>${label}</b>`;
@@ -1113,11 +1167,19 @@ function playSpecialFx(owner, laneIndex, key, label, { generatedOnly = false, si
     } else window.setTimeout(() => fx.remove(), 1250);
     const abilityElements = { aemi:'Ignis',runny:'Aer',berry:'Aqua',frosty:'Glacial',den:'Mind',ryota:'Solar',healer:'Terra',summoner:'Dark',gummy:'Ignis',zoya:'Dark',cooking:'Dark',cotton:'Mind',kage:'Dark',amethyst:'Dark',shielder:'Terra',shooter:'Aer',enchanter:'Mind',trickster:'Dark',blader:'Solar',brawler:'Ignis',peppermint:'Mind','avatar-gem':'Dark','dharma-revival':'Terra','solar-explosion':'Solar' };
     if (!silent) playSfx('special', abilityElements[key] || 'Mind');
-  }, 0);
+    if (!spriteFile) return 1250;
+    window.setTimeout(() => fx.remove(), 1600);
+    return 1600;
+  };
+  if (currentRivalAnimations()) queueRivalAnimation(play);
+  else window.setTimeout(play, 0);
 }
 let fieldFxSequence = 0;
 function playFieldActivationFx(fieldId) {
   if (activeCombatCue) return;
+  queueRivalAnimation(() => animateFieldActivation(fieldId));
+}
+function animateFieldActivation(fieldId) {
   const host = document.body;
   const names = { 'ip-field':'ISLAND PARADISE', 'toy-store':'TOY STORE', 'christmas-mall':'CHRISTMAS MALL', 'academy-grounds':'ACADEMY HALL', 'cactus-creek':'CACTUS CREEK', 'valhalla-bar':'VALHALLA BAR' };
   const id = `field-flow-${++fieldFxSequence}`;
@@ -1126,6 +1188,7 @@ function playFieldActivationFx(fieldId) {
   fx.innerHTML = `<svg viewBox="0 0 1200 700" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ff657a"/><stop offset=".17" stop-color="#ffbd67"/><stop offset=".34" stop-color="#fff283"/><stop offset=".5" stop-color="#7dffca"/><stop offset=".67" stop-color="#68ddff"/><stop offset=".84" stop-color="#a78bff"/><stop offset="1" stop-color="#ff8de1"/></linearGradient><filter id="${id}-glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><g class="field-flow-lines" stroke="url(#${id})" filter="url(#${id}-glow)"><path id="${id}-a" d="M600 350 C480 290 250 200 0 150"/><path id="${id}-b" d="M600 350 C420 350 190 350 0 350"/><path id="${id}-c" d="M600 350 C480 410 250 500 0 550"/><path id="${id}-d" d="M600 350 C720 290 950 200 1200 150"/><path id="${id}-e" d="M600 350 C780 350 1010 350 1200 350"/><path id="${id}-f" d="M600 350 C720 410 950 500 1200 550"/></g><g class="field-flow-particles" fill="url(#${id})"><circle r="6"><animateMotion dur="1.05s" repeatCount="1"><mpath href="#${id}-a"/></animateMotion></circle><circle r="4"><animateMotion dur=".92s" begin=".12s" repeatCount="1"><mpath href="#${id}-b"/></animateMotion></circle><circle r="5"><animateMotion dur="1.15s" begin=".04s" repeatCount="1"><mpath href="#${id}-c"/></animateMotion></circle><circle r="5"><animateMotion dur="1.08s" begin=".08s" repeatCount="1"><mpath href="#${id}-d"/></animateMotion></circle><circle r="6"><animateMotion dur=".95s" begin=".16s" repeatCount="1"><mpath href="#${id}-e"/></animateMotion></circle><circle r="4"><animateMotion dur="1.12s" begin=".05s" repeatCount="1"><mpath href="#${id}-f"/></animateMotion></circle></g><circle class="field-flow-core" cx="600" cy="350" r="20"/><circle class="field-flow-ring" cx="600" cy="350" r="40"/></svg><b>${names[fieldId] || 'FIELD SHIFT'}</b>`;
   host.appendChild(fx);
   window.setTimeout(() => fx.remove(), 1750);
+  return 1750;
 }
 function playHealthPotionFx(owner, index) {
   if (activeCombatCue) return;
@@ -1137,6 +1200,9 @@ function playHealthPotionFx(owner, index) {
   window.setTimeout(() => fx.remove(), 1300);
 }
 function playMainLifeChainFx(side, mode) {
+  return queueRivalAnimation(() => animateMainLifeChain(side, mode));
+}
+function animateMainLifeChain(side, mode) {
   const host = document.querySelector(`#${side}-life .main-life-back .main-life`);
   if (!host) return;
   const fx = document.createElement('span');
@@ -1146,6 +1212,7 @@ function playMainLifeChainFx(side, mode) {
   host.appendChild(fx);
   playChainTransitionSound(mode);
   window.setTimeout(() => fx.remove(), 1000);
+  return 1000;
 }
 function playChainTransitionSound(mode) {
   try {
@@ -1356,6 +1423,9 @@ function refreshAttackStatuses(owner) {
   });
 }
 function playCoinFlipFx(heads) {
+  return queueRivalAnimation(() => animateCoinFlip(heads));
+}
+function animateCoinFlip(heads) {
   const host = document.querySelector('.battlefield');
   if (!host) return;
   const fx = document.createElement('div');
@@ -1364,6 +1434,7 @@ function playCoinFlipFx(heads) {
   fx.innerHTML = `<span class="coin-flip-disc ${heads ? 'coin-heads' : 'coin-tails'}"><i class="coin-flip-face coin-front"><em>VALHALLA</em><b>HEADS</b></i><i class="coin-flip-face coin-back"><em>VALHALLA</em><b>TAILS</b></i></span>`;
   host.appendChild(fx);
   window.setTimeout(() => fx.remove(), 1500);
+  return 1500;
 }
 function resolveEuphoriaAfterAttack(owner, laneIndex) {
   const card = owner?.lanes[laneIndex];
@@ -1576,6 +1647,8 @@ function animateShatter(source, element, variant = '') {
   overlay.style.top = `${bounds.top}px`;
   overlay.style.width = `${bounds.width}px`;
   overlay.style.height = `${bounds.height}px`;
+  const shatterDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 390 : 890;
+  overlay.style.setProperty('--shatter-duration', `${shatterDuration}ms`);
   const pieces = [
     ['0 0, 50% 0, 50% 50%', -34, -43, -18], ['50% 0, 100% 0, 50% 50%', 0, -54, 14],
     ['100% 0, 100% 50%, 50% 50%', 36, -35, 22], ['100% 50%, 100% 100%, 50% 50%', 47, 1, 18],
@@ -1595,9 +1668,13 @@ function animateShatter(source, element, variant = '') {
     shard.style.animationDelay = `${index * 14}ms`;
     overlay.appendChild(shard);
   });
-  document.body.appendChild(overlay);
-  window.setTimeout(() => overlay.remove(), 900);
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 680;
+  queueRivalAnimation(() => {
+    document.body.appendChild(overlay);
+    const duration = shatterDuration + 115;
+    window.setTimeout(() => overlay.remove(), duration);
+    return duration;
+  });
+  return shatterDuration - 90;
 }
 function animateCardShatter(owner, laneIndex, card) {
   const side = owner === match.player ? 'player' : 'opponent';
@@ -1787,6 +1864,7 @@ function clearTemporaryAttackModifiers(owner) {
   });
 }
 function triggerOnSummon(card, owner, laneIndex) {
+  if (owner !== match.player && owner !== match.opponent) return;
   return trackCombatCue(card, owner, laneIndex, () => resolveTriggerOnSummon(card, owner, laneIndex), { reveal: card.id === 'valhalla-morrikyn' && Boolean((owner === match.player ? match.opponent : match.player).deck.length) });
 }
 function resolveTriggerOnSummon(card, owner, laneIndex) {
@@ -2079,7 +2157,8 @@ function collectLifeCard(owner, laneIndex, main = false) {
     // The render that follows replaces the life-zone DOM, so play the effect
     // on the freshly rendered main-life element and prevent a duplicate render-triggered effect.
     mainLifeChainState[side] = false;
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => playMainLifeChainFx(side, 'break')));
+    if (currentRivalAnimations()) playMainLifeChainFx(side, 'break');
+    else window.requestAnimationFrame(() => window.requestAnimationFrame(() => playMainLifeChainFx(side, 'break')));
   }
   owner.hand.push(card);
   queueDrawAnimation(owner, card);
@@ -2230,6 +2309,7 @@ function waitForAiSummonAnimations() {
 }
 function animateSummon(owner, index, card) {
   const beginAnimation = () => {
+    if (owner !== match.player && owner !== match.opponent) return;
     const side = owner === match.player ? 'player' : 'opponent';
     const lane = document.querySelector(`[data-side="${side}"][data-lane="${index}"]`);
     lane?.classList.remove('ai-summon-pending');
@@ -2237,8 +2317,18 @@ function animateSummon(owner, index, card) {
     const glyphs = { Ignis: '✹', Glacial: '❄', Terra: '✿', Aer: '〰', Aqua: '◉', Mind: '✧', Dark: '◐', Solar: '☼' };
     if (lane) { const burst = document.createElement('div'); burst.className = `element-burst summon-burst effect-${card.element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[card.element] || '✧'}</span><i></i><i></i><i></i><i></i>`; lane.appendChild(burst); window.setTimeout(() => burst.remove(), owner.isAI ? 1500 : 1050); }
     playSfx('summon', card.element);
-    return new Promise((resolve) => window.setTimeout(resolve, owner.isAI ? 1250 : 850));
+    return new Promise((resolve) => window.setTimeout(resolve, currentRivalAnimations() ? (owner.isAI ? 1500 : 1050) : owner.isAI ? 1250 : 850));
   };
+  if (currentRivalAnimations()) {
+    if (owner.isAI) {
+      pendingAiSummons.add(card.instance);
+      document.querySelector(`[data-side="opponent"][data-lane="${index}"]`)?.classList.add('ai-summon-pending');
+    }
+    return queueRivalAnimation(() => {
+      pendingAiSummons.delete(card.instance);
+      return beginAnimation();
+    });
+  }
   if (!owner.isAI) return beginAnimation();
   pendingAiSummons.add(card.instance);
   document.querySelector(`[data-side="opponent"][data-lane="${index}"]`)?.classList.add('ai-summon-pending');
@@ -2265,34 +2355,42 @@ function animateAttack(from, index, done, target = { type: 'lane', index }) {
     const shield = defender.lanes[finalTarget.index];
     if (!showCombatCue(shield, defender, finalTarget.index)) playSpecialFx(defender, finalTarget.index, 'shielder', 'SHIELDER · INTERCEPT');
   }
-  if (attacker) { attacker.attacking = true; attacker.attackTargetIndex = finalTarget.type === 'lane' ? finalTarget.index : -1; }
-  render();
-  const sourceLane = document.querySelector(`[data-side="${sourceSide}"][data-lane="${index}"]`);
-  const targetLane = finalTarget.type === 'lane' ? document.querySelector(`[data-side="${targetSide}"][data-lane="${finalTarget.index}"]`) : null;
-  const sourceCard = sourceLane?.querySelector('.battle-card');
-  const targetCard = targetLane?.querySelector('.battle-card');
-  const element = attacker?.element || 'Mind';
-  const impact = targetCard || lifeTargetElement(targetSide, finalTarget.index, !!finalTarget.main) || targetLane;
-  const vectorStrike = window.peppermintCombatEffects?.play({
-    card: attacker, kind: 'strike', source: sourceCard || sourceLane, targets: [impact], audio: soundContext,
-  });
-  const ranged = vectorStrike && window.peppermintCombatEffects.isRanged(attacker);
-  sourceCard?.classList.add(ranged ? 'combat-ranged-release' : from === match.player ? 'attack-lunge-up' : 'attack-lunge-down');
-  if (vectorStrike) {
-    impact?.classList.add('combat-impact');
-  } else {
-    targetCard?.classList.add('damage-shake');
-    impact?.classList.add(targetCard ? 'impact-glow' : 'life-hit');
-  }
-  if (from === match.opponent) document.getElementById('phase-label').textContent = 'RIVAL ATTACK';
-  if (!vectorStrike) playSfx('attack', element);
-  window.setTimeout(() => {
-    const hitPlayer = from === match.player ? match.opponent : match.player;
-    const hadTarget = finalTarget.type === 'lane' && !!hitPlayer.lanes[finalTarget.index];
-    done(target);
-    if (!vectorStrike) playSfx(hadTarget ? 'impact' : 'life', element);
+  const attackingPlayer = match.player;
+  return queueRivalAnimation(() => {
+    if (attacker) { attacker.attacking = true; attacker.attackTargetIndex = finalTarget.type === 'lane' ? finalTarget.index : -1; }
     render();
-  }, 740);
+    const sourceLane = document.querySelector(`[data-side="${sourceSide}"][data-lane="${index}"]`);
+    const targetLane = finalTarget.type === 'lane' ? document.querySelector(`[data-side="${targetSide}"][data-lane="${finalTarget.index}"]`) : null;
+    const sourceCard = sourceLane?.querySelector('.battle-card');
+    const targetCard = targetLane?.querySelector('.battle-card');
+    const element = attacker?.element || 'Mind';
+    const impact = targetCard || lifeTargetElement(targetSide, finalTarget.index, !!finalTarget.main) || targetLane;
+    const combatEffects = window.peppermintCombatEffects;
+    const vectorStrike = combatEffects?.play({
+      card: attacker, kind: 'strike', source: sourceCard || sourceLane, targets: [impact], audio: soundContext,
+    });
+    const ranged = vectorStrike && combatEffects.isRanged(attacker);
+    const resolutionTime = vectorStrike ? combatEffects.attackResolutionTime : 740;
+    sourceCard?.classList.add(ranged ? 'combat-ranged-release' : from === match.player ? 'attack-lunge-up' : 'attack-lunge-down');
+    if (vectorStrike) {
+      impact?.style.setProperty('--combat-impact-delay', `${combatEffects.attackImpactTime - 24}ms`);
+      impact?.classList.add('combat-impact');
+    } else {
+      targetCard?.classList.add('damage-shake');
+      impact?.classList.add(targetCard ? 'impact-glow' : 'life-hit');
+    }
+    if (from === match.opponent) document.getElementById('phase-label').textContent = 'RIVAL ATTACK';
+    if (!vectorStrike) playSfx('attack', element);
+    window.setTimeout(() => {
+      if (match.player !== attackingPlayer || match.over) return;
+      const hitPlayer = from === match.player ? match.opponent : match.player;
+      const hadTarget = finalTarget.type === 'lane' && !!hitPlayer.lanes[finalTarget.index];
+      done(target);
+      if (!vectorStrike) playSfx(hadTarget ? 'impact' : 'life', element);
+      render();
+    }, resolutionTime);
+    return vectorStrike ? Math.max(resolutionTime, vectorStrike) : resolutionTime + 260;
+  });
 }
 function npcAttackValue(card, sourceLane, defender, target) {
   const finalTarget = resolveAttackTarget(defender, target, sourceLane);
@@ -2327,60 +2425,68 @@ function npcAttackTarget(card, index, defender) {
   });
   return best;
 }
-function runNpcAttacks(index = 0) {
-  if (match.over) return;
-  let target = null;
-  while (index < 3) {
-    const card = match.opponent.lanes[index];
-    if (!canCardAttack(card)) { index++; continue; }
-    target = npcAttackTarget(card, index, match.player);
+async function runNpcAttacks(queue) {
+  let index = 0;
+  while (index < 3 && currentRivalAnimations() === queue && !match.over) {
+    const card = queue.opponent.lanes[index];
+    const target = canCardAttack(card) ? npcAttackTarget(card, index, match.player) : null;
     if (!target) { index++; continue; }
-    break;
+    card.attacked = true;
+    card.attacksThisTurn = (card.attacksThisTurn || 0) + 1;
+    card.npcAttackReserved = true;
+    animateAttack(queue.opponent, index, (finalTarget) => battle(card, index, queue.opponent, finalTarget), target);
+    await finishRivalAnimations(queue);
+    if (card.id !== 'ip-coyote' || card.attacksThisTurn >= 2) index++;
   }
-  if (index >= 3) { window.setTimeout(startPlayerTurn, 350); return; }
-  const card = match.opponent.lanes[index];
-  card.attacked = true;
-  card.attacksThisTurn = (card.attacksThisTurn || 0) + 1;
-  card.npcAttackReserved = true;
-  animateAttack(match.opponent, index, (finalTarget) => battle(card, index, match.opponent, finalTarget), target);
-  window.setTimeout(() => runNpcAttacks(card.id === 'ip-coyote' && (card.attacksThisTurn || 0) < 2 ? index : index + 1), 980);
 }
-function rivalTurn() {
+async function rivalTurn() {
   if (match.active !== 'transition' || match.over) return;
   if (match.tutorialMode) { tutorialWrongAction('The tutorial is arranging the next practice move.'); return; }
   logBattleEvent('Enemy turn began.', 'enemy');
   match.active = 'opponent'; match.drawn = false; match.turnSerial = (match.turnSerial || 0) + 1;
+  const queue = { opponent: match.opponent, turnSerial: match.turnSerial, tail: Promise.resolve() };
+  rivalAnimations = queue;
+  const canContinue = () => currentRivalAnimations() === queue && !match.over;
+  const step = async (action) => {
+    if (!canContinue()) return false;
+    action();
+    await finishRivalAnimations(queue);
+    return canContinue();
+  };
   expireEuphoriaAtTurnStart();
   if (match.secondPlayerBonusPending) { match.energy = match.maxEnergy + 1; match.secondPlayerBonusPending = false; }
   else match.energy = match.maxEnergy;
   match.turnEnergyCap = match.energy;
   drawCard(match.opponent);
   refreshAttackStatuses(match.opponent);
-  resolveDharmaRevives(match.opponent);
-  activateIslandTurnEffects(match.opponent);
-  runNpcRepositioning(match.opponent);
+  await waitForAiSummonAnimations();
+  if (!await step(() => resolveDharmaRevives(match.opponent))) return;
+  if (!await step(() => activateIslandTurnEffects(match.opponent))) return;
+  if (!await step(() => runNpcRepositioning(match.opponent))) return;
   match.opponent.aiReplacementPlan=null;
   let summoned = null; let summonedLane = -1;
   const toyStore = match.opponent.hand.find((card) => card.id === 'toy-store' && card.cost <= match.energy);
   const islandField = match.opponent.hand.find((card) => card.id === 'ip-field' && card.cost <= match.energy);
   const cactusField = match.opponent.hand.find((card) => card.id === 'cactus-creek' && card.cost <= match.energy);
   const cotton = match.opponent.hand.find((card) => card.id === 'peppermint-ally');
-  if (toyStore && match.fieldCard?.id !== 'toy-store') activateAction(match.opponent, toyStore.instance);
-  else if (islandField && match.fieldCard?.id !== 'ip-field') activateAction(match.opponent, islandField.instance);
-  else if (cactusField && match.fieldCard?.id !== 'cactus-creek') activateAction(match.opponent, cactusField.instance);
-  else if (cotton && match.fieldCard?.id !== 'academy-grounds') useCotton(match.opponent, cotton.instance);
+  if (!await step(() => {
+    if (toyStore && match.fieldCard?.id !== 'toy-store') activateAction(match.opponent, toyStore.instance);
+    else if (islandField && match.fieldCard?.id !== 'ip-field') activateAction(match.opponent, islandField.instance);
+    else if (cactusField && match.fieldCard?.id !== 'cactus-creek') activateAction(match.opponent, cactusField.instance);
+    else if (cotton && match.fieldCard?.id !== 'academy-grounds') useCotton(match.opponent, cotton.instance);
+  })) return;
   const rideWave = match.opponent.hand.find((card) => card.id === 'ip-ride-the-wave' && card.cost <= match.energy);
-  if (rideWave) activateAction(match.opponent, rideWave.instance);
-  activateAiSageape(match.opponent);
+  if (rideWave && !await step(() => activateAction(match.opponent, rideWave.instance))) return;
+  if (!await step(() => activateAiSageape(match.opponent))) return;
   const cooking = match.opponent.hand.find((card) => card.id === 'cooking' && card.cost <= match.energy && match.opponent.destroyed.some((held) => held.type === 'Fighter' || held.type === 'Creature'));
-  if (cooking) useCooking(match.opponent, cooking.instance);
+  if (cooking && !await step(() => useCooking(match.opponent, cooking.instance))) return;
   const planting = match.opponent.hand.find((card) => card.id === 'ww-planting' && card.cost <= match.energy && match.opponent.lanes.some((unit) => !unit) && (match.opponent.deck.some((unit) => unit.title === 'Vegcritter') || match.opponent.destroyed.some((unit) => unit.title === 'Vegcritter')));
-  if (planting) usePlanting(match.opponent, planting.instance);
+  if (planting && !await step(() => usePlanting(match.opponent, planting.instance))) return;
   const avatarGem = match.opponent.hand.find((card) => card.id === 'avatar-gem' && card.cost <= match.energy && match.opponent.lanes.some((unit) => unit && match.opponent.transformationDeck.some((transform) => matchesTransformation(unit, transform))));
-  if (avatarGem) useAvatarGem(match.opponent, avatarGem.instance);
+  if (avatarGem && !await step(() => useAvatarGem(match.opponent, avatarGem.instance))) return;
   const medusaIndex = match.opponent.lanes.findIndex((unit) => unit?.id === 'ww-medusa' && unit.abilityUsedTurn !== match.turn);
-  if (medusaIndex >= 0 && match.energy >= 1 && match.opponent.deck.length) activateMedusa(match.opponent, medusaIndex);
-  maybeUseZoya(match.opponent);
+  if (medusaIndex >= 0 && match.energy >= 1 && match.opponent.deck.length && !await step(() => activateMedusa(match.opponent, medusaIndex))) return;
+  if (!await step(() => maybeUseZoya(match.opponent))) return;
   const availableEnergy = match.energy;
   const unitPlayable = match.opponent.hand.filter((card) => card.type !== 'Action' && playCost(match.opponent, card) <= availableEnergy && canSummonCard(match.opponent, card)).sort((a, b) => playCost(match.opponent, a) - playCost(match.opponent, b));
   const openLanes = match.opponent.lanes.map((card, lane) => card ? -1 : lane).filter((lane) => lane >= 0);
@@ -2397,8 +2503,14 @@ function rivalTurn() {
     } else { summoned = null; summonedLane = -1; }
   }
   render();
-  if (summoned) animateSummon(match.opponent, summonedLane, summoned).then(() => triggerOnSummon(summoned, match.opponent, summonedLane));
-  if (!match.over) waitForAiSummonAnimations().then(() => { if (!match.over) window.setTimeout(() => { runNpcRepositioning(match.opponent); runNpcAttacks(); }, 250); });
+  if (summoned && !await step(() => {
+    animateSummon(queue.opponent, summonedLane, summoned).then(() => triggerOnSummon(summoned, queue.opponent, summonedLane));
+  })) return;
+  if (!await step(() => runNpcRepositioning(queue.opponent))) return;
+  await runNpcAttacks(queue);
+  if (!canContinue()) return;
+  rivalAnimations = null;
+  startPlayerTurn();
 }
 function startPlayerTurn() {
   match.turn++;
@@ -2422,11 +2534,14 @@ function endMatch(won, revealDelay = 0) {
   document.getElementById('result-copy').textContent = match.tutorialMode&&won ? (tutorialReward?.total ? 'You earned 100 Diamonds for completing the tutorial.' : 'Tutorial complete. Your one-time 100 Diamond reward was already claimed.') : won ? 'You broke through the rival’s last life card.' : 'Your main life was broken. Give it another try.';
   renderBattleRewards(tutorialReward || settleCollectionBattle(won));
   const result = document.getElementById('result-dialog');
-  if (!revealDelay) { result.showModal(); return; }
   const finishedPlayer = match.player;
-  window.setTimeout(() => {
+  const reveal = () => {
     if (match.over && match.player === finishedPlayer && !document.querySelector('dialog[open]')) result.showModal();
-  }, revealDelay);
+  };
+  const queue = currentRivalAnimations();
+  if (queue) finishRivalAnimations(queue).then(reveal);
+  else if (revealDelay) window.setTimeout(reveal, revealDelay);
+  else result.showModal();
 }
 function setResultCharacterArt(playerWon) {
   const playerCard = match.playerProfileAvatar || profileResultCharacter('peppermint');
