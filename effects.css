@@ -12,7 +12,6 @@
 .life-card.main-life span{top:6px}
 .life-card{overflow:visible}
 .attack-boost{font:700 7px Manrope,sans-serif;font-style:normal;color:#baffd4;background:#154b36;border:1px solid #91e2c070;border-radius:4px;padding:1px 3px;vertical-align:2px;margin:0 2px}.attack-reduced{color:#ffc5bc;background:#552d37;border-color:#ed9e9b77}
-.card-stats .blader-modifier{font-size:8px;padding:1px 4px;min-width:19px;text-align:center;line-height:1.2}
 .card-ability-trigger{position:absolute;z-index:4;border:1px solid #f5ce79aa;border-radius:5px;background:#372b22;color:#ffe6a8;font:700 7px Manrope,sans-serif;letter-spacing:.08em;padding:4px 6px}.card-ability-trigger{right:3px;top:27px}.card-ability-trigger:disabled{opacity:.38;cursor:not-allowed}
 .world-status{width:100%;margin-top:-9px;padding:8px 4px;border-top:1px solid #f5ce7944;color:#f5ce79;font:8px Manrope,sans-serif;letter-spacing:.04em;line-height:1.45}
 .freeze-mark{position:absolute;right:5px;top:6px;z-index:3;border:1px solid #a6eaff99;border-radius:50%;width:18px;height:18px;display:grid;place-items:center;background:#183d59;color:#c4f3ff;font-size:11px;box-shadow:0 0 12px #71c9ff88}

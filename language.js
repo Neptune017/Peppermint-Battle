@@ -870,6 +870,11 @@
     if(language==='hu'){const dynamic=translateDynamic(trimmed);if(dynamic!==null)return value.replace(trimmed,dynamic);}
     let result=value;
     if(language==='hu'){
+      result=result.replaceAll('+1 attack during its owner’s turn; −1 attack during the rival’s turn.','A saját körében +1 támadást kap; az ellenfél körében −1 támadást kap.');
+      result=result.replaceAll('Your Blader gains +1 ATK throughout your turn and −1 ATK throughout the rival’s turn.','A Pengeforgató a teljes saját körödben +1 támadást kap, az ellenfél körében pedig −1-et.');
+      result=result.replaceAll('Your Blader is ready in Lane 1 and has +1 ATK throughout your turn. Its modifier becomes −1 ATK during the rival’s turn.','Az 1. sávban álló Pengeforgatód a teljes saját körödben +1 támadást kap. Az ellenfél körében a módosító −1 támadásra vált.');
+    }
+    if(language==='hu'){
       result=result.replace(/Your Shooter is in Lane 1 and (.+) is in the adjacent Lane 2\. Attack \1\./g,(_,name)=>'A Lövészed az 1. sávban áll, '+name+' pedig a szomszédos 2. sávban. Támadd meg '+name+' kártyát.');
       result=result.replace(/(.+) is already in Lane 1\. Summon the Enchanter beside \1 in Lane 2; \1 gains \+1 ATK\./g,(_,name)=>name+' már az 1. sávban áll. Idézd meg mellé a Támogatót a 2. sávba; '+name+' +1 támadást kap.');
       result=result.replace(/(.+) faces your Trickster in Lane 1\. Summon the Trickster there; \1 loses 1 ATK\./g,(_,name)=>name+' a Megtévesztőddel áll szemben az 1. sávban. Idézd meg oda a Megtévesztőt; '+name+' 1 támadást veszít.');
