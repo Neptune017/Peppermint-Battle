@@ -171,7 +171,7 @@ const valhallaLibrary = [
 ];
 cardLibrary.push({ id: 'academy-sabrina', title: 'Academy', name: 'Sabrina', type: 'Fighter', maxCopies: 1, deckCopies: 1, cost: 4, attack: 4, element: 'Aer', role: 'Brawler', art: 'assets/cards/AcademySabrina.webp', ability: 'On summon, stun the opposing fighter. It cannot attack during its next turn.' });
 const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', valhalla: 'Valhalla', fun: 'Fun Deck', mixed: 'Mixed', collection: 'My Collection' };
-const avatarPortrait = (id) => `assets/avatar-headshots/${id}.webp?v=20261125-rick-clean`;
+const avatarPortrait = (id) => `assets/avatar-headshots/${id}.webp?v=20261125-rick-fade`;
 const isFighterCard = (card) => (card.type || 'Fighter') === 'Fighter' && Boolean(card.role) && displayedCardType(card) === 'Fighter';
 const avatarLabel = (card) => `${card.title ? card.title + ' ' : ''}${card.name}`;
 const playerProfileName = (user) => user?.nickname || user?.email?.split('@')[0] || '';
@@ -221,9 +221,16 @@ const match = { turn: 1, turnSerial: 0, active: 'player', energy: 1, maxEnergy: 
 let mainLifeChainState = { player: null, opponent: null };
 const battleHistory = [];
 function battleSideName(owner) { return owner === match.player ? 'You' : 'Enemy'; }
-document.getElementById('battle-history-list')?.previousElementSibling?.addEventListener('click', () => {
-  if (window.matchMedia('(max-width: 780px)').matches) document.querySelector('.battle-history')?.classList.toggle('expanded');
-});
+const battleHistoryPanel = document.getElementById('battle-history');
+const battleHistoryToggle = document.getElementById('battle-history-toggle');
+const narrowBattleHistory = window.matchMedia('(max-width: 780px)');
+function setBattleHistoryExpanded(expanded) {
+  battleHistoryPanel.classList.toggle('expanded', expanded);
+  battleHistoryToggle.setAttribute('aria-expanded', String(expanded));
+}
+setBattleHistoryExpanded(!narrowBattleHistory.matches);
+narrowBattleHistory.addEventListener('change', (event) => setBattleHistoryExpanded(!event.matches));
+battleHistoryToggle.addEventListener('click', () => setBattleHistoryExpanded(!battleHistoryPanel.classList.contains('expanded')));
 function logBattleEvent(message, kind = 'system') {
   const list = document.getElementById('battle-history-list');
   if (!list) return;
@@ -848,7 +855,7 @@ function showCardTooltip(card, event) {
   const inPlayerHand = owner === match.player && match.player.hand.includes(card);
   const canUseFromHand = inPlayerHand && match.active === 'player' && !match.over && playCost(match.player, card) <= match.energy;
   const cottonAbility = inPlayerHand && match.active === 'player' && !match.over && card.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds';
-  const canSummonFromHand = canUseFromHand && card.type !== 'Action' && canSummonCard(match.player, card) && !cottonAbility && match.player.lanes.some((unit) => !unit);
+  const canSummonFromHand = canUseFromHand && card.type !== 'Action' && canSummonCard(match.player, card) && match.player.lanes.some((unit) => !unit);
   const sageapeAbility = canUseFromHand && card.id === 'wb-sageape';
   const canAttackFromField = owner === match.player && laneIndex >= 0 && match.active === 'player' && !match.over && !match.attackResolving && canCardAttack(card) && canAttackLane(card,laneIndex,match.opponent);
   const canUseFieldAbility = canActivateCardAbility(card,owner,laneIndex);
@@ -1425,7 +1432,7 @@ function useLockerRoom(owner, actionInstance) {
   });
 }
 function useCotton(owner, cardInstance) {
-  const cotton = owner.hand.find((card) => card.instance === cardInstance);
+  const cotton = owner.hand.find((card) => card.id === 'peppermint-ally' && card.instance === cardInstance);
   if (!cotton) return;
   const hallIndex = owner.deck.findIndex((card) => card.id === 'academy-grounds');
   if (hallIndex < 0) { announceEffect('Cotton could not find Academy Hall in your deck.'); return; }
@@ -2243,7 +2250,7 @@ function setResultCharacterArt(playerWon) {
   setResultCharacterImage('result-player-character-art', playerCard, playerWon ? 'victory' : 'loss');
   setResultCharacterImage('result-opponent-character-art', opponentCard, playerWon ? 'loss' : 'victory');
 }
-const profileResultArtAliases = Object.freeze({
+const characterArtAliases = Object.freeze({
   'ww-academy-fritz': 'academy-fritz',
   'ww-academy-lynda': 'academy-lynda',
   'ww-rick': 'wild-west-rick',
@@ -2257,11 +2264,15 @@ function profileResultCharacter(avatarId) {
   return catalog.find((card) => card.id === avatarId) || catalog.find((card) => card.id === 'peppermint');
 }
 
+function resultCharacterPath(card, outcome) {
+  const assetId = characterArtAliases[card.id] || card.id;
+  return `assets/result-characters/${assetId}-${outcome}.webp?v=variants-v6`;
+}
+
 function setResultCharacterImage(elementId, card, outcome) {
   const image = document.getElementById(elementId);
   if (!image || !card) return;
-  const assetId = profileResultArtAliases[card.id] || card.id;
-  image.src = `assets/result-characters/${assetId}-${outcome}.webp?v=variants-v5`;
+  image.src = resultCharacterPath(card, outcome);
   image.alt = `${card.title ? card.title + ' ' : ''}${card.name} ${outcome === 'victory' ? 'celebrating' : 'defeated'}`;
 }
 
@@ -2384,7 +2395,8 @@ document.addEventListener('click', (event) => {
   if (tooltipSpecial) {
     const id = tooltipSpecial.dataset.cardInstance, kind = tooltipSpecial.dataset.tooltipSpecial;
     hideCardTooltip(); match.selected = null;
-    if (kind === 'cotton') useCotton(match.player, id); else if (kind === 'sageape') activateSageape(id);
+    if (kind === 'cotton' && match.active === 'player' && !match.over && match.fieldCard?.id !== 'academy-grounds') useCotton(match.player, id);
+    else if (kind === 'sageape') activateSageape(id);
     return;
   }
   if (!isTouchInput()) {
@@ -2687,8 +2699,9 @@ document.addEventListener('pointerup', (event) => {
     if (drag.card.type === 'Action' && overBoard) {
       match.attackMode = false; match.attackerLane = null; match.selected = null;
       activateAction(match.player, drag.card.instance);
-    } else if (drag.card.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds' && overBoard) useCotton(match.player,drag.card.instance);
-    else if (laneIndex >= 0 && !match.player.lanes[laneIndex]) playCard(drag.card.instance, laneIndex);
+    } else if (laneIndex >= 0 && !match.player.lanes[laneIndex]) {
+      playCard(drag.card.instance, laneIndex);
+    }
   } else handDragCandidate = null;
 });
 document.addEventListener('pointercancel', (event) => { if (handDragCandidate?.pointerId === event.pointerId) clearCardDrag(); });
@@ -2772,6 +2785,70 @@ document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEv
   document.querySelectorAll('[data-battle-mode]').forEach((option) => { const selected = option === button; option.classList.toggle('selected', selected); option.setAttribute('aria-pressed', String(selected)); });
   document.getElementById('player-deck-picker-group').classList.toggle('hidden', selectedBattleMode !== 'standard'); document.getElementById('rival-deck-picker-group').classList.toggle('hidden', selectedBattleMode === 'tutorial');
 }));
+// Relative to the visible silhouette, so transparent image margins do not shrink the pose.
+const versusStanceFrames = new Map([
+  ['academy-coyote', [1.341, 1.0302, -0.0181, 9.7005]],
+  ['academy-fritz', [0.7908, 1.0107, -0.0046, 3.8558]],
+  ['academy-lynda', [0.8383, 1.018, -0.0102, 4.1425]],
+  ['academy-sabrina', [0.8065, 1.0075, 0, 8.4255]],
+  ['aemi', [0.8365, 1.0224, -0.0023, 3.5383]],
+  ['amethyst', [1.069, 1.0213, -0.0009, 1.753]],
+  ['den', [0.9687, 1.0135, -0.0059, 7.3933]],
+  ['dharma', [0.9094, 1.0077, -0.0054, 0.5838]],
+  ['horatio', [1.4955, 1.0291, -0.0131, 2.0182]],
+  ['ip-brody', [1.2122, 1.0199, -0.009, 13.8672]],
+  ['ip-coyote', [1.1331, 1.0255, -0.017, 7.942]],
+  ['ip-natsuki', [0.8888, 1.0102, -0.0055, 2.8712]],
+  ['ip-sabrina', [0.5997, 1.0149, -0.0054, 12.4164]],
+  ['island-paradise-chase', [0.8198, 1.0008, 0, 0.0844]],
+  ['kage', [1.8131, 1.0172, -0.0115, 9.9775]],
+  ['peppermint-ally', [1.4692, 1.0179, -0.007, 0.9766]],
+  ['peppermint', [0.552, 1.0302, -0.0101, 15.4297]],
+  ['ryota', [0.8803, 1.0194, -0.0078, 1.6681]],
+  ['vishnu', [0.8086, 1.0045, 0, 2.4014]],
+  ['wild-west-rick', [0.6477, 1.0152, -0.0053, 2.0508]],
+  ['ww-academy-brian', [0.7786, 1.0146, -0.0061, 7.9698]],
+  ['ww-academy-rick', [0.6346, 1.0186, -0.0093, 2.0508]],
+  ['ww-blake', [1.4797, 1.0149, -0.0079, 0.7161]],
+  ['ww-brian', [0.9268, 1.0047, -0.0031, 0.9024]],
+  ['ww-fritz', [0.8182, 1.0116, -0.0031, 6.7613]],
+  ['ww-medusa', [1.226, 1.0181, -0.0073, 2.4251]],
+  ['ww-wade', [0.8755, 1.0147, -0.0093, 1.3344]],
+  ['ww-zodiac-guardian-brian', [0.7578, 1.0078, -0.0014, 0.6352]],
+  ['zodiac-guardian-kage', [1.5798, 1.1353, -0.0931, 3.0599]],
+  ['zodiac-guardian-rick', [0.9268, 1.0789, -0.0395, 2.2519]],
+  ['zodiac-guardian-ryota', [1.2207, 1.0526, -0.0295, 1.1594]],
+  ['zoya', [0.6545, 1.0165, -0.0066, 2.2461]],
+]);
+
+function setVersusCharacterImage(elementId, card) {
+  const image = document.getElementById(elementId);
+  const assetId = characterArtAliases[card.id] || card.id;
+  const frame = versusStanceFrames.get(assetId);
+  const fallback = resultCharacterPath(card, 'victory');
+  const url = frame ? `assets/versus-characters/${assetId}.webp?v=stances-v1` : fallback;
+  if (image.dataset.versusArt !== url) {
+    image.dataset.versusArt = url;
+    if (frame) {
+      const [visibleAspect, imageHeightScale, offsetTop, offsetInner] = frame;
+      image.dataset.versusStance = assetId;
+      image.style.setProperty('--stance-aspect', visibleAspect);
+      image.style.setProperty('--stance-height-scale', imageHeightScale);
+      image.style.setProperty('--stance-offset-bottom', 1 - imageHeightScale - offsetTop);
+      image.style.setProperty('--stance-offset-inner', `${offsetInner}%`);
+    } else {
+      delete image.dataset.versusStance;
+    }
+    image.onerror = frame ? () => {
+      image.onerror = null;
+      delete image.dataset.versusStance;
+      image.src = fallback;
+    } : null;
+    image.src = url;
+  }
+  image.alt = avatarLabel(card);
+}
+
 const versusDialog = document.getElementById('versus-dialog');
 const versusDeck = document.getElementById('versus-saved-deck');
 const versusStart = document.getElementById('versus-start');
@@ -2782,7 +2859,7 @@ function updateVersusPlayer() {
   const user = window.peppermintCurrentUser;
   pendingBattle.playerAvatar = ownedProfileAvatar(user);
   const playerCard = pendingBattle.playerAvatar || profileResultCharacter('peppermint');
-  setResultCharacterImage('versus-player-art', playerCard, 'victory');
+  setVersusCharacterImage('versus-player-art', playerCard);
   document.getElementById('versus-player-name').textContent = playerProfileName(user) || 'YOU';
   document.getElementById('versus-player-character').textContent = avatarLabel(playerCard);
   document.getElementById('versus-saved-deck-group').classList.toggle('hidden', !collectionOnly);
@@ -2832,7 +2909,7 @@ function showVersus() {
   pendingBattle = { collectionOnly, tutorialMode, playerDeckId, opponentDeckId, opponent };
   versusDeck.replaceChildren();
   updateVersusPlayer();
-  setResultCharacterImage('versus-rival-art', opponent.avatar, 'victory');
+  setVersusCharacterImage('versus-rival-art', opponent.avatar);
   document.getElementById('versus-rival-name').textContent = avatarLabel(opponent.avatar);
   document.getElementById('versus-rival-deck-name').textContent = deckNames[opponentDeckId];
   document.getElementById('deck-select-dialog').close('versus');

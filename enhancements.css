@@ -31,64 +31,101 @@
 .battle-card .card-art.natural-art-zodiac-rick { object-position: 50% 28%; }
 
 .versus-dialog {
-  width: min(1400px, calc(100% - 36px));
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
   max-width: none;
-  max-height: calc(100dvh - 36px);
-  padding: clamp(14px, 2.5vw, 34px);
-  overflow: auto;
+  max-height: none;
+  box-sizing: border-box;
+  margin: 0;
+  padding: max(clamp(18px, 3.5dvh, 48px), env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
   background:
     radial-gradient(ellipse at 23% 44%, #1d564b66, transparent 50%),
     radial-gradient(ellipse at 77% 44%, #793d4566, transparent 50%),
     #171422;
-  border-color: #8c779065;
+}
+.versus-dialog[open] {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  row-gap: clamp(8px, 1.5dvh, 20px);
 }
 .versus-stage {
   position: relative;
   isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: stretch;
-  column-gap: clamp(4px, 2vw, 32px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  column-gap: clamp(6px, 1vw, 20px);
 }
 .versus-stage::before {
   content: "";
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: linear-gradient(102deg, transparent 49.8%, #f8d7a73b 50%, transparent 50.3%);
-  mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent 92%);
+  background: linear-gradient(180deg, transparent, #f8d7a766 42%, #f8d7a766 54%, transparent 90%) center / 1px 100% no-repeat;
 }
 .versus-stage #versus-title {
-  align-self: start;
-  margin: clamp(65px, 27dvh, 390px) 0 0;
+  grid-area: 1 / 2;
+  align-self: center;
+  margin: 0;
   color: #fff0ce;
-  font: 700 clamp(36px, 8vw, 108px)/1 Cinzel, Georgia, serif;
-  letter-spacing: -.08em;
+  font: 700 clamp(32px, 8vw, 108px)/1 Cinzel, Georgia, serif;
   text-shadow: 0 0 34px #dc9766b3, 0 4px 2px #1e1017;
 }
-.versus-side {
-  text-align: center;
-  min-width: 0;
+.versus-player { grid-column: 1; }
+.versus-rival { grid-column: 3; }
+.versus-portrait {
+  grid-row: 1;
+  position: relative;
+  container-type: size;
+  overflow: hidden;
+  margin-bottom: 3px;
 }
-.versus-side > img {
+.versus-portrait > img {
+  position: absolute;
+  bottom: 0;
   display: block;
-  width: 100%;
-  height: min(65dvh, 820px);
-  min-height: 130px;
+  width: 135%;
+  height: 100%;
+  max-width: none;
   object-fit: contain;
-  object-position: center bottom;
+  object-position: right bottom;
   filter: drop-shadow(0 12px 18px #080612aa);
+  pointer-events: none;
 }
-.versus-rival > img { transform: scaleX(-1); }
+.versus-player > img { right: 0; }
+.versus-rival > img { left: 0; transform: scaleX(-1); }
+
+.versus-portrait > img[data-versus-stance] {
+  --stance-width-limit: 190cqw;
+  --stance-visible-height: min(100cqh, calc(var(--stance-width-limit) / var(--stance-aspect)));
+  bottom: calc(var(--stance-visible-height) * var(--stance-offset-bottom));
+  width: auto;
+  max-width: none;
+  height: calc(var(--stance-visible-height) * var(--stance-height-scale));
+  transform: translateX(var(--stance-offset-inner));
+}
+.versus-portrait > img[data-versus-stance="amethyst"] { --stance-width-limit: 205cqw; }
+.versus-portrait > img[data-versus-stance="peppermint-ally"] { --stance-width-limit: 175cqw; }
+.versus-rival > img[data-versus-stance] {
+  transform: translateX(calc(-1 * var(--stance-offset-inner))) scaleX(-1);
+}
 .versus-identity {
-  margin-top: 8px;
+  grid-row: 2;
+  min-width: 0;
+  margin-inline: clamp(6px, 3vw, 44px);
   border-top: 1px solid #a9dcca6b;
-  padding: 12px 4px 0;
+  padding-top: clamp(5px, 1.15dvh, 12px);
+  text-align: center;
 }
-.versus-rival .versus-identity { border-color: #f3aa9b72; }
+.versus-identity.versus-rival { border-color: #f3aa9b72; }
 .versus-identity h3 {
   margin: 0;
-  font: 700 clamp(15px, 3vw, 34px)/1.12 Cinzel, Georgia, serif;
+  font: 700 clamp(14px, 3vw, 34px)/1.12 Cinzel, Georgia, serif;
   color: #fff0d6;
   overflow-wrap: anywhere;
 }
@@ -97,12 +134,12 @@
   display: grid;
   justify-items: center;
   gap: 4px;
-  margin: 8px auto 0;
+  margin: 7px auto 0;
 }
 .versus-deck-group label { font-size: 12px; color: #d8ece6; }
 .versus-deck-group select {
   width: min(100%, 320px);
-  padding: 7px;
+  padding: 6px;
   border: 1px solid #73b9a477;
   border-radius: 7px;
   background: #242635;
@@ -113,13 +150,10 @@
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin-top: clamp(10px, 2vh, 24px);
 }
 .versus-actions .start-battle-button { width: auto; margin: 0; }
 .versus-actions .start-battle-button:disabled { opacity: .45; cursor: not-allowed; }
 @media (max-width: 650px) {
-  .versus-dialog { width: calc(100% - 16px); }
-  .versus-side > img { height: min(56dvh, 87vw); }
-  .versus-stage #versus-title { margin-top: min(24dvh, 35vw); }
   .versus-identity p { font-size: 11px; }
+  .versus-deck-group select { font-size: 11px; }
 }

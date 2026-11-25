@@ -252,8 +252,6 @@
   .hand-content .hand-title { margin-bottom: 5px; }
   .hand-content .hand { gap: 6px; transform: none; }
   .hand-content .hand-card { flex: 0 0 clamp(62px, 20vw, 78px); width: clamp(62px, 20vw, 78px); height: clamp(92px, 27vw, 108px); }
-  .battle-history { position: relative; inset: auto; width: 100%; max-height: 160px; margin: 8px 0 12px; z-index: 1; }
-  .battle-history:not(.expanded) { min-height: 0; height: 35px; }
 }
 @media (max-width: 360px) {
   .battle-buttons #give-up, .battle-buttons #end-turn { width: 88px; height: 42px; min-height: 42px; font-size: 8px; }
@@ -362,6 +360,56 @@ h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055e
 .main-menu-profile:hover,.main-menu-profile:focus-visible{border-color:var(--mint)}
 @media(max-width:760px){.main-menu-fullscreen .main-menu-copy{grid-column:2;grid-row:1}.menu-language-profile-row{gap:6px;margin-top:7px;flex-wrap:wrap}.main-menu-profile{padding:4px 8px}.main-menu-profile>img{width:32px;height:32px}.main-menu-profile-copy>strong{max-width:110px}}
 @media(max-width:420px){.main-menu-fullscreen .main-menu-copy{grid-column:1/-1;grid-row:1}.menu-language-profile-row{flex-wrap:nowrap;gap:5px}.menu-language-selector{gap:4px;font-size:7px}.menu-language-selector select{padding:4px 5px;font-size:10px}.main-menu-profile{gap:6px;padding:3px 6px}.main-menu-profile>img{width:28px;height:28px}.main-menu-profile-copy>span{font-size:7px}.main-menu-profile-copy>strong{max-width:82px;font-size:10px}}
+
+.side-rail .battle-history {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  min-height: 0;
+  max-height: min(136px, 24dvh);
+  height: auto;
+  margin-top: -10px;
+  overflow: visible;
+  border-radius: 8px;
+}
+.side-rail .battle-history::before { display: none; }
+.battle-history-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  width: 100%;
+  min-height: 27px;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #ffe7a6;
+  font: 700 9px/1.15 Manrope, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.battle-history-toggle:focus-visible { outline: 2px solid var(--mint); outline-offset: 1px; }
+.battle-history-toggle span { color: #bab1c7; }
+.side-rail .battle-history ol { gap: 3px; padding: 4px; }
+.side-rail .battle-history:not(.expanded) ol { display: none; }
+.side-rail .battle-history li { padding: 3px 5px; font-size: 9px; }
+@media (max-width: 780px) {
+  .side-rail .battle-history { margin-top: -3px; }
+  .battle-history-toggle { flex-wrap: wrap; justify-content: center; padding-inline: 2px; font-size: 7px; text-align: center; }
+  .side-rail .battle-history.expanded { z-index: 20; }
+  .side-rail .battle-history ol {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: min(240px, calc(100vw - 20px));
+    max-height: min(160px, 30dvh);
+    border: 1px solid #d9a8ff52;
+    border-radius: 8px;
+    background: #1d1a2a;
+  }
+}
 
 /* Outcome figures can overlap the panel edges, behind the rewards and controls. */
 .result-dialog {
