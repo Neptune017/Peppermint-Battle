@@ -570,7 +570,27 @@
     const air=flameOutline(lick,[0,0,7,9,6,3,0],1.22);
     const melt=flameOutline(curl,[1,4,9,8,4,1,0],.96);
     const threads=flameOutline(lick,[.5,2,5,3,2,1,0],.63);
-    return `<g filter="${softenFlame()}">${path(skin,fill('jetFire'))}${path(air,fill('jetFire'))}${path(melt,fill('jetCore'))}${path(threads,fill('jetCore'))}</g>`;
+    const glint=flameOutline(curl,[.5,3,4,3,1.8,0,0],.8);
+    return `<g filter="${softenFlame()}">${path(skin,fill('jetFire'))}${path(air,fill('jetFire'))}</g>`+
+      path(melt,fill('jetCore'))+path(threads,fill('jetCore'))+path(glint,fill('jetFlash'));
+  }
+
+
+  function fireSweep(ctx, point, angle, start, size, mirrored) {
+    const {art,motion,palette,reduced}=ctx;
+    if (reduced) return;
+    const curve=path('M-48 27C-26-11 19-29 60-26C37-23 23-12 18-2C13 10 7 20-12 29C10 13 0 10-12 14C-26 20-31 35-48 27Z',palette.fill('jetFire'))+
+      path('M-42 24C-18-4 7-15 39-21C25-14 11-8 4 2C-10 15-22 27-42 24Z',palette.fill('jetCore'))+
+      path('M-30 20C-9-1 8-8 27-13C8-2-1 9-14 16Z',palette.fill('jetFlash'));
+    const sweep=art(curve,point.x,point.y,angle);
+    sweep.setAttribute('data-combat-prop','fireSweep');
+    const side=mirrored?-1:1;
+    motion(sweep,[
+      {opacity:0,transform:`rotate(${-26*side}deg) scale(${size*.38},${side*size*.46})`},
+      {opacity:.97,transform:`rotate(${10*side}deg) scale(${size},${side*size*.79})`,offset:.17},
+      {opacity:.63,transform:`translateY(-13px) rotate(${30*side}deg) scale(${size*1.23},${side*size*.63})`,offset:.52},
+      {opacity:0,transform:`translateY(-36px) rotate(${47*side}deg) scale(${size*1.53},${side*size*.32})`},
+    ],630,start,'ease-out');
   }
 
   function renderFireAir(ctx, point, start, heading, count) {
@@ -582,15 +602,16 @@
       const cloud=art(`<g filter="${palette.softenFlame()}">${oval(-19,6,41,27,palette.fill('jetSmoke'))}${oval(14,-7,39,30,palette.fill('jetSmoke'))}${oval(35,7,26,21,palette.fill('jetSmoke'))}</g>`,
         point.x+(i-1.5)*13*s,point.y+(i%2)*9);
       cloud.setAttribute('data-combat-prop','fireSmoke');
-      motion(cloud,[{opacity:0,transform:'scale(.38)'},{opacity:.65,transform:`translate(${drift*.27}px,-17px) scale(${s*.83})`,offset:.25},
-        {opacity:.51,transform:`translate(${drift*.56}px,-49px) scale(${s*1.04})`,offset:.60},
+      motion(cloud,[{opacity:0,transform:'scale(.38)'},{opacity:.45,transform:`translate(${drift*.27}px,-17px) scale(${s*.83})`,offset:.25},
+        {opacity:.36,transform:`translate(${drift*.56}px,-49px) scale(${s*1.04})`,offset:.60},
         {opacity:0,transform:`translate(${drift}px,${-83-i*6}px) rotate(${i*13-18}deg) scale(${s*1.36})`}],994+i*62,start+85+i*50,'ease-out');
     }
     for(let i=0;i<count;i++){
       const direction=heading+((i*47)%173-86)*Math.PI/180;
       const speed=(27+(i*23)%82)*s;
       const vx=Math.cos(direction)*speed,vy=Math.sin(direction)*speed;
-      const spark=art(oval(0,0,4,1.6,palette.fill('jetHeat'))+oval(0,0,1.75,.8,i%3?'#ffd687':'#ff7d34'),
+      const spark=art(oval(0,0,5.8,2.0,palette.fill('jetHeat'))+
+        path(i%5===0?'M-5 1L0-1.7 4-.4 0 1.1Z':'M-2 .6L0-.66 2.3 0 .6 1.1Z',i%3?'#ffe195':'#ff7d34'),
         point.x+(i%3-1)*8*s,point.y+(i%5-2)*4*s,direction*180/Math.PI);
       spark.setAttribute('data-combat-prop','fireSpark');
       motion(spark,[{opacity:0,transform:'scale(.61)'},{opacity:.96,transform:`translate(${vx*.38}px,${vy*.37-6}px) scale(${.84+i%4*.13})`,offset:.17},
@@ -662,6 +683,8 @@
           {opacity:0,transform:`translate(${driftX}px,${driftY-53}px) scale(${s*1.21},${s*.35}) rotate(${i%2?10:-21}deg)`}],
         685+i*37,ctx.hitAt+[0,35,8,23,56,84][i],'ease-out');
     });
+    fireSweep(ctx,point,angle-23,ctx.hitAt-13,size*.94,false);
+    fireSweep(ctx,point,angle+43,ctx.hitAt+56,size*.68,true);
     renderFireAir(ctx,point,ctx.hitAt,radians,14+ctx.baseAttack);
   }
 
@@ -685,6 +708,8 @@
         {opacity:0,transform:`translate(${drift}px,-70px) scale(${s*.66},${s*.42})`}],
         1040+i*43,impactAt-525+[130,60,0,96,164][i],'ease-out');
     });
+    fireSweep(ctx,{x:root.x,y:root.y-12},-26,impactAt-235,effectScale*.85,false);
+    fireSweep(ctx,{x:root.x+12,y:root.y-39},-156,impactAt-42,effectScale*.64,true);
     renderFireAir(ctx,{x:target.x,y:target.y+12*effectScale},impactAt-235,-Math.PI/2,10+ctx.baseAttack);
   }
 
