@@ -710,9 +710,9 @@ function cardMarkup(card, enemy = false, compact = false) {
   const stunned = frozen && card.skipAttackReason === 'stun';
   const rooted = compact && Boolean(card.cannotMoveUntilTurn && match.turn < card.cannotMoveUntilTurn);
   const euphoric = compact && Boolean(card.euphoria);
-  const statusClass = `${frozen ? (stunned ? ' status-stunned' : ' status-frozen') : ''}${rooted ? ' status-rooted' : ''}`;
+  const statusClass = `${frozen ? (stunned ? ' status-stunned' : ' status-frozen') : ''}${rooted ? ' status-rooted' : ''}${euphoric ? ' status-euphoria' : ''}`;
   const freezeBadge = frozen ? `<span class="freeze-mark ${stunned ? 'stun-mark' : ''}" title="${stunned ? 'Stunned: cannot attack next turn' : card.skipAttackNext && !card.skipAttackThisTurn ? 'Cannot attack next turn' : 'Cannot attack this turn'}">${stunned ? '✦' : '❄'}</span>` : '';
-  const euphoriaBubbles = euphoric ? `<span class="euphoria-bubbles${card.euphoriaProtected ? ' is-protected' : ''}" aria-hidden="true">${'<i></i>'.repeat(6)}</span>` : '';
+  const euphoriaBubbles = euphoric ? `<span class="euphoria-bubbles${card.euphoriaProtected ? ' is-protected' : ''}" aria-hidden="true">${'<i></i>'.repeat(8)}</span>` : '';
   const handArtClass = !compact && ['ww-academy-rick'].includes(card.id) ? ' hand-art-rick' : !compact && ['academy-lynda', 'ww-academy-lynda'].includes(card.id) ? ' hand-art-lynda' : '';
   const art = card.art ? (() => {
     const cleanArt = card.art.split('?')[0];
@@ -1647,7 +1647,7 @@ function animateShatter(source, element, variant = '') {
   overlay.style.top = `${bounds.top}px`;
   overlay.style.width = `${bounds.width}px`;
   overlay.style.height = `${bounds.height}px`;
-  const shatterDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 390 : 890;
+  const shatterDuration = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 450 : 1020;
   overlay.style.setProperty('--shatter-duration', `${shatterDuration}ms`);
   const pieces = [
     ['0 0, 50% 0, 50% 50%', -34, -43, -18], ['50% 0, 100% 0, 50% 50%', 0, -54, 14],

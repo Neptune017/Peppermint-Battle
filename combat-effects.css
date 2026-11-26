@@ -35,10 +35,10 @@
   to { opacity: .98; }
 }
 .battle-card.combat-impact, .life-card.combat-impact {
-  animation: combat-impact .37s var(--combat-impact-delay, 716ms) ease-out both;
+  animation: combat-impact .46s var(--combat-impact-delay, 882ms) ease-out both;
 }
 .battle-card.combat-ranged-release {
-  animation: combat-ranged-release .46s .15s ease-out both;
+  animation: combat-ranged-release .58s .19s ease-out both;
 }
 .battle-card.attack-lunge-up, .battle-card.attack-lunge-down { z-index: 10; }
 @keyframes combat-ranged-release {
@@ -62,6 +62,19 @@
   stroke-linecap: round;
   stroke-dasharray: .38 .62;
   filter: drop-shadow(0 0 5px var(--combat-color));
+}
+.combat-wake-core { stroke-dasharray: .21 .79; }
+.combat-wake-smoke { stroke-dasharray: .18 .82; filter: blur(1.7px); }
+.combat-wake-silk { stroke-dasharray: .48 .52; }
+.combat-wake-drops, .combat-wake-leaves { stroke-dasharray: .11 .29; }
+.combat-wake-charge { stroke-dasharray: .09 .15 .12 .64; }
+.combat-contact-light { filter: blur(9px); mix-blend-mode: screen; }
+.combat-impact-wave {
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px var(--combat-color));
+  transform-box: fill-box;
+  transform-origin: center;
 }
 .combat-painted { filter: drop-shadow(0 2px 3px #10091b66); }
 .shatter-overlay {
@@ -95,10 +108,15 @@
   100% { opacity: 0; }
 }
 
+.battle-card.status-euphoria { overflow: visible; }
+.battle-card.status-euphoria > .card-art,
+.battle-card.status-euphoria > .card-art-fallback,
+.battle-card.status-euphoria > .art-shade { border-radius: inherit; }
+.lane:has(> .status-euphoria) { z-index: 1; }
 .battle-card .euphoria-bubbles {
-  top: -31px;
-  width: min(82px, 76%);
-  height: 37px;
+  top: -32px;
+  width: 108%;
+  height: 43px;
   z-index: 14;
   overflow: visible;
   --bubble-edge: #ffc672;
@@ -126,18 +144,20 @@
   box-shadow: inset 0 0 4px #fff5cd85, 0 0 5px #e5ad9a77;
   animation: combat-mead-rise var(--bubble-duration) ease-out var(--bubble-delay) infinite;
 }
-.battle-card .euphoria-bubbles i:nth-child(1) { --bubble-left: 12%; --bubble-size: 8px; --bubble-drift: -7px; --bubble-duration: 1.86s; --bubble-delay: -.83s; }
-.battle-card .euphoria-bubbles i:nth-child(2) { --bubble-left: 26%; --bubble-size: 14px; --bubble-drift: -5px; --bubble-duration: 2.3s; --bubble-delay: -1.31s; }
-.battle-card .euphoria-bubbles i:nth-child(3) { --bubble-left: 47%; --bubble-size: 11px; --bubble-drift: 6px; --bubble-duration: 1.91s; --bubble-delay: -.24s; }
-.battle-card .euphoria-bubbles i:nth-child(4) { --bubble-left: 67%; --bubble-size: 15px; --bubble-drift: 10px; --bubble-duration: 2.46s; --bubble-delay: -1.85s; }
-.battle-card .euphoria-bubbles i:nth-child(5) { --bubble-left: 82%; --bubble-size: 7px; --bubble-drift: 14px; --bubble-duration: 1.64s; --bubble-delay: -.62s; }
-.battle-card .euphoria-bubbles i:nth-child(6) { --bubble-left: 40%; --bubble-size: 5px; --bubble-drift: -11px; --bubble-duration: 1.55s; --bubble-delay: -1.09s; }
+.battle-card .euphoria-bubbles i:nth-child(1) { --bubble-left: 12%; --bubble-size: 8px; --bubble-drift: -7px; --bubble-duration: 2.39s; --bubble-delay: -.83s; }
+.battle-card .euphoria-bubbles i:nth-child(2) { --bubble-left: 26%; --bubble-size: 14px; --bubble-drift: -5px; --bubble-duration: 2.98s; --bubble-delay: -1.31s; }
+.battle-card .euphoria-bubbles i:nth-child(3) { --bubble-left: 47%; --bubble-size: 11px; --bubble-drift: 6px; --bubble-duration: 2.41s; --bubble-delay: -.24s; }
+.battle-card .euphoria-bubbles i:nth-child(4) { --bubble-left: 67%; --bubble-size: 15px; --bubble-drift: 10px; --bubble-duration: 3.07s; --bubble-delay: -1.85s; }
+.battle-card .euphoria-bubbles i:nth-child(5) { --bubble-left: 82%; --bubble-size: 7px; --bubble-drift: 14px; --bubble-duration: 2.18s; --bubble-delay: -.62s; }
+.battle-card .euphoria-bubbles i:nth-child(6) { --bubble-left: 40%; --bubble-size: 5px; --bubble-drift: -11px; --bubble-duration: 2.08s; --bubble-delay: -1.09s; }
+.battle-card .euphoria-bubbles i:nth-child(7) { --bubble-left: 3%; --bubble-size: 11px; --bubble-drift: -25px; --bubble-duration: 2.59s; --bubble-delay: -1.4s; }
+.battle-card .euphoria-bubbles i:nth-child(8) { --bubble-left: 91%; --bubble-size: 14px; --bubble-drift: 23px; --bubble-duration: 2.71s; --bubble-delay: -.45s; }
 @keyframes combat-mead-rise {
   0% { opacity: 0; transform: translate(0, 14px) scale(.43); }
   23% { opacity: .97; }
-  73% { opacity: .92; transform: translate(var(--bubble-drift), -18px) scale(1.05); }
-  80% { opacity: 1; transform: translate(var(--bubble-drift), -22px) scale(1.16); }
-  86%, 100% { opacity: 0; transform: translate(var(--bubble-drift), -25px) scale(1.24); }
+  73% { opacity: .92; transform: translate(var(--bubble-drift), -39px) scale(1.05); }
+  80% { opacity: 1; transform: translate(var(--bubble-drift), -47px) scale(1.16); }
+  86%, 100% { opacity: 0; transform: translate(var(--bubble-drift), -51px) scale(1.24); }
 }
 @media (prefers-reduced-motion: reduce) {
   .battle-card .euphoria-bubbles i { animation: none; transform: translateY(-9px); }

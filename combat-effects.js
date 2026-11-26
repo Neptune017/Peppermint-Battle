@@ -25,12 +25,20 @@
     'arrow', 'bolt', 'book', 'coil', 'drop', 'eye', 'feather', 'flame', 'gem', 'note', 'pen',
     'portal', 'rabbit', 'shot', 'staff', 'sun', 'veil', 'wave', 'whirl',
   ]);
+  const closeMoves = {
+    hammer: [.12, .03, .41], axe: [.09, .16, .37], scythe: [.06, -.21, .32],
+    kick: [.07, .22, .24], claw: [.04, -.12, .23], shield: [.14, .04, .40],
+    sword: [.075, -.17, .29], rapier: [.15, .02, .38], umbrella: [.10, .13, .36],
+    piston: [.14, .015, .32], horn: [.16, .065, .37], leap: [.06, .24, .27],
+  };
   function isRanged(card) {
     const lead = window.peppermintCombatRecipes[card?.id]?.strike.split('+')[0];
-    return card?.role === 'Shooter' || rangedMotifs.has(lead);
+    if (card?.role === 'Brawler') return false;
+    if (card?.role === 'Shooter') return true;
+    return rangedMotifs.has(lead) || ['ip-natsuki', 'ip-coyote', 'ip-coyote-zodiac'].includes(card?.id);
   }
-  const attackImpactTime = 740;
-  const attackResolutionTime = attackImpactTime + 190;
+  const attackImpactTime = 910;
+  const attackResolutionTime = attackImpactTime + 240;
   const layers = new Set();
   const noiseByContext = new WeakMap();
 
@@ -137,18 +145,19 @@
     const signature = seedFor(`${card.id}:${kind}`);
     const [lead, mark] = (attack ? recipe.strike : recipe.skill).split('+');
     const theme = reference.describe(card, kind, lead, mark);
+    const projectile = window.peppermintProjectiles.profile(card, kind, lead, mark, signature);
     const candy = theme.impact === 'candy';
     const sharedField = !attack && sharedFields.has(card.id);
     const baseAttack = Number.isFinite(card.attack) ? Math.max(0, Math.min(8, card.attack)) : 0;
     const power = (sharedField ? 1.12 : 1) + baseAttack * .038;
     const viewportScale = Math.max(.78, Math.min(1, window.innerWidth / 450, window.innerHeight / 680));
-    const effectScale = (1.21 + baseAttack * .085) * viewportScale;
-    const projectileScale = (1.20 + baseAttack * .074) * viewportScale;
-    const impactAt = attack ? attackImpactTime : sharedField ? 665 : 520;
+    const effectScale = (1.24 + baseAttack * .115) * viewportScale;
+    const projectileScale = (1.19 + baseAttack * .10) * viewportScale;
+    const impactAt = attack ? attackImpactTime : sharedField ? 810 : 645;
     const weaponScale = Math.min(1.27, Math.max(.74, origin.h / 146)) * effectScale;
     const prepared = Math.round(impactAt * .45);
     const moveDuration = attackResolutionTime - 23;
-    const burstDuration = reduced ? 360 : (candy ? 1100 : 715) + baseAttack * 22;
+    const burstDuration = reduced ? 425 : (candy ? 1280 : 875) + baseAttack * 28;
     const color = candy ? '#fc57a9' : recipe.color;
     const layer = svgNode('svg', { class: 'combat-fx-layer', 'aria-hidden': 'true', viewBox: `0 0 ${window.innerWidth} ${window.innerHeight}` }, document.body);
     layer.style.setProperty('--combat-color', color);
@@ -171,7 +180,7 @@
 
     if (sharedField && !reduced) {
       const haze = svgNode('ellipse', { cx: first.x, cy: first.y, rx: Math.min(window.innerWidth * .28, 380), ry: Math.min(window.innerHeight * .23, 200), class: 'combat-fx-haze' }, layer);
-      motion(haze, [{ opacity: 0 }, { opacity: .17 }, { opacity: 0 }], 1080);
+      motion(haze, [{ opacity: 0 }, { opacity: .17 }, { opacity: 0 }], 1320);
     }
     if (weapon && !melee) {
       const prop = painted(layer, weapon, origin.x, origin.y, weaponAngle);
@@ -180,7 +189,7 @@
         { opacity: 1, transform: `translateY(0) scale(${weaponScale})`, offset: .35 },
         { opacity: .94, transform: `translateY(0) scale(${weaponScale})`, offset: .73 },
         { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
-      ], prepared + 240);
+      ], prepared + 280);
     }
     if (!weapon && !reduced) {
       const swell = painted(layer, palette.paint(theme.flight, 'projectile', signature, lead), origin.x, origin.y, facing);
@@ -188,7 +197,7 @@
         { opacity: 0, transform: `scale(${projectileScale * .30})` },
         { opacity: .86, transform: `scale(${projectileScale})`, offset: .6 },
         { opacity: 0, transform: `scale(${projectileScale * 1.24})` },
-      ], prepared + 90);
+      ], prepared + 120);
     }
 
     destinations.forEach(({ box: target, element: cardElement }, index) => {
@@ -201,13 +210,22 @@
       const hitAt = impactAt + delay;
       if (melee && distance > 12 && !reduced) {
         const reach = Math.max(.22, 1 - Math.min(distance * .7, Math.min(origin.h, target.h) * .45) / distance);
-        const thrust = `translate(${dx * reach}px, ${dy * reach}px)`;
-        source?.animate?.([
-          { transform: 'translate(0, 0)', filter: 'brightness(1)' },
-          { transform: `translate(${-dx * .045}px, ${-dy * .045}px)`, offset: .36 },
-          { transform: `${thrust} scale(1.06)`, filter: 'brightness(1.26)', offset: impactAt / moveDuration },
-          { transform: 'translate(0, 0)', filter: 'brightness(1)' },
-        ], { duration: moveDuration, easing: 'cubic-bezier(.3,.69,.34,1)' });
+        const [back, bend, hold] = closeMoves[lead] || [.08, -.075, .32];
+        const flex = back * (.8 + signature % 21 / 40);
+        const feint = Math.min(70, distance * Math.abs(bend)) * Math.sign(bend) * (signature & 1 ? 1 : -1);
+        const approach = .54 + ((signature >>> 8) % 13) * .01;
+        const line = [
+          { transform: 'translate(0, 0)' },
+          { transform: `translate(${-dx * flex}px, ${-dy * flex}px)`, offset: hold },
+          { transform: `translate(${dx * reach * approach - Math.sin(rotation) * feint}px, ${dy * reach * approach + Math.cos(rotation) * feint}px)`, offset: .64 },
+          { transform: `translate(${dx * reach}px, ${dy * reach}px)`, offset: impactAt / moveDuration },
+          { transform: 'translate(0, 0)' },
+        ];
+        const contactScale = 1.04 + baseAttack * .008;
+        source?.animate?.(line.map((frame, index) => index === 3
+          ? { ...frame, transform: `${frame.transform} scale(${contactScale})`, filter: 'brightness(1.26)' }
+          : frame
+        ), { duration: moveDuration, easing: 'linear' });
         if (weapon) {
           const carried = svgNode('g', { class: 'combat-carried' }, layer);
           const prop = painted(carried, weapon, origin.x, origin.y, weaponAngle);
@@ -217,56 +235,91 @@
             { opacity: 1, transform: `rotate(${spread * 1.1}deg) scale(${weaponScale})`, offset: .82 },
             { opacity: 0, transform: `rotate(${spread * 2}deg) scale(${weaponScale})` },
           ], moveDuration);
-          motion(carried, [
-            {transform:'translate(0, 0)'}, {transform:`translate(${-dx*.045}px, ${-dy*.045}px)`,offset:.36},
-            {transform:thrust,offset:impactAt/moveDuration},{transform:'translate(0, 0)'},
-          ], moveDuration);
+          motion(carried, line, moveDuration, 0, 'linear');
         }
       } else if (!reduced && distance > 16) {
-        const direct = ['arrow', 'shot', 'bolt'].includes(lead);
+        const direct = projectile.curve === 0;
         const setback = candy ? Math.min(distance * .53, 49 * weaponScale) : weapon && !direct ? Math.min(distance * .35, 34 * weaponScale) : 0;
         const x = origin.x + Math.cos(rotation) * setback;
         const y = origin.y + Math.sin(rotation) * setback;
         const travelX = target.x - x;
         const travelY = target.y - y;
-        const bend = direct ? 0 : (signature % 2 ? -1 : 1) * Math.min(candy ? 41 : 59, distance * (candy ? .15 : .13));
+        const bend = (signature % 2 ? -1 : 1) * Math.min(candy ? 59 : 78, distance * projectile.curve);
         const mx = travelX*.52 - Math.sin(rotation)*bend;
         const my = travelY*.52 + Math.cos(rotation)*bend;
         const travel = hitAt - prepared - delay;
-        const width = (candy ? 6 : direct ? 2.1 : 4.5) * projectileScale;
-        const ribbon = svgNode('path', {
-          class: 'combat-flight-ribbon', d: `M${x} ${y}Q${x + mx*2 - travelX*.5} ${y + my*2 - travelY*.5} ${target.x} ${target.y}`,
-          pathLength: 1, stroke: color, 'stroke-width': width,
-        }, layer);
-        motion(ribbon, [
-          { opacity: 0, strokeDashoffset: 1 }, { opacity: candy ? .69 : .67, strokeDashoffset: .27, offset: .59 },
-          { opacity: 0, strokeDashoffset: -.25 },
-        ],travel+125,prepared+delay,'linear');
+        const width = (candy ? 7 : direct ? 2.8 : 4.9) * projectileScale;
+        const trace = `M${x} ${y}Q${x + mx*2 - travelX*.5} ${y + my*2 - travelY*.5} ${target.x} ${target.y}`;
+        const wakeLayers = baseAttack >= 4 ? 3 : 2;
+        for (let i = 0; i < wakeLayers; i++) {
+          const ribbon = svgNode('path', {
+            class: `combat-flight-ribbon combat-wake-${projectile.wake}${i ? ' combat-wake-core' : ''}`,
+            d: trace, pathLength: 1, stroke: i ? theme.hot : color, 'stroke-width': width * (i ? .32 : 1),
+            transform: `translate(${i * Math.sin(rotation) * 2} ${i * -Math.cos(rotation) * 2})`,
+          }, layer);
+          motion(ribbon, [
+            { opacity: 0, strokeDashoffset: 1 }, { opacity: i ? .86 : .64, strokeDashoffset: .27, offset: .64 },
+            { opacity: 0, strokeDashoffset: -.31 },
+          ], travel + 165, prepared + delay + i * 20, 'linear');
+        }
         const traveller = svgNode('g', {}, layer);
-        painted(traveller, palette.missile(lead, theme.flight, signature), x, y, deg)
-          .setAttribute('transform', `scale(${projectileScale})`);
+        const body = painted(traveller, palette.missile(projectile, theme.flight), x, y, deg);
+        body.setAttribute('transform', `scale(${projectileScale})`);
+        const swing = projectile.swing;
+        motion(body, [
+          { transform: `scale(${projectileScale * .89}) rotate(${-swing * .35}deg)` },
+          { transform: `scale(${projectileScale}) rotate(${swing * .35}deg)`, offset: .53 },
+          { transform: `scale(${projectileScale}) rotate(${swing}deg)` },
+        ], travel, prepared + delay, 'linear');
         motion(traveller, [
           { opacity: 0, transform: 'translate(0, 0)' },
+          { opacity: .93, transform: `translate(${mx * .27}px, ${my * .27}px)`, offset: .14 },
           { opacity: 1, transform: `translate(${mx}px, ${my}px)`, offset: .52 },
           { opacity: .93, transform: `translate(${travelX}px, ${travelY}px)` },
         ], travel, prepared + delay, 'linear');
-        window.setTimeout(() => traveller.remove(), hitAt + 4);
-        if (candy) {
-          for (let i = 0; i < 5; i++) {
-            const drop = painted(layer, palette.particle('candy', i), x, y, deg - 90);
-            const fraction = .16 + i * .145;
-            const offset = (i % 2 ? -1 : 1) * (9 + i);
-            motion(drop, [
-              { opacity: .87, transform: `translate(${travelX * fraction}px, ${travelY * fraction}px) scale(.34)` },
-              { opacity: 0, transform: `translate(${travelX * fraction - Math.sin(rotation) * offset}px, ${travelY * fraction + Math.cos(rotation) * offset}px) scale(.15)` },
-            ],240,prepared+delay+travel*fraction);
-            drop.style.opacity = '0';
-          }
+        window.setTimeout(() => traveller.remove(), hitAt + 6);
+        const wakeMaterial = { leaves: 'growth', frost: 'ice', water: 'water', drops: theme.flight, smoke: 'dark', ember: 'fire' }[projectile.wake] || theme.flight;
+        const trailFragments = (candy ? 6 : 3) + Math.floor(baseAttack / 2);
+        for (let i = 0; i < trailFragments; i++) {
+          const speck = painted(layer, palette.particle(wakeMaterial, i), x, y, deg - 90);
+          const fraction = (i + 1) / (trailFragments + 1);
+          const offset = (i % 2 ? -1 : 1) * (11 + (i % 3) * 4) * projectileScale;
+          const vx = travelX * fraction - Math.sin(rotation) * bend * Math.sin(fraction * Math.PI);
+          const vy = travelY * fraction + Math.cos(rotation) * bend * Math.sin(fraction * Math.PI);
+          motion(speck, [
+            { opacity: 0, transform: `translate(${vx}px, ${vy}px) scale(.18)` },
+            { opacity: .78, transform: `translate(${vx}px, ${vy}px) scale(${.28 * projectileScale})`, offset: .2 },
+            { opacity: 0, transform: `translate(${vx - Math.sin(rotation) * offset}px, ${vy + Math.cos(rotation) * offset}px) scale(.09)` },
+          ], 310, prepared + delay + travel * fraction);
         }
+      } else if (reduced && attack && !melee) {
+        const body = painted(layer, palette.missile(projectile, theme.flight),
+          target.x - Math.cos(rotation) * 28, target.y - Math.sin(rotation) * 28, deg);
+        body.setAttribute('transform', `scale(${projectileScale * .65})`);
+        motion(body, [{ opacity: 0 }, { opacity: .86 }, { opacity: 0 }], 380, hitAt - 275);
       }
 
       const scale = Math.min(1.47, Math.max(.76, Math.max(target.w, target.h) / 118)) * effectScale * (sharedField ? 1.12 : 1);
       const rotationAtImpact = candy || ['growth','ice','fire'].includes(theme.impact) ? 0 : deg * .4;
+      if (!reduced) {
+        const light = svgNode('ellipse', {
+          class: 'combat-contact-light', cx: target.x, cy: target.y,
+          rx: 39 * scale, ry: 27 * scale, fill: theme.hot,
+        }, layer);
+        motion(light, [{ opacity: 0 }, { opacity: .29 + baseAttack * .04, offset: .19 }, { opacity: 0 }], 320, hitAt - 40);
+        const volume = 19 + scale * 34;
+        const waves = 1 + Math.floor(baseAttack / 3);
+        for (let i = 0; i < waves; i++) {
+          const wave = svgNode('path', {
+            class: 'combat-impact-wave', stroke: i % 2 ? color : theme.hot, 'stroke-width': Math.max(1.5, 1.1 * scale),
+            d: `M${target.x - volume} ${target.y + 12}q${volume * .43} ${-volume * .86} ${volume * 1.28} ${-volume * .60}m${-volume*.05} ${volume*.9}q${volume*.73} ${-volume*.25} ${volume*.85} ${-volume*.86}`,
+          }, layer);
+          motion(wave, [
+            { opacity: 0, transform: 'scale(.69)' }, { opacity: .48, offset: .18 },
+            { opacity: 0, transform: `scale(${1.35 + baseAttack * .07})` },
+          ], 475 + baseAttack * 22, hitAt + i * 72 - 20);
+        }
+      }
       const burst = painted(layer, palette.paint(theme.impact, 'impact', signature, mark), target.x, target.y, rotationAtImpact);
       const impactMotion = candy ? [
         {opacity:0, transform:`scale(${scale*.12},${scale*.86})`},
@@ -288,7 +341,7 @@
           { filter: 'brightness(1)', transform: 'scale(1)' },
           { filter: 'brightness(1.29)', transform: `scale(${protecting ? 1.035 : .975})` },
           { filter: 'brightness(1)', transform: 'scale(1)' },
-        ], { duration: 320, delay: hitAt, easing: 'ease-out' });
+        ], { duration: 390, delay: hitAt, easing: 'ease-out' });
       }
       const particles = (candy ? 20 : theme.impact === 'ice' ? 15 : 8 + signature % 5) + Math.round(baseAttack * 1.65);
       for (let i = 0; i < particles; i++) {
@@ -302,7 +355,7 @@
           { opacity: 0, transform: 'translate(0, 0) scale(.16)' },
           { opacity: .96, transform: `translate(${x*.6}px, ${y*.71}px) scale(${sparkScale})`, offset: .23 },
           { opacity: 0, transform: `translate(${x}px, ${y + (candy ? 42 : 14)}px) scale(${sparkScale*.46})` },
-        ], (candy ? 650 : 410) + baseAttack * 15 + i * 8, hitAt + i * 4);
+        ], (candy ? 775 : 510) + baseAttack * 18 + i * 9, hitAt + i * 5);
       }
     });
     try { sound(audio, recipe, signature, attack, prepared, impactAt, power, candy); } catch { /* Visual feedback can run on its own. */ }

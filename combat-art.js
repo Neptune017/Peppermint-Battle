@@ -308,13 +308,8 @@
         path('M-10 8L8-7','none','#fff0b2',.65);
       return path('M-2 5C-8 3-4-5 3-10Q2-6 7-4Q10 6-2 5Z',fill(index%3?'core':'flame'));
     }
-    function missile(motif, material, seed) {
-      if (motif==='arrow' || motif==='shot') {
-        return path(motif==='arrow'?'M-49-2H31L29-9 51 0 29 9 31 2H-49Z':'M-24-4Q10-9 31 0Q10 9-24 4Z',fill('gold'),hot,.7) +
-          (motif==='arrow'?path('M-48-2L-59-9-47-7-40-2M-48 2L-59 9-47 7-40 2',fill('pearlCloth'),'#ffd9bb',.65):'') +
-          path('M-65-2Q-34-10-14 0Q-40 10-65-2Z',fill('flame'));
-      }
-      return paint(material, 'projectile', seed, motif);
+    function missile(spec, material) {
+      return window.peppermintProjectiles.drawing(spec, material, { fill, accent: color, highlight: hot });
     }
     return { weapon, paint, particle, missile };
   }
