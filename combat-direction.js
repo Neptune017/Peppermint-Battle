@@ -26,7 +26,7 @@ horatio swarm/feathers/harp bloom/leaves/rustle
 vishnu ribbon/folds/shadow implosion/facets/crystal
 brewy sling/drops/boil brew/sugar/pour
 mana-potion - fountain/drops/water
-health-potion - fountain/facets/chime
+health-potion - healing/crystalRenewal/healthGlass
 patchy swing/cloth/fabric stitch/threads/fabric
 zesty beam/sugar/chime portal/syrup/syrup
 zomby swing/gashes/cloth stitch/folds/fabric
@@ -89,11 +89,11 @@ lt-scribble ribbon/sugar/paper pages/folds/paper
 lt-clary swing/threads/steel stitch/feathers/fabric
 lt-fritz score/threads/flute chains/mask/chain
 lt-rat-king chains/gashes/chain curtain/plates/shadow
-lt-boxy sling/shell/gears hatch/plates/gears
+lt-boxy sling/shell/gears sendParcel/parcelArrival/parcel
 lt-teddy swing/cloth/fabric stitch/fault/fabric
 lt-broomy gale/splinters/air portal/whorl/shadow
 lt-melodoll score/notes/harp fountain/threads/harp
-lt-clapster beam/plates/pulse stamp/circuit/gears
+lt-clapster cymbals/cymbalRings/cymbals stamp/circuit/gears
 lt-beatcracker slam/ripples/drum gate/marks/drum
 lt-zodiac-fritz curtain/notes/flute trap/mask/shadow
 lt-raterrot swing/gashes/claws chains/facets/chain
@@ -103,7 +103,7 @@ lt-wind-up-toy - windup/coil/windup
 lt-toy-capsule - hatch/shell/ceramic
 drinking-tea - serving/steam/tea
 christmas-mall - carousel/sleet/bells
-academy-diamond kettles/windShear/tea serving/drift/tea
+academy-diamond gale/windShear/air gale/drift/air
 academy-topaz raijin/wireStrike/raijin score/sparkComb/electric
 academy-dimitri swing/sleet/ice pages/facets/paper
 wb-topaz-diamond kettles/porcelain/tea kettles/tea/tea
@@ -137,7 +137,7 @@ valhalla-ryota beam/roar/fire implosion/embers/solar
 valhalla-sabrina swing/thunderPunch/thunder armor/grounding/thunder
 valhalla-sloetunn slam/embers/metal trap/fault/fire
 valhalla-wendy swing/feathers/steel tavern/folds/shadow
-valhalla-meadsting lash/sun/whistle serving/leaves/tea
+valhalla-meadsting lash/sun/whistle tavern/leaves/boil
 valkyries-mead - tavern/foam/splash
 golden-egg-flatbread - forge/shell/ceramic
 training - target/marks/wood

@@ -27,7 +27,7 @@
     if (card?.role === 'Brawler') return false;
     if (card?.role === 'Shooter') return true;
     const scene = window.peppermintCombatDirection[card?.id]?.strike?.move;
-    return ['raijin','mirrors','beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
+    return ['cymbals','raijin','mirrors','beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
   }
   const attackImpactTime = 910;
   const attackResolutionTime = attackImpactTime + 240;
@@ -51,10 +51,6 @@
     return box?.width && box?.height ? { x: box.left + box.width / 2, y: box.top + box.height / 2, w: box.width, h: box.height } : null;
   }
 
-  function motion(node, frames, duration, delay = 0, easing = 'cubic-bezier(.18,.65,.27,1)') {
-    node.animate?.(frames, { delay, duration, easing, fill: 'both' });
-  }
-
   function painted(parent, drawing, x, y, rotation = 0) {
     const position = svgNode('g', { transform: `translate(${x} ${y}) rotate(${rotation})` }, parent);
     const art = svgNode('g', { class: 'combat-painted' }, position);
@@ -62,7 +58,14 @@
     return art;
   }
 
-  function play({ card, kind = 'skill', source, targets = [], audio }) {
+  function play({ card, kind = 'skill', source, targets = [], audio, onImpact }) {
+    const clock = () => window.performance?.now() ?? 0;
+    const startedAt = clock();
+    const timelineStart = document.timeline?.currentTime;
+    const motion = (node, frames, duration, delay = 0, easing = 'cubic-bezier(.18,.65,.27,1)') => {
+      const animation = node.animate?.(frames, { delay, duration, easing, fill: 'both' });
+      if (animation && timelineStart != null) animation.startTime = timelineStart;
+    };
     const recipe = window.peppermintCombatRecipes[card?.id];
     const reference = window.peppermintCombatArt;
     const start = frame(source);
@@ -141,14 +144,13 @@
       ], prepared + 120);
     }
 
-    destinations.forEach(({ box: target, element: cardElement }, index) => {
+    destinations.forEach(({ box: target, element: cardElement }) => {
       const dx = target.x - origin.x;
       const dy = target.y - origin.y;
       const distance = Math.hypot(dx, dy);
       const rotation = Math.atan2(dy, dx);
       const deg = rotation * 180 / Math.PI;
-      const delay = Math.min(index * 48, 96);
-      const hitAt = impactAt + delay;
+      const hitAt = impactAt;
       const sceneContext = { ...scene, special, hitAt, scale: effectScale };
       const performed = scenes.choreograph(sceneContext, target, deg, missile);
       if (melee && distance > 12 && !reduced) {
@@ -190,7 +192,7 @@
         const bend = (signature % 2 ? -1 : 1) * Math.min(candy ? 59 : 78, distance * projectile.curve);
         const mx = travelX*.52 - Math.sin(rotation)*bend;
         const my = travelY*.52 + Math.cos(rotation)*bend;
-        const travel = hitAt - prepared - delay;
+        const travel = hitAt - prepared;
         const width = (candy ? 7 : direct ? 2.8 : 4.9) * projectileScale;
         const trace = `M${x} ${y}Q${x + mx*2 - travelX*.5} ${y + my*2 - travelY*.5} ${target.x} ${target.y}`;
         const wakeLayers = baseAttack >= 4 ? 3 : 2;
@@ -203,7 +205,7 @@
           motion(ribbon, [
             { opacity: 0, strokeDashoffset: 1 }, { opacity: i ? .86 : .64, strokeDashoffset: .27, offset: .64 },
             { opacity: 0, strokeDashoffset: -.31 },
-          ], travel + 165, prepared + delay + i * 20, 'linear');
+          ], travel + 165, prepared + i * 20, 'linear');
         }
         const traveller = svgNode('g', {}, layer);
         const body = painted(traveller, missile, x, y, deg);
@@ -213,13 +215,13 @@
           { transform: `scale(${projectileScale * .89}) rotate(${-swing * .35}deg)` },
           { transform: `scale(${projectileScale}) rotate(${swing * .35}deg)`, offset: .53 },
           { transform: `scale(${projectileScale}) rotate(${swing}deg)` },
-        ], travel, prepared + delay, 'linear');
+        ], travel, prepared, 'linear');
         motion(traveller, [
           { opacity: 0, transform: 'translate(0, 0)' },
           { opacity: .93, transform: `translate(${mx * .27}px, ${my * .27}px)`, offset: .14 },
           { opacity: 1, transform: `translate(${mx}px, ${my}px)`, offset: .52 },
           { opacity: .93, transform: `translate(${travelX}px, ${travelY}px)` },
-        ], travel, prepared + delay, 'linear');
+        ], travel, prepared, 'linear');
         window.setTimeout(() => traveller.remove(), hitAt + 6);
         const wakeMaterial = { leaves: 'growth', frost: 'ice', water: 'water', drops: theme.flight, smoke: 'dark', ember: 'fire' }[projectile.wake] || theme.flight;
         const trailFragments = (candy ? 6 : 3) + Math.floor(baseAttack / 2);
@@ -233,7 +235,7 @@
             { opacity: 0, transform: `translate(${vx}px, ${vy}px) scale(.18)` },
             { opacity: .78, transform: `translate(${vx}px, ${vy}px) scale(${.28 * projectileScale})`, offset: .2 },
             { opacity: 0, transform: `translate(${vx - Math.sin(rotation) * offset}px, ${vy + Math.cos(rotation) * offset}px) scale(.09)` },
-          ], 310, prepared + delay + travel * fraction);
+          ], 310, prepared + travel * fraction);
         }
       } else if (reduced && attack && !melee) {
         const body = painted(layer, missile,
@@ -257,6 +259,7 @@
         aer: theme.aer, fist: Boolean(fist), finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
       });
     } catch { /* Visual feedback remains available without audio. */ }
+    if (onImpact) window.setTimeout(onImpact, Math.max(0, impactAt - (clock() - startedAt)));
     return duration;
   }
 

@@ -75,7 +75,26 @@
     }
 
     const beats = window.peppermintCombatScenes.beats[mode];
-    if (mode === 'raijin') {
+    if (mode==='cymbals') {
+      const hit=t-window.peppermintCombatScenes.cymbalLead/1000;
+      texture(hit-.055,.15,2450,6020,.08,3.0);
+      texture(hit,.67,8320,2940,.163*weight,2.4);
+      [740,1183,1928,2741,4633].forEach((hz,i)=>sweep(hit+i*.003,.61-i*.072,hz,hz*(1-i*.004),.08*weight/(1+i*.27)));
+      texture(t,.31,3880,1140,.100,2.1);
+      sweep(t,.25,191,63,.081*weight,'triangle');
+    } else if (mode==='parcel') {
+      texture(t-.78,.56,3290,1660,.071,1.4);
+      sweep(t-.57,.51,430,119,.073);
+      texture(t-.015,.145,1910,429,.11,2.9);
+      resonator(t,138,.22,.095,'wood');
+      sweep(t+.04,.25,151,40,.066,'triangle');
+    } else if (mode==='healthGlass') {
+      resonator(t-.59,998,.37,.099,'glass');
+      texture(t-.39,.41,1310,473,.075,3.0);
+      sweep(t-.32,.22,640,330,.055);
+      [note(74),note(78),note(81),note(86)].forEach((hz,i)=>resonator(t+i*.041,hz,.57,.098/(1+i*.25),'glass'));
+      sweep(t,.28,151,77,.075,'triangle');
+    } else if (mode === 'raijin') {
       beats.forEach((before, i) => {
         const at = t - before / 1000, skin = [114, 147, 86][i] - baseAttack * 1.35;
         sweep(at, .35 + i * .05, skin * 1.75, skin * .48, (.16 + i * .04) * weight, 'triangle');

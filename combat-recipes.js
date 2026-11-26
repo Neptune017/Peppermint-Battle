@@ -25,7 +25,7 @@ horatio staff+wing wing+leaf harp ffe18a
 vishnu veil+whirl gem+veil choir 8e9dff
 brewy flask+drop flask+steam bubble e2abff
 mana-potion - flask+orbit water 70dcff
-health-potion - flask+heart chime ffe79a
+health-potion - flask+heart chime ff4e79
 patchy stitch+leaf stitch+heart fabric b8e18a
 zesty sun+candy candy+portal chime ffbf55
 zomby stitch+claw stitch+portal choir c5a1ff

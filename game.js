@@ -221,6 +221,7 @@ const match = { turn: 1, turnSerial: 0, active: 'player', energy: 1, maxEnergy: 
 let mainLifeChainState = { player: null, opponent: null };
 const battleHistory = [];
 let activeCombatCue = null;
+let resolvingStrike = false;
 
 let rivalAnimations = null;
 
@@ -254,8 +255,12 @@ async function finishRivalAnimations(queue) {
 
 function playCombatCue(options) {
   const effects = window.peppermintCombatEffects;
-  if (!effects) return false;
-  if (!currentRivalAnimations()) return effects.play(options);
+  const present = (cue) => {
+    const duration = effects?.play(cue) || false;
+    if (!duration) cue.onImpact?.();
+    return duration;
+  };
+  if (!currentRivalAnimations()) return present(options);
   // A previous animation may outlast the DOM nodes describing a card that just left play.
   const capture = (element) => {
     const rect = element?.getBoundingClientRect?.() ?? element;
@@ -263,7 +268,7 @@ function playCombatCue(options) {
   };
   const source = capture(options.source);
   const targets = options.targets.map(capture);
-  queueRivalAnimation(() => effects.play({ ...options, source: source(), targets: targets.map((target) => target()) }));
+  queueRivalAnimation(() => present({ ...options, source: source(), targets: targets.map((target) => target()) }));
   return true;
 }
 
@@ -318,7 +323,7 @@ function followCombatCue(cue, perform) {
     return perform();
   } finally {
     activeCombatCue = previous;
-    if (!cue.shown) {
+    if (!cue.shown && !cue.waitingForChoice) {
       const after = combatSnapshot();
       const teams = [match.player, match.opponent];
       const targets = after.lanes.flatMap((stamp, index) => stamp !== before.lanes[index]
@@ -329,21 +334,14 @@ function followCombatCue(cue, perform) {
       if (before.field !== after.field) targets.push(document.getElementById('field-zone'));
       if (cue.card.id === 'mana-potion' && before.energy !== after.energy) targets.push(document.querySelector('.energy'));
       const sceneTargets = cue.sceneTargets || targets.filter(Boolean);
-      if (sceneTargets.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
+      if (sceneTargets.length || cue.shatters?.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
         cue.shown = true;
         playCombatCue({
           card: cue.card, source, kind: cue.kind, targets: sceneTargets, audio: soundContext,
+          onImpact: cue.shatters?.length ? () => {
+            if (cue.owner === match.player || cue.owner === match.opponent) cue.shatters.forEach((shatter) => shatter());
+          } : undefined,
         });
-        if (cue.afterContact?.length) {
-          const direction = window.peppermintCombatDirection?.[cue.card.id]?.[cue.kind];
-          const lead = cue.card.id === 'ww-bounty-raid' ? 135 : 32;
-          const contact = (window.peppermintCombatScenes?.productionTime(direction, false, false) ?? 0) - lead;
-          const present = () => {
-            if (cue.owner === match.player || cue.owner === match.opponent) cue.afterContact.forEach((animate) => animate());
-          };
-          if (currentRivalAnimations()) present();
-          else window.setTimeout(present, Math.max(0, contact));
-        }
       }
     }
   }
@@ -483,6 +481,7 @@ function beginMatch({ playerDeckId, opponentDeckId, collectionOnly, tutorialMode
   pendingAiSummons.clear();
   aiSummonAnimationTail = Promise.resolve();
   window.peppermintCombatEffects?.clear();
+  document.querySelectorAll('.shatter-overlay').forEach((overlay) => overlay.remove());
   mainLifeChainState = { player: null, opponent: null };
   handOverflowOpen = false;
   pendingEndTurnAfterDiscard = false;
@@ -1267,7 +1266,11 @@ function chooseEffect(owner, title, copy, choices, callback) {
     return `<button class="effect-option" data-choice="${index}">${art}<span class="effect-option-copy"><strong>${escapeHTML(choice.label)}</strong><small>${escapeHTML(choice.detail || '')}</small></span>${stats}</button>`;
   }).join('');
   const cue = activeCombatCue;
-  pendingEffectChoice = cue ? (value) => followCombatCue(cue, () => callback(value)) : callback;
+  if (cue) cue.waitingForChoice = true;
+  pendingEffectChoice = cue ? (value) => {
+    cue.waitingForChoice = false;
+    return followCombatCue(cue, () => callback(value));
+  } : callback;
   chooseEffect.choices = choices; document.getElementById('effect-dialog').showModal();
 }
 function cardForEffectChoice(choice, owner = null, context = '') {
@@ -1686,15 +1689,24 @@ function animateShatter(source, element, variant = '') {
     shard.style.animationDelay = `${index * 14}ms`;
     overlay.appendChild(shard);
   });
-  const animate = () => queueRivalAnimation(() => {
-    document.body.appendChild(overlay);
+  const animate = () => {
+    overlay.querySelector('.shatter-hold')?.remove();
+    overlay.classList.remove('shatter-hold-overlay');
+    if (!overlay.isConnected) document.body.appendChild(overlay);
     const duration = shatterDuration + 115;
     window.setTimeout(() => overlay.remove(), duration);
     return duration;
-  });
-  if (['ww-bounty-raid', 'amethyst'].includes(activeCombatCue?.card.id) && !variant) {
-    (activeCombatCue.afterContact ??= []).push(animate);
-  } else animate();
+  };
+  if (activeCombatCue && !activeCombatCue.shown) {
+    const heldCard = source.cloneNode(true);
+    heldCard.classList.add('shatter-hold');
+    heldCard.inert = true;
+    overlay.classList.add('shatter-hold-overlay');
+    overlay.appendChild(heldCard);
+    document.body.appendChild(overlay);
+    (activeCombatCue.shatters ??= []).push(animate);
+  } else if (resolvingStrike) animate();
+  else queueRivalAnimation(animate);
   return shatterDuration - 90;
 }
 function animateCardShatter(owner, laneIndex, card) {
@@ -1939,7 +1951,18 @@ function resolveTriggerOnSummon(card, owner, laneIndex) {
   if (card.id === 'aemi' || card.id === 'academy-fritz' || card.id === 'ww-academy-fritz' || card.id === 'academy-lynda' || card.id === 'ww-academy-lynda') drawMatching(owner, (candidate) => candidate.title === 'Academy' && candidate.element !== card.element, 'Academy card with another element');
   if (card.id === 'lt-scribble' || card.id === 'vishnu') drawMatching(owner, (candidate) => candidate.id === 'avatar-gem', 'Avatar Gem');
   if (card.id === 'brewy') drawMatching(owner, (candidate) => candidate.id === 'mana-potion' || candidate.id === 'health-potion', 'Potion card');
-  if (card.id === 'lt-boxy') { const index = owner.deck.findIndex((candidate) => candidate.element === 'Dark'); if (index >= 0) { const [sent] = owner.deck.splice(index, 1); owner.destroyed.push(sent); render(); announceEffect(`Boxy sent ${sent.name} from the deck to the Pandemonium Zone.`); summonBeatcracker(owner, sent); } }
+  if (card.id === 'lt-boxy') {
+    const index = owner.deck.findIndex((candidate) => candidate.element === 'Dark');
+    if (index >= 0) {
+      const [sent] = owner.deck.splice(index, 1);
+      const portal = document.querySelector(`[data-zone-kind="destroyed"][data-zone-side="${combatSide(owner)}"] .discard-icon`)?.getBoundingClientRect();
+      if (portal && activeCombatCue?.card === card) activeCombatCue.sceneTargets = [portal];
+      owner.destroyed.push(sent);
+      render();
+      announceEffect(`Boxy sent ${sent.name} from the deck to the Pandemonium Zone.`);
+      summonBeatcracker(owner, sent);
+    }
+  }
   if (card.id === 'lt-melodoll') { const choices = owner.destroyed.map((held, i) => held.element === 'Dark' ? { value: i, label: held.name, detail: `${held.title} · Dark` } : null).filter(Boolean); chooseEffect(owner, 'Melodoll: return a Dark card', 'Choose a Dark card in your Pandemonium Zone to return to your hand.', choices, (index) => { const [returned] = owner.destroyed.splice(index, 1); owner.hand.push(returned); render(); announceEffect(`${returned.name} returned to your hand.`); }); }
   if (card.id === 'lt-clapster') { let milled = null; if (owner.deck.length) { [milled] = owner.deck.splice(0, 1); owner.destroyed.push(milled); } if (opponent.hand.length) { const [discarded] = opponent.hand.splice(Math.floor(Math.random() * opponent.hand.length), 1); opponent.destroyed.push(discarded); announceEffect(`Clapster sent a card to the Pandemonium Zone and discarded ${discarded.name} from the enemy’s hand.`); } else announceEffect('Clapster sent the top card of your deck to the Pandemonium Zone; the enemy had no cards to discard.'); render(); if (milled) summonBeatcracker(owner, milled); }
   if (card.id === 'lt-teddy') { const choices = owner.hand.map((held, i) => ({ value: i, label: held.name, detail: `Discard ${held.title} · gain +1 attack` })); chooseEffect(owner, 'Teddy: discard a card', 'Discard a card from your hand to give Teddy +1 attack.', choices, (index) => { const [discarded] = owner.hand.splice(index, 1); owner.destroyed.push(discarded); if (discarded.id !== 'lt-beatcracker') { card.attackBonus = (card.attackBonus || 0) + 1; card.attackBonusModifiers = [...(card.attackBonusModifiers || []), { amount: 1, source: card.name }]; card.attackBonusSources = [...(card.attackBonusSources || []), card.name]; } render(); announceEffect(`Teddy discarded ${discarded.name} and gained 1 attack.`); summonBeatcracker(owner, discarded); }); }
@@ -2390,30 +2413,37 @@ function animateAttack(from, index, done, target = { type: 'lane', index }) {
     const element = attacker?.element || 'Mind';
     const impact = targetCard || lifeTargetElement(targetSide, finalTarget.index, !!finalTarget.main) || targetLane;
     const combatEffects = window.peppermintCombatEffects;
-    const vectorStrike = combatEffects?.play({
-      card: attacker, kind: 'strike', source: sourceCard || sourceLane, targets: [impact], audio: soundContext,
+    let vectorStrike = false;
+    const resolveImpact = () => {
+      if (match.player !== attackingPlayer || match.over) return;
+      const hitPlayer = from === match.player ? match.opponent : match.player;
+      const hadTarget = finalTarget.type === 'lane' && !!hitPlayer.lanes[finalTarget.index];
+      resolvingStrike = true;
+      try {
+        done(target);
+      } finally {
+        resolvingStrike = false;
+      }
+      if (!vectorStrike) playSfx(hadTarget ? 'impact' : 'life', element);
+      render();
+    };
+    vectorStrike = combatEffects?.play({
+      card: attacker, kind: 'strike', source: sourceCard || sourceLane, targets: [impact], audio: soundContext, onImpact: resolveImpact,
     });
     const ranged = vectorStrike && combatEffects.isRanged(attacker);
-    const resolutionTime = vectorStrike ? combatEffects.attackResolutionTime : 740;
     sourceCard?.classList.add(ranged ? 'combat-ranged-release' : from === match.player ? 'attack-lunge-up' : 'attack-lunge-down');
     if (vectorStrike) {
-      impact?.style.setProperty('--combat-impact-delay', `${combatEffects.attackImpactTime - 24}ms`);
+      impact?.style.setProperty('--combat-impact-delay', `${combatEffects.attackImpactTime}ms`);
       impact?.classList.add('combat-impact');
     } else {
       targetCard?.classList.add('damage-shake');
       impact?.classList.add(targetCard ? 'impact-glow' : 'life-hit');
     }
     if (from === match.opponent) document.getElementById('phase-label').textContent = 'RIVAL ATTACK';
-    if (!vectorStrike) playSfx('attack', element);
-    window.setTimeout(() => {
-      if (match.player !== attackingPlayer || match.over) return;
-      const hitPlayer = from === match.player ? match.opponent : match.player;
-      const hadTarget = finalTarget.type === 'lane' && !!hitPlayer.lanes[finalTarget.index];
-      done(target);
-      if (!vectorStrike) playSfx(hadTarget ? 'impact' : 'life', element);
-      render();
-    }, resolutionTime);
-    return vectorStrike ? Math.max(resolutionTime, vectorStrike) : resolutionTime + 260;
+    if (vectorStrike) return vectorStrike;
+    playSfx('attack', element);
+    window.setTimeout(resolveImpact, 740);
+    return 1000;
   });
 }
 function npcAttackValue(card, sourceLane, defender, target) {

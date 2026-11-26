@@ -65,7 +65,10 @@
     switch(name) {
       case 'flower': return flower();
       case 'teapot': return vessel(fill);
-      case 'cup': return group('scale(.68)',vessel(fill,'#b98b2c'));
+      case 'cup': return path('M23-12Q45-20 46-1Q44 15 21 17L20 10Q37 9 38-2Q38-8 24-5Z',fill('gold'),'#915833',1.55)+
+        path('M-24-19H26L21 29Q0 38-20 28Z',fill('wood'),'#96613f',1.8)+
+        path('M-25-14Q0-5 26-15L25-8Q1 0-23-7Z M-22 20Q0 28 23 20L21 27Q0 35-20 27Z',fill('gold'))+
+        oval(1,-18,24,6,'#ffdaa8','stroke="#a9794b" stroke-width="1.5"');
       case 'toy': return toy(fill);
       case 'tree': return tree();
       case 'key': return path('M-25-19C-45-24-48 9-26 12L-8 10V26H8V10L25 12C48 9 45-23 25-19Q14-18 5-8H-5Q-14-18-25-19ZM-22-10Q-10-5-19 3Q-34 6-34-2Q-34-10-22-10ZM22-10Q34-10 34-2Q34 6 19 3Q10-5 22-10Z',fill('gold'),'#edc785',1.8)+
@@ -76,6 +79,35 @@
         oval(0,-4,9,12,'#89644f')+path('M-15 12Q-10 4 0 5Q11 3 15 10Z','#89644f');
       case 'gift': return path('M-27-13L-1-28 26-14 23 20 0 33-27 19Z',fill('ruby'),'#efb565',1.55)+
         path('M-27-13L0 1 26-14M0 1V33M-13-20L12-7V27M-11-13Q-28-44-11-43Q-3-42 0-27Q17-49 24-37Q29-32 3-23','none','#ffd986',3.3);
+
+      case 'boxyParcel': return path('M-28-16L3-27 30-15 26 20 0 32-28 21Z',fill('ruby'),'#d29373',1.4)+
+        path('M-28-16L0-7 30-15 3-27Z','#bd4859','#f2968d',.85)+
+        path('M0-7V32M-10-21L18-12 15 25M17-22L-9-11-8 27','none',fill('gold'),3)+
+        path('M0-23Q-15-45-24-32Q-24-25 0-23Q18-43 25-34Q28-26 0-23M2-25Q14-37 19-47','none','#f2c388',2.2)+
+        path('M-22-5l11 1-1 16-9-5Z M3 1l11-4-1 15-9 4Z','#351629')+
+        oval(-16,5,2.15,2.9,'#ffdc92')+oval(8,5,2.1,2.85,'#ffcf7d');
+      case 'cymbal': return path('M-46-26Q0-31 45-23Q58-8 48 27Q0 36-51 24Q-56 0-46-26Z',fill('gold'),'#643722',2.2)+
+        oval(0,0,50,27,fill('gold'),'stroke="#f6be74" stroke-width="1.6"')+
+        repeat(5,i=>oval(0,0,44-i*6.2,23-i*3.5,'none',`stroke="#f6d495" stroke-width=".71" opacity="${.28+i*.12}"`))+
+        path('M-19 5Q-15-10 0-11Q16-10 20 5Q4 15-19 5Z',fill('gold'),'#a86b3c',1.35)+
+        path('M-12 3Q-5-8 8-4Q16-1 10 8L6 9Q7 2 1 2Q-6 2-8 6Z','#81395c','#e29abc',1.05)+
+        path('M-41 12Q-21 24 14 19M19-19Q34-16 43-9','none','#fff5ce',1.95);
+      case 'healthBottle': return path('M-11-48H11L10-24C20-18 43-7 44 20Q45 45 0 48Q-43 45-44 20C-45 0-23-14-10-24Z',fill('glass'),'#ffe2d0',1.55)+
+        path('M-37 15C-27 3-9 19 3 10Q20 3 37 14C48 36 23 45 0 45C-19 45-45 35-37 15Z',fill('ruby'),'#ff89a1',1.15)+
+        path('M-15-52L-11-61 2-67 14-58 16-50 6-41H-7Z',fill('ruby'),'#ffd38f',1.35)+
+        path('M-16-49H16L12-40H-12Z M-32 38Q0 43 32 38L22 49H-22Z',fill('gold'),'#bc774c',1.4)+
+        path('M10-34Q22-53 32-41Q44-26 13-25M9-29Q46-41 45-16L28-16 20-7Q21-20 9-29Z',fill('ruby'),'#f6a19a',.98)+
+        path('M-35 12Q-36 0-24-9M-26 33Q-17 41 5 41M-8-55L1-62 7-55','none','#fff1ddd0',1.7);
+      case 'crystalHeart': return path('M0-27L-13-40-33-39-50-23-51-2-36 22 0 54 36 22 51-2 50-23 33-39 13-40Z',fill('ruby'),'#ffb2bb',1.7)+
+        path('M0-27L-15-16-35-16-50-23-33-39-13-40Z M0-27L14-15 31-20 33-39 13-40Z','#ffbacb9c')+
+        path('M0-27L-15-16-22 10 0 39 22 10 14-15Z','#ff415ec9','#ffb7c1',.92)+
+        path('M-15-16L-35-16-51-2-36 22-22 10Z M14-15L31-20 51-2 36 22 22 10Z','#db245ce0','#ff7483',1)+
+        path('M0 54L0 39 22 10 36 22Z M0 54L-36 22-22 10 0 39Z','#7d183d','#ff90a0',1)+
+        path('M-32-33l13 1M-45-17l-2 12M2-19L14-10 19 4M-31 21L-9 42','none','#fff2ee',1.55)+
+        oval(-12,-14,5,3,'#fff8f6bd');
+      case 'cookpot': return path('M-42-11H41L31 26Q0 36-31 26Z',fill('silver'),'#71442d',1.95)+
+        oval(0,-12,44,12,fill('gold'),'stroke="#b77b48" stroke-width="1.8"')+
+        oval(0,-12,34,8,'#7d3c32')+path('M-43 0h-16m102 0h16M-21 18q23 8 42-1','none',fill('gold'),3.2);
       case 'bell': return path('M-25 17Q-16 7-15-8Q-13-28 0-30Q16-29 18-6Q20 11 26 17Q0 24-25 17Z',fill('gold'),'#ffe1a8',1.4)+oval(0,20,25,5,'#6a402c')+oval(0,25,5,6,fill('gold'));
       case 'egg': return path('M-23 13C-21-12-9-35 2-39Q20-28 25 10Q24 36 0 35Q-25 36-23 13Z',fill('pearlCloth'),hot,1.6)+
         path('M-23 6L-10-4-2 6 8-8 21-2','none','#d5ad6d',1.6);
@@ -144,7 +176,7 @@
 
   function productionTime(direction, attack, sharedField) {
     if (attack) return null;
-    return { prism: 960, mirrors: 850, horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
+    return { sendParcel: 1090, healing: 830, prism: 960, mirrors: 850, horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
       brew: 950, hatch: 950, carnival: 970, carousel: 1050, panorama: 1020 }[direction?.move] || (sharedField ? 900 : 735);
   }
 
@@ -170,8 +202,11 @@
       const bend=`M${from.x+uy*q*.32} ${from.y-ux*q*.32}C${from.x+dx*.29+uy*s} ${from.y+dy*.29-ux*s} ${target.x-dx*.25-uy*s*.54} ${target.y-dy*.25+ux*s*.54} ${target.x+uy*q*.25} ${target.y-ux*q*.25}`;
       const core=svgNode('path',{d:bend,pathLength:1,fill:'none',stroke:i===0?rgba:hot,'stroke-width':Math.max(1.5,width*scale/(1+i*.72)),
         'stroke-linecap':'round','stroke-dasharray':strokes,class:i===0?'combat-channel-halo':'combat-channel-core'},layer);
-      motion(core,[{opacity:0,strokeDashoffset:1},{opacity:.91,strokeDashoffset:.48,offset:.31},
-        {opacity:i===0?.67:.91,strokeDashoffset:0,offset:.66},{opacity:0,strokeDashoffset:-.34}],675+cruise*20,hold+i*33,'ease-in-out');
+      const start = hold + i * 33;
+      const duration = 675 + cruise * 20;
+      const contact = (hitAt - start) / duration;
+      motion(core,[{opacity:0,strokeDashoffset:1},{opacity:.86,strokeDashoffset:.48,offset:contact*.55},
+        {opacity:i===0?.67:.91,strokeDashoffset:0,offset:contact},{opacity:0,strokeDashoffset:-.34}],duration,start,'linear');
     }
     if(['chains','roots','stitch'].includes(style)){
       for(let i=0;i<6;i++){
@@ -440,10 +475,82 @@
         {opacity:0,transform:`translate(${-dx*.08}px,${-dy*.08}px) scale(${s*.79})`}],530,hitAt-175,'linear');
   }
 
+
+  function stageParcel(ctx, target) {
+    const {origin, impactAt, effectScale, reduced, motion, art, palette, hot, color} = ctx;
+    const gift = art(prop('boxyParcel',palette.fill,hot,color),origin.x,origin.y);
+    gift.setAttribute('data-combat-prop','boxyParcel');
+    const dx=target.x-origin.x, dy=target.y-origin.y;
+    const lift=Math.min(126,Math.hypot(dx,dy)*.23+30);
+    const launch=150;
+    const points=[0,.2,.45,.7,.88,1];
+    const frames=points.map((offset,i)=>{
+      const x=dx*offset,y=dy*offset-Math.sin(offset*Math.PI)*lift;
+      const size=effectScale*(.78-offset*.72);
+      return {offset,opacity:i===0?0:i===points.length-1?0:1,
+        transform:`translate(${x}px,${y}px) rotate(${offset*205-14}deg) scale(${size})`};
+    });
+    if (reduced) {
+      const arrive=art(prop('boxyParcel',palette.fill,hot,color),target.x,target.y);
+      arrive.setAttribute('data-combat-prop','boxyParcelTarget');
+      motion(arrive,[{opacity:0,transform:'scale(.49)'},{opacity:.9},{opacity:0,transform:'scale(.14)'}],390,impactAt-195);
+      motion(gift,[{opacity:0},{opacity:.9,transform:'scale(.62)'},{opacity:0}],440,launch);
+    } else motion(gift,frames,impactAt-launch,launch,'linear');
+  }
+
+  const cymbalLead=365;
+  function stageCymbals(ctx, target) {
+    const {origin, impactAt, effectScale, reduced, motion, art, palette, hot, color} = ctx;
+    const sign=target.x>=origin.x?1:-1;
+    const point=mix(origin,target,.15);
+    const center={x:point.x,y:Math.max(58,point.y-29*effectScale)};
+    const collision=impactAt-cymbalLead;
+    const s=effectScale*.72;
+    [-1,1].forEach((side)=>{
+      const x=center.x+side*16*s;
+      const cymbal=art(prop('cymbal',palette.fill,hot,color),x,center.y,side*28);
+      cymbal.setAttribute('data-combat-prop','cymbal');
+      cymbal.setAttribute('data-beat',collision);
+      const move=(spread,turn,tilt)=>`translateX(${side*spread}px) rotate(${side*turn}deg) scale(${tilt*s},${s})`;
+      motion(cymbal,reduced ? [{opacity:0,transform:move(0,0,.74)},{opacity:1},{opacity:0}]
+        : [{opacity:0,transform:move(64,27,.82)},
+          {opacity:1,transform:move(49,16,1),offset:.33},
+          {opacity:1,transform:move(0,0,.63),offset:.50},
+          {opacity:1,transform:move(16,7,.87),offset:.63},
+          {opacity:.74,transform:move(14,-9,.78),offset:.77},
+          {opacity:0,transform:move(36,-21,1)}],collision*2-220,110,'linear');
+    });
+    if(reduced)return;
+    const dx=target.x-center.x,dy=target.y-center.y;
+    const a=Math.atan2(dy,dx)*180/Math.PI;
+    const soundWave=art(repeat(4,i=>path(`M${i*7-10} -49Q${i*11+20} 0 ${i*7-10} 49`,'none',i%2?'#ffd48b':'#d1adff',2.15-i*.35)),center.x,center.y,a);
+    motion(soundWave,[{opacity:0,transform:'scale(.27)'},{opacity:.93,transform:`translate(${dx*.38}px,${dy*.38}px) scale(${s*.94})`,offset:.38},
+      {opacity:.87,transform:`translate(${dx}px,${dy}px) scale(${s*1.22})`,offset:cymbalLead/(cymbalLead+175)},
+      {opacity:0,transform:`translate(${dx+sign*17}px,${dy}px) scale(${s*1.64})`}],cymbalLead+175,collision,'linear');
+  }
+
+  function stageHealingBottle(ctx, target) {
+    const {impactAt, effectScale, reduced, motion, art, palette, hot, color} = ctx;
+    const point={x:target.x,y:Math.max(60,target.y-67*effectScale)};
+    const bottle=art(prop('healthBottle',palette.fill,hot,color),point.x,point.y);
+    bottle.setAttribute('data-combat-prop','healthBottle');
+    const s=effectScale*.95;
+    motion(bottle,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1},{opacity:0}]
+      : [{opacity:0,transform:`translateY(21px) scale(${s*.44})`},
+        {opacity:1,transform:`scale(${s})`,offset:.31},
+        {opacity:1,transform:`rotate(-6deg) scale(${s*1.04})`,offset:.57},
+        {opacity:0,transform:`translateY(-21px) rotate(-9deg) scale(${s*.85})`}],impactAt+240,105);
+  }
+
+  const winterTeaCards = new Set(['drinking-tea','wb-topaz-diamond','wb-steepod']);
+
   function setPiece(ctx) {
     const {direction, origin, targets, palette, motion, hot, color, impactAt, reduced, effectScale, viewport} = ctx;
     const move=direction.move;
     const scale=Math.min(1.55,effectScale*.83);
+    if (move==='sendParcel') { stageParcel(ctx, targets[0]); return true; }
+    if (move==='cymbals') { stageCymbals(ctx, targets[0]); return true; }
+    if (move==='healing') { stageHealingBottle(ctx, targets[0]); return true; }
     if (move==='raijin' || move==='mirrors' || move==='prism') {
       if (move==='raijin') stageRaijin(ctx, targets[0], scale);
       if (move==='mirrors') stageMirrors(ctx, targets[0], scale);
@@ -532,6 +639,7 @@
       }
       return true;
     }
+    if (!winterTeaCards.has(ctx.card.id)) return false;
     const pots=move==='kettles'?3:1;
     const relevant=move==='serving'&&targets.length>1?last:first;
     const center=mix(origin,relevant,move==='kettles'?.47:.78);
@@ -583,12 +691,12 @@
     armor:['shield','shard',3], bloom:['flower','leaf',7], fountain:['drop','shard',5], forge:['hammer','gear',4],
     panorama:['arch','leaf',5], carousel:['gift','gear',6], target:['notice','coin',3], stamp:['notice','coin',3],
     frost:['shard','steam',6], hatch:['egg','shard',5], escort:['leaf','rib',5], curtain:['rib','card',5],
-    tavern:['cup','coin',4], brew:['teapot','steam',6], orbit:['shard','coin',6],
+    tavern:['cup','coin',4], brew:['potion','steam',6], orbit:['shard','coin',6],
   };
 
   const locationProps = {
-    'academy-grounds':['tome','lantern'], cooking:['teapot','salt'],
-    'locker-room':['bag','rib'], 'mana-potion':['potion','drop'], 'health-potion':['potion','flower'],
+    'academy-grounds':['tome','lantern'], cooking:['cookpot','salt'],
+    'locker-room':['bag','rib'], 'mana-potion':['potion','drop'],
     'ww-wanted-poster':['notice','paper'], 'cactus-creek':['cactus','leaf'], 'ww-root':['leaf','shard'],
     'ww-planting':['leaf','flower'], 'ip-field':['seaGate','drop'], 'ip-swim-dont-sink':['bubble','drop'],
     'ip-no-pain-no-gain':['anvil','gear'], 'lt-toy-capsule':['egg','stageDoll'],
@@ -626,7 +734,7 @@
         const shot=ctx.art(missile,origin.x,origin.y,rotation);
         const dx=to.x-origin.x,dy=to.y-origin.y;
         motion(shot,[{opacity:0,transform:'scale(.31)'},{opacity:.89,transform:`translate(${dx*.39}px,${dy*.39}px) scale(${scale*.75})`,offset:.43},
-          {opacity:0,transform:`translate(${dx}px,${dy}px) scale(${scale*.54})`}],Math.max(430,hitAt-330),280,'linear');
+          {opacity:0,transform:`translate(${dx}px,${dy}px) scale(${scale*.54})`}],hitAt-280,280,'linear');
       }
       if(move==='surf'||move==='river'){
         const wave=ctx.art(palette.paint('water','impact',seed,'wave'),to.x,to.y,rotation);
@@ -637,9 +745,9 @@
     }
     if(processions[move] && !melee && !reduced && distance>16){
       const [count,object]=processions[move];
-      const travel=hitAt-270;
       for(let i=0;i<count;i++){
         const o=i-(count-1)/2, delay=160+i*71;
+        const travel=hitAt-delay-(count-1-i)*22;
         const body=object==='missile'?missile:prop(object,palette.fill,hot,color);
         const actor=ctx.art(body,origin.x,origin.y,rotation+(i%2?-15:8));
         const dx=to.x-origin.x,dy=to.y-origin.y;
@@ -651,7 +759,7 @@
           {opacity:.92,transform:`translate(${dx*.18+offsetX*.61}px,${dy*.18+offsetY*.61}px) scale(${ss})`,offset:.27},
           {opacity:1,transform:`translate(${dx*.51+offsetX}px,${dy*.51+offsetY}px) rotate(${o*7}deg) scale(${ss})`,offset:.61},
           {opacity:0,transform:`translate(${dx+o*8}px,${dy+o*6}px) scale(${ss*.65})`},
-        ],Math.max(240,travel-i*41),delay,'ease-in-out');
+        ],travel,delay,'ease-in-out');
       }
       if(move==='score')channel(ctx,origin,to,'score');
       return true;
@@ -699,6 +807,7 @@
     tea:['fluid','drop',14], chamomile:['fluid','flower',11], steam:['spiral','steam',7],
     ornaments:['rain','bell',11], coil:['echo','gear',8],
     prismBloom:['prism','shard',8], gelSnap:['fluid','slimeDrop',10],
+    crystalRenewal:['heart','shard',11], parcelArrival:['parcel','orb',4], cymbalRings:['metalWave','shard',7],
     windShear:['wind','feather',5], drift:['wind','steam',5],
     forkPunch:['arc','shard',5], tidalShock:['arc','drop',7], tidalNet:['arc','steam',5], coronaPunch:['arc','shard',5],
     thunderPunch:['arc','shard',8], grounding:['arc','shard',5], wireStrike:['arc','shard',5],
@@ -815,6 +924,18 @@
           path(`M-${size+18} 32C-33-4 22-44 63-23Q83-12 61 2C73-12 65-21 43-20Q8-20-${size+18} 32Z`,palette.fill('mist'))+
           path('M-65 22Q17-42 61-21M-38 15Q18-23 46-17','none',i%2?color:hot,1.38-i*.22)));
         break;
+      case 'heart':
+        graphic=prop('crystalHeart',palette.fill,hot,color)+
+          oval(0,31,64,25,'none','stroke="#fd668d" stroke-width="1.55" opacity=".55"');
+        break;
+      case 'parcel':
+        graphic=group('scale(.36)',oval(0,0,44,29,palette.fill('mist'))+
+          path('M-32 7Q-20-20 8-14Q40-12 34 5Q21 22 1 9Q-12-3 10-6','none',hot,1.35));
+        break;
+      case 'metalWave':
+        graphic=repeat(4,i=>oval(0,i*2,36+i*17,19+i*8,'none',`stroke="${i%2?'#d2a8ef':'#ffc878'}" stroke-width="${2.4-i*.40}" opacity="${.93-i*.14}"`))+
+          path('M-31 2Q-24-20-6-10Q0-5 7-11Q21-19 32 2Q21 16 7 10Q0 7-7 10Q-21 18-31 2Z',palette.fill('mist'));
+        break;
       case 'prism':
         graphic=oval(0,0,72,35,palette.fill('mist'),'opacity=".35"')+
           repeat(prismColors.length,i=>group(`rotate(${i*46+take(i)})`,
@@ -880,7 +1001,7 @@
     const main = art(graphic + (shape === 'arc' ? '' : `<g opacity=".44">${variation}</g>`),target.x,target.y,direction);
     main.setAttribute('data-contact',mark);
     const duration = reduced?420:Math.round((880+baseAttack*34)*(timeScale[shape]||1));
-    const start=hitAt-30;
+    const start=hitAt;
     const frames = reduced ? [{opacity:0,transform:`scale(${scale*.9})`},{opacity:.85},{opacity:0}]
       : shape==='wind' || shape==='surf' ? [
         {opacity:0,transform:`translateX(${-35*scale}px) scale(${scale*.68},${scale*.63})`},
@@ -921,23 +1042,26 @@
         {opacity:.78,transform:`scale(${scale*1.12})`,offset:.57},
         {opacity:0,transform:`rotate(${seed%55-27}deg) scale(${scale*1.36})`},
       ];
-    motion(main,frames,duration,start);
+    const openingOpacity = shape==='heart' ? .62 : shape==='parcel' ? .30 : .48;
+    motion(main,[{...frames[0],offset:0},{...frames[0],offset:.012,opacity:openingOpacity},...frames.slice(1)],duration,start);
     if(reduced)return;
-    const glint=art(oval(0,0,45+baseAttack*6,26+baseAttack*3,palette.fill('mist')),target.x,target.y);
+    const glowSize=shape==='parcel'?22:45+baseAttack*6;
+    const glint=art(oval(0,0,glowSize,glowSize*.57,palette.fill('mist')),target.x,target.y);
     motion(glint,[{opacity:0,transform:'scale(.48)'},{opacity:.40+baseAttack*.032,offset:.29},
-      {opacity:0,transform:`scale(${scale*1.27})`}],500,start-35);
+      {opacity:0,transform:`scale(${scale*1.27})`}],500,start);
     const count=Math.round(density*.82+baseAttack*1.6);
     const fan = ['cut','wind','surf'].includes(shape);
     const course = angle * Math.PI / 180;
     for(let i=0;i<count;i++){
       const heading = fan ? course + (i / count - .5) * 1.9 + take(i%20) * .008
         : i * Math.PI * 2 / count + take(i%20) * .22;
-      const spread=(35+take(i%17)*2.9)*scale;
+      const spread=(35+take(i%17)*2.9)*scale*(shape==='parcel'?.32:1);
       const xx=Math.cos(heading)*spread,yy=Math.sin(heading)*spread;
       const grav=mark==='foam'?-27:shape==='wind'?-14:['rain','fluid','splinter','break','surf'].includes(shape)?45:6;
       const scaleFactor=(.18+take((i+13)%22)/83)*scale;
       const fragment = shape==='prism'
         ? path('M-15 1L-3-18 11-11 14-2 4 13-12 11Z',prismColors[i%prismColors.length],'#ffefda',.8)
+        : shape==='heart' ? path('M-8 3L-3-12 12-7 10 10 1 17Z',palette.fill('ruby'),'#ffb5c1',.8)
         : object==='orb'||mark==='syrup'||(shape==='arc'&&!mark.startsWith('tidal'))
           ? palette.particle(impactMaterial,i):prop(object,palette.fill,hot,color);
       const piece=art(fragment,target.x,target.y,i*97);
@@ -949,5 +1073,5 @@
     }
   }
 
-  window.peppermintCombatScenes = { productionTime, setPiece, choreograph, contactArt, contactDetails, beats, fistStyles };
+  window.peppermintCombatScenes = { productionTime, setPiece, choreograph, contactArt, contactDetails, beats, fistStyles, cymbalLead };
 })();
