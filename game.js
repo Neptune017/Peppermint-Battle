@@ -714,8 +714,6 @@ function cardMarkup(card, enemy = false, compact = false) {
   const attacking = compact && (card.attacking || (!enemy && match.attackMode && laneIndex === match.attackerLane));
   const attackInfo = compact ? attackBreakdown(card, owner, { attacking, targetIndex: card.attackTargetIndex ?? (attacking ? laneIndex : null) }) : { total: card.attack + (card.attackBonus || 0), change: card.attackBonus || 0, reasons: card.attackBonus ? ['Card effect'] : [], sources: card.attackBonusSources || (card.attackBonus ? [card.name] : []) };
   const attackBadge = attackInfo.change ? `<em class="attack-boost ${attackInfo.change < 0 ? 'attack-reduced' : ''}" title="${attackInfo.sources.join(' · ')}">${attackInfo.change > 0 ? '+' : '−'}${Math.abs(attackInfo.change)}</em>` : '';
-  const actionButton = compact && !enemy && ['ww-medusa','ww-blake','ip-croaktail','wb-steepod','wb-topaz-diamond'].includes(card.id) ? `<button class="card-ability-trigger" data-ability="${card.id}" ${card.abilityUsedTurn === match.turn ? 'disabled' : ''} title="Drag this button onto the battlefield to use ${card.name}’s once-per-turn effect">DRAG</button>` : '';
-  const handAbilityButton = !compact && card.id === 'wb-sageape' ? '<button class="hand-ability-trigger" data-hand-ability="wb-sageape" title="Drag this button onto the battlefield to discard Sageape and move a Glacial fighter">DRAG</button>' : '';
   const frozen = compact && Boolean(card.skipAttackThisTurn || card.skipAttackNext);
   const stunned = frozen && card.skipAttackReason === 'stun';
   const rooted = compact && Boolean(card.cannotMoveUntilTurn && match.turn < card.cannotMoveUntilTurn);
@@ -750,9 +748,9 @@ function cardMarkup(card, enemy = false, compact = false) {
   const details = compact ? `<div class="card-bottom"><span class="card-element"></span><span class="card-stats" title="Base ${card.attack}${attackInfo.sources.length ? ` · ${attackInfo.sources.join(' · ')}` : ''}">${attackValueMarkup}${attackBadge} ATK</span></div>` : card.type === 'Action' ? `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${card.cost} MANA</span></div>` : `<div class="card-bottom"><span class="card-icons"></span><span class="card-stats">${attackValueMarkup}${attackBadge} ATK</span></div>`;
   const summonLocked = !compact && card.id === 'vishnu' && !owner?.lanes.some((unit) => unit?.name === 'Peppermint');
   const displayName = displayedCardName(card);
-  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, drag to attack" data-lane="${laneIndex}"` : `data-id="${card.instance}" title="${summonLocked ? 'Requires Peppermint in your Battle Zone' : ''}"`}>
+  return `<div class="${compact ? 'battle-card' : 'hand-card'} ${sideClass} ${elementClass}${statusClass}${summonLocked ? ' disabled' : ''}" data-card-preview="${card.instance}" ${compact ? `role="button" tabindex="0" aria-label="${displayName}, drag to attack" data-lane="${laneIndex}"` : `data-id="${card.instance}" role="button" tabindex="0" title="${summonLocked ? 'Requires Peppermint in your Battle Zone' : ''}"`}>
     ${art}<span class="art-shade"></span>${compact ? cardCombatStatus(card, owner) : ''}${compact ? '' : `<span class="card-cost">${card.cost}</span>`}${elementIcon}${classIcon}<div class="card-heading"><div class="card-topline">${card.title}</div><div class="card-name">${displayName}</div></div>
-    ${actionButton}${handAbilityButton}${freezeBadge}${euphoriaBubbles}${details}</div>`;
+    ${freezeBadge}${euphoriaBubbles}${details}</div>`;
 }
 function lifeCount(player) { return player.life.middle.filter(Boolean).length + (player.life.main ? 1 : 0); }
 function lifeMarkup(player, side) {
@@ -821,7 +819,7 @@ function attackBreakdown(card, owner, { attacking = false, defending = false, ta
   if (card.id === 'lt-clary') { const bonus = adjacent.filter((n) => ['Living Toy', 'Dollmaster'].includes(owner.lanes[n]?.title)).length; if (bonus) { attack += bonus; reasons.push(`Nearby toys +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'lt-rat-king') { const bonus = new Set(owner.destroyed.filter((unit) => unit.element === 'Dark').map((unit) => unit.name)).size; if (bonus) { attack += bonus; reasons.push(`Unique Dark names in Pandemonium Zone +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'lt-zodiac-fritz') { const bonus = owner.destroyed.filter((unit) => ['Fighter', 'Creature'].includes(unit.type || 'Fighter') && unit.element === 'Dark').length; if (bonus) { attack += bonus; reasons.push(`Dark cards in Pandemonium Zone +${bonus}`); addModifier(bonus, card.name); } }
-  if (card.role === 'Brawler' && adjacent.some((n) => !owner.lanes[n])) { attack++; reasons.push('Brawler +1'); addModifier(1, card.name); }
+  if (card.role === 'Brawler' && adjacent.some((n) => !owner.lanes[n])) { attack++; reasons.push('Brawler +1'); addModifier(1, 'Brawler'); }
   if (card.id === 'ip-sabrina') { const bonus = adjacent.filter((n) => owner.lanes[n]?.role === 'Brawler').length; if (bonus) { attack += bonus; reasons.push(`Adjacent Brawlers +${bonus}`); addModifier(bonus, card.name); } }
   if (card.id === 'ww-zodiac-guardian-brian') { const bonus=[...owner.hand,...owner.lanes.filter(Boolean)].filter((unit)=>unit.element==='Terra').length;if(bonus){attack+=bonus;reasons.push(`Terra cards on field or in hand +${bonus}`);addModifier(bonus,card.name);} }
   if (card.id === 'ip-academy-chase') { const bonus=adjacent.filter((n)=>owner.lanes[n]?.element==='Aqua').length;if(bonus){attack+=bonus;reasons.push(`Adjacent Aqua cards +${bonus}`);addModifier(bonus,card.name);} }
@@ -924,17 +922,21 @@ function render() {
   const fieldBackgrounds = { 'academy-grounds': 'field-academy-hall', 'ip-field': 'field-island-paradise', 'toy-store': 'field-toy-store', 'christmas-mall': 'field-christmas-mall', 'cactus-creek': 'field-cactus-creek', 'valhalla-bar': 'field-valhalla-bar' };
   const fieldName = match.fieldCard ? fieldNames[match.fieldCard.id] || 'Grass Plain' : '';
   if (match.fieldCard) {
-    if (match.fieldCard.card?.instance) fieldZone.dataset.cardPreview = match.fieldCard.card.instance;
-    else delete fieldZone.dataset.cardPreview;
+    if (match.fieldCard.card?.instance) {
+      fieldZone.dataset.cardPreview = match.fieldCard.card.instance;
+      fieldZone.tabIndex = 0;
+      fieldZone.setAttribute('role', 'button');
+    } else delete fieldZone.dataset.cardPreview;
     const background = fieldBackgrounds[match.fieldCard.id] || 'field-grass-plain';
-    const mallUseKey = `${match.turn}-${match.active}`;
-    const mallUsed = match.fieldCard.usedTurnKeys?.includes(mallUseKey);
-    const mallButton = match.fieldCard.id === 'christmas-mall' && match.active === 'player' && !match.over ? `<button class="field-zone-action" data-field-ability="christmas-mall" title="Drag onto the battlefield to swap fighters" ${mallUsed ? 'disabled' : ''}>DRAG TO SWAP</button>` : '';
     const activeCardArt = match.fieldCard.card?.art ? `<img class="field-zone-card-art" src="${match.fieldCard.card.art}" alt=""/>` : '';
-    fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.webp')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>${mallButton}`;
+    fieldZone.innerHTML = `<div class="field-zone-art" style="--field-zone-image:url('assets/backgrounds/${background}.webp')"></div><span class="field-zone-eyebrow">FIELD ZONE</span>${activeCardArt}<strong>${fieldName}</strong>`;
   } else {
     fieldZone.innerHTML = '';
     delete fieldZone.dataset.cardPreview;
+  }
+  if (!fieldZone.dataset.cardPreview) {
+    fieldZone.removeAttribute('tabindex');
+    fieldZone.removeAttribute('role');
   }
   fieldZone.classList.toggle('hidden', !match.fieldCard);
   document.getElementById('player-life-count').textContent = lifeCount(match.player);
@@ -995,14 +997,19 @@ function showCardTooltip(card, event) {
     const breakdown = owner
       ? attackBreakdown(card, owner, { attacking: !!card.attacking, targetIndex: card.attackTargetIndex ?? null })
       : { total: (card.attack || 0) + (card.attackBonus || 0), modifiers: [] };
-    const modifier = breakdown.modifiers.length ? `<div class="tooltip-modifier-list">${breakdown.modifiers.map(({ amount, source }) => `<span class="tooltip-modifier ${amount > 0 ? 'modifier-up' : 'modifier-down'}">${amount > 0 ? '+' : '−'}${Math.abs(amount)} ${source}</span>`).join('')}</div>` : '';
+    const totals = new Map();
+    for (const { amount, source } of breakdown.modifiers) totals.set(source, (totals.get(source) || 0) + amount);
+    const badges = [...totals].filter(([, amount]) => amount).map(([source, amount]) =>
+      `<span class="tooltip-modifier ${amount > 0 ? 'modifier-up' : 'modifier-down'}">${escapeHTML(source)} ${amount > 0 ? '+' : '−'}${Math.abs(amount)}</span>`).join('');
+    const modifier = badges ? `<div class="tooltip-modifier-list">${badges}</div>` : '';
     return `<div class="tooltip-stats"><span>⚔ <b>${breakdown.total}</b> attack</span><span>✧ <b>${card.cost}</b> energy</span></div>${modifier}`;
   })();
-  const inPlayerHand = owner === match.player && match.player.hand.includes(card);
+  const inPlayerHand = owner === match.player && Boolean(match.player?.hand.includes(card));
   const canUseFromHand = inPlayerHand && match.active === 'player' && !match.over && playCost(match.player, card) <= match.energy;
   const cottonAbility = inPlayerHand && match.active === 'player' && !match.over && card.id === 'peppermint-ally' && match.fieldCard?.id !== 'academy-grounds';
   const canSummonFromHand = canUseFromHand && card.type !== 'Action' && canSummonCard(match.player, card) && match.player.lanes.some((unit) => !unit);
-  const sageapeAbility = canUseFromHand && card.id === 'wb-sageape';
+  const sageapeAbility = canUseSageape(card);
+  const mallAbility = canUseChristmasMall(card);
   const canAttackFromField = owner === match.player && laneIndex >= 0 && match.active === 'player' && !match.over && !match.attackResolving && canCardAttack(card) && canAttackLane(card,laneIndex,match.opponent);
   const canUseFieldAbility = canActivateCardAbility(card,owner,laneIndex);
   const controlButtons = [
@@ -1010,6 +1017,7 @@ function showCardTooltip(card, event) {
     card.type === 'Action' && canUseFromHand ? `<button type="button" data-tooltip-use="${card.instance}">USE</button>` : '',
     cottonAbility ? `<button type="button" data-tooltip-special="cotton" data-card-instance="${card.instance}">USE</button>` : '',
     sageapeAbility ? `<button type="button" data-tooltip-special="sageape" data-card-instance="${card.instance}">USE</button>` : '',
+    mallAbility ? `<button type="button" data-tooltip-special="christmas-mall" data-card-instance="${card.instance}">USE</button>` : '',
     canAttackFromField ? `<button type="button" data-tooltip-attack="${laneIndex}">ATTACK</button>` : '',
     canUseFieldAbility ? `<button type="button" data-tooltip-ability="${card.id}" data-lane="${laneIndex}">USE</button>` : '',
   ].filter(Boolean);
@@ -1765,7 +1773,7 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
 function moveWinterCard(owner, from, to) {
   const card = owner.lanes[from]; if (!card || owner.lanes[to] || to < 0 || to > 2 || from === to) return false;
   if (card.cannotMoveUntilTurn && match.turn < card.cannotMoveUntilTurn) { announceEffect(`${card.name} is rooted and cannot move yet.`); return false; }
-  if (['wb-steepod', 'wb-topaz-diamond', 'ip-ride-the-wave'].includes(activeCombatCue?.card.id)) {
+  if (['wb-steepod', 'wb-topaz-diamond', 'ip-ride-the-wave', 'wb-merryhound'].includes(activeCombatCue?.card.id)) {
     activeCombatCue.sceneTargets = [from, to].map((lane) => combatLane(owner, lane)?.getBoundingClientRect()).filter(Boolean);
   }
   owner.lanes[to] = card; owner.lanes[from] = null;
@@ -1870,6 +1878,16 @@ function findAiBestMallSwap(owner) {
   }));
   return best;
 }
+function christmasMallSwapChoices(owner) {
+  const sideKey = owner === match.player ? 'p' : 'o';
+  return owner.lanes.flatMap((firstCard, first) => firstCard ? owner.lanes.flatMap((secondCard, second) => second > first && secondCard && (firstCard.element === 'Glacial' || secondCard.element === 'Glacial') ? [{ value: `${first}:${second}`, label: `${firstCard.name} ↔ ${secondCard.name}`, detail: `Your lanes ${first + 1} and ${second + 1}` }] : []) : []);
+}
+function canUseChristmasMall(card) {
+  const field = match.fieldCard;
+  return Boolean(card && field?.id === 'christmas-mall' && field.card === card &&
+    match.active === 'player' && !match.over && !match.attackResolving &&
+    !field.usedTurnKeys?.includes(`${match.turn}-player`) && christmasMallSwapChoices(match.player).length);
+}
 function activateChristmasMall(owner) {
   return trackCombatCue(match.fieldCard?.card, owner, -1, () => resolveActivateChristmasMall(owner));
 }
@@ -1885,8 +1903,7 @@ function resolveActivateChristmasMall(owner) {
     announceEffect(`Christmas Mall repositioned ${owner.lanes[plan.first].name} and ${owner.lanes[plan.second].name} for a stronger formation.`);
     return;
   }
-  const sideKey = owner === match.player ? 'p' : 'o';
-  const choices = owner.lanes.flatMap((firstCard, first) => firstCard ? owner.lanes.flatMap((secondCard, second) => second > first && secondCard && (firstCard.element === 'Glacial' || secondCard.element === 'Glacial') ? [{ value: `${first}:${second}`, label: `${firstCard.name} ↔ ${secondCard.name}`, detail: `Your lanes ${first + 1} and ${second + 1}` }] : []) : []);
+  const choices = christmasMallSwapChoices(owner);
   chooseEffect(owner, 'Christmas Mall: switch partners', 'Swap two of your fighters. At least one must be Glacial.', choices, (key) => { if (match.fieldCard !== field) return; const [first, second] = key.split(':'); field.usedTurnKeys ||= []; field.usedTurnKeys.push(turnKey); swapChristmasMallFighters(sideKey === 'p' ? match.player : match.opponent, Number(first), Number(second)); });
 }
 function addPermanentAttack(card, amount, source) { card.attackBonus = (card.attackBonus || 0) + amount; card.attackBonusModifiers = [...(card.attackBonusModifiers || []), { amount, source }]; card.attackBonusSources = [...(card.attackBonusSources || []), source]; }
@@ -1919,7 +1936,7 @@ function resolveTriggerOnSummon(card, owner, laneIndex) {
     let choices = [];
     if (card.id === 'wb-gillusion') choices = [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((unit, from) => unit && Math.abs(from - laneIndex) > 1 ? adjacent.filter((to) => !side.lanes[to]).map((to) => ({ value: `${side === match.player ? 'p' : 'o'}:${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: side === owner ? 'Your fighter' : 'Rival fighter' })) : []));
     if (card.id === 'wb-ladyfeather') { const foe = opponent.lanes[laneIndex]; choices = foe ? adjacent.filter((to) => !opponent.lanes[to]).map((to) => ({ value: `o:${laneIndex}:${to}`, label: `${foe.name} · lane ${laneIndex + 1} → ${to + 1}`, detail: 'Move the opposing fighter' })) : []; }
-    if (card.id === 'wb-merryhound') choices = adjacent.flatMap((from) => owner.lanes[from] ? owner.lanes.flatMap((unit, to) => !unit && Math.abs(to - from) > 1 ? [{ value: `p:${from}:${to}`, label: `${owner.lanes[from].name} · lane ${from + 1} → ${to + 1}`, detail: 'Move an adjacent ally' }] : []) : []);
+    if (card.id === 'wb-merryhound') choices = adjacent.flatMap((from) => owner.lanes[from] ? owner.lanes.flatMap((unit, to) => !unit && Math.abs(to - from) > 1 ? [{ value: `${combatSide(owner) === 'player' ? 'p' : 'o'}:${from}:${to}`, label: `${owner.lanes[from].name} · lane ${from + 1} → ${to + 1}`, detail: 'Move an adjacent ally' }] : []) : []);
     if (owner.isAI) choices = rankAiMoveChoices(owner, choices);
     chooseEffect(owner, `${card.name}: reposition`, 'Choose a legal lane move.', choices, (key) => { const [sideKey, from, to] = key.split(':'); moveWinterCard(sideKey === 'p' ? match.player : match.opponent, Number(from), Number(to)); });
   }
@@ -2030,8 +2047,15 @@ function resolveTriggerOnSummon(card, owner, laneIndex) {
     else if (!opponent.hand.length) announceEffect('The rival has no card in hand for Sangrizo to destroy.');
     else { match.energy--; const randomIndex = Math.floor(Math.random() * opponent.hand.length); const [discarded] = opponent.hand.splice(randomIndex, 1); opponent.destroyed.push(discarded); render(); announceEffect(`Sangrizo destroyed a random card from the rival’s hand.`); }
   }
-  if (card.role === 'Healer') {
-    if (!owner.life.middle[laneIndex] && owner.deck.length) { playSpecialFx(owner, laneIndex, 'healer', 'LIFE RESTORED', { generatedOnly: true }); owner.life.middle[laneIndex] = owner.deck.shift(); render(); announceEffect(`${card.name} restored a life zone.`); }
+  if (card.role === 'Healer' && !owner.life.middle[laneIndex] && owner.deck.length) {
+    playSpecialFx(owner, laneIndex, 'healer', 'LIFE RESTORED', { generatedOnly: true });
+    owner.life.middle[laneIndex] = owner.deck.shift();
+    render();
+    if (card.id === 'lt-melodoll' && activeCombatCue?.card === card) {
+      const restored = lifeTargetElement(combatSide(owner), laneIndex);
+      if (restored) activeCombatCue.sceneTargets = [restored.getBoundingClientRect()];
+    }
+    announceEffect(`${card.name} restored a life zone.`);
   }
   if (card.id === 'ip-coyote') card.doubleAttackReady = false;
   if (card.id === 'ip-pinebeak') drawMatching(owner, (candidate) => candidate.title === 'Island Paradise' && candidate.type === 'Creature', 'Island Paradise Creature');
@@ -2151,12 +2175,19 @@ function resolveActivateTopazDiamond(owner, laneIndex) {
   const choices = owner.lanes.flatMap((unit, from) => unit ? owner.lanes.flatMap((slot, to) => !slot ? [{ value: `${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: 'Move to an empty Battle Zone' }] : []) : []);
   chooseEffect(owner, 'Topaz & Diamond: glide across the floor', 'Once per turn, move one of your fighters to any empty Battle Zone.', choices, (key) => { const [from, to] = key.split(':').map(Number); if (moveWinterCard(owner, from, to)) card.abilityUsedTurn = match.turn; });
 }
+function sageapeMoveChoices() {
+  return [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((unit, from) => unit?.element === 'Glacial' && !(unit.cannotMoveUntilTurn > match.turn) ? side.lanes.flatMap((slot, to) => !slot && to !== from ? [{ value: `${side === match.player ? 'p' : 'o'}:${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: side === match.player ? 'Move your Glacial fighter' : 'Move rival Glacial fighter' }] : []) : []));
+}
+function canUseSageape(card) {
+  return Boolean(card?.id === 'wb-sageape' && match.player?.hand.includes(card) &&
+    match.active === 'player' && !match.over && !match.attackResolving && sageapeMoveChoices().length);
+}
 function activateSageape(instance) {
   return trackCombatCue(match.player.hand.find((card) => card.id === 'wb-sageape' && card.instance === instance), match.player, -1, () => resolveActivateSageape(instance));
 }
 function resolveActivateSageape(instance) {
   const cardIndex = match.player.hand.findIndex((card) => card.instance === instance); if (cardIndex < 0) return;
-  const targets = [match.player, match.opponent].flatMap((side) => side.lanes.flatMap((unit, from) => unit?.element === 'Glacial' ? side.lanes.flatMap((slot, to) => !slot && to !== from ? [{ value: `${side === match.player ? 'p' : 'o'}:${from}:${to}`, label: `${unit.name} · lane ${from + 1} → ${to + 1}`, detail: side === match.player ? 'Move your Glacial fighter' : 'Move rival Glacial fighter' }] : []) : []));
+  const targets = sageapeMoveChoices();
   chooseEffect(match.player, 'Sageape: shift the ice', 'Discard Sageape to move a Glacial fighter to another free Battle Zone.', targets, (key) => { const [sideKey, from, to] = key.split(':'); const [discarded] = match.player.hand.splice(cardIndex, 1); match.player.destroyed.push(discarded); moveWinterCard(sideKey === 'p' ? match.player : match.opponent, Number(from), Number(to)); render(); announceEffect('Sageape was discarded to move a Glacial fighter.'); });
 }
 function activateAiSageape(owner) {
@@ -2727,7 +2758,7 @@ function selectAttackerFromClick(index) {
   return true;
 }
 document.addEventListener('click', (event) => {
-  if (Date.now() < suppressHandClickUntil && event.target.closest('.hand-card, .lane, .battle-card, .card-ability-trigger, [data-hand-ability], [data-field-ability]')) { event.preventDefault(); return; }
+  if (Date.now() < suppressHandClickUntil && event.target.closest('.hand-card, .lane, .battle-card')) { event.preventDefault(); return; }
   const tooltip = document.getElementById('card-tooltip');
   const tooltipSummon = event.target.closest('[data-tooltip-summon]');
   if (tooltipSummon) {
@@ -2749,7 +2780,8 @@ document.addEventListener('click', (event) => {
     const id = tooltipSpecial.dataset.cardInstance, kind = tooltipSpecial.dataset.tooltipSpecial;
     hideCardTooltip(); match.selected = null;
     if (kind === 'cotton' && match.active === 'player' && !match.over && match.fieldCard?.id !== 'academy-grounds') useCotton(match.player, id);
-    else if (kind === 'sageape') activateSageape(id);
+    else if (kind === 'sageape' && canUseSageape(match.player.hand.find((card) => card.instance === id))) activateSageape(id);
+    else if (kind === 'christmas-mall' && match.fieldCard?.card?.instance === id && canUseChristmasMall(match.fieldCard.card)) activateChristmasMall(match.player);
     return;
   }
   if (!isTouchInput()) {
@@ -2813,7 +2845,6 @@ document.addEventListener('click', (event) => {
   if (libraryTab) { renderCardLibrary(libraryTab.dataset.libraryDeck); return; }
   const inspectedZone = event.target.closest('.inspect-zone');
   if (inspectedZone) { showZoneCards(inspectedZone.dataset.zoneSide, inspectedZone.dataset.zoneKind); return; }
-  if (event.target.closest('.card-ability-trigger, [data-hand-ability], [data-field-ability]')) return;
   const mainLife = event.target.closest('.life-card[data-life-side="opponent"][data-life-main="true"]');
   if (mainLife && match.active === 'player' && match.attackMode && !match.attackResolving && match.attackerLane !== null) {
     const attacker = match.player.lanes[match.attackerLane];
@@ -2851,8 +2882,6 @@ let activeCardDrag = null;
 let attackDragCandidate = null;
 let activeAttackDrag = null;
 let suppressHandClickUntil = 0;
-let abilityDragCandidate = null;
-let activeAbilityDrag = null;
 function activateCardAbilityById(ability,index) {
   if (ability === 'ww-medusa') activateMedusa(match.player,index);
   else if (ability === 'ww-blake') activateBlake(match.player,index);
@@ -2861,47 +2890,6 @@ function activateCardAbilityById(ability,index) {
   else if (ability === 'wb-topaz-diamond') activateTopazDiamond(match.player,index);
   else if (ability === 'zoya') activateZoya(match.player,index);
 }
-function activateDraggedAbility(control) {
-  if (control.matches('.card-ability-trigger')) {
-    const lane = control.closest('.lane'); if (!lane) return;
-    const index = Number(lane.dataset.lane);
-    activateCardAbilityById(control.dataset.ability,index);
-  } else if (control.matches('[data-hand-ability="wb-sageape"]')) {
-    const card = control.closest('.hand-card'); if (card) activateSageape(card.dataset.id);
-  } else if (control.matches('[data-field-ability="christmas-mall"]')) activateChristmasMall(match.player);
-}
-document.addEventListener('pointerdown', (event) => {
-  const control = event.target.closest('.card-ability-trigger, [data-hand-ability], [data-field-ability]');
-  if (!control || control.disabled || event.button === 2 || match.active !== 'player' || match.over) return;
-  hideCardTooltip();
-  abilityDragCandidate = { pointerId:event.pointerId, x:event.clientX, y:event.clientY, element:control };
-});
-document.addEventListener('pointermove', (event) => {
-  if (!abilityDragCandidate || event.pointerId !== abilityDragCandidate.pointerId) return;
-  const dx=event.clientX-abilityDragCandidate.x, dy=event.clientY-abilityDragCandidate.y;
-  if (!activeAbilityDrag) {
-    if (Math.hypot(dx,dy)<9) return;
-    const source=abilityDragCandidate.element.closest('.battle-card, .hand-card') || abilityDragCandidate.element;
-    const ghost=source.cloneNode(true); ghost.classList.add('drag-ghost'); document.body.append(ghost);
-    document.body.classList.add('card-dragging');
-    try { abilityDragCandidate.element.setPointerCapture(event.pointerId); } catch {}
-    activeAbilityDrag={...abilityDragCandidate,ghost};
-  }
-  event.preventDefault();
-  activeAbilityDrag.ghost.style.left=`${event.clientX}px`; activeAbilityDrag.ghost.style.top=`${event.clientY}px`;
-  document.querySelectorAll('.drag-action-target').forEach((node)=>node.classList.remove('drag-action-target'));
-  const board=document.elementFromPoint(event.clientX,event.clientY)?.closest('#player-board, .player-life, .player-field-zone, .battlefield');
-  if(board) board.classList.add('drag-action-target');
-},{passive:false});
-document.addEventListener('pointerup', (event) => {
-  if (!abilityDragCandidate || event.pointerId !== abilityDragCandidate.pointerId) return;
-  const drag=activeAbilityDrag;
-  const overBoard=!!document.elementFromPoint(event.clientX,event.clientY)?.closest('#player-board, .player-life, .player-field-zone, .battlefield, .lane');
-  if(drag){ suppressHandClickUntil=Date.now()+450; drag.ghost.remove(); document.body.classList.remove('card-dragging'); document.querySelectorAll('.drag-action-target').forEach((node)=>node.classList.remove('drag-action-target')); activeAbilityDrag=null; }
-  abilityDragCandidate=null;
-  if(drag&&overBoard&&match.active==='player'&&!match.over) activateDraggedAbility(drag.element);
-});
-document.addEventListener('pointercancel',(event)=>{ if(abilityDragCandidate?.pointerId===event.pointerId){ activeAbilityDrag?.ghost?.remove(); activeAbilityDrag=null; abilityDragCandidate=null; document.body.classList.remove('card-dragging'); document.querySelectorAll('.drag-action-target').forEach((node)=>node.classList.remove('drag-action-target')); }});
 function clearCardDrag() {
   document.querySelectorAll('.drag-drop-target,.drag-action-target').forEach((node) => node.classList.remove('drag-drop-target', 'drag-action-target'));
   document.querySelectorAll('.hand-card.dragging').forEach((node) => node.classList.remove('dragging'));
@@ -3060,11 +3048,11 @@ document.addEventListener('pointerup', (event) => {
 document.addEventListener('pointercancel', (event) => { if (handDragCandidate?.pointerId === event.pointerId) clearCardDrag(); });
 document.addEventListener('keydown', (event) => {
   if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.inspect-zone')) { event.preventDefault(); showZoneCards(event.target.dataset.zoneSide, event.target.dataset.zoneKind); }
-  if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.battle-card[role="button"]')) { event.preventDefault(); const card=findCardPreview(event.target.dataset.cardPreview); const tooltip=document.getElementById('card-tooltip'); if(card){showCardTooltip(card,{target:event.target,clientX:window.innerWidth/2,clientY:window.innerHeight/2});tooltip.classList.add('pinned');} }
+  if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.battle-card[role="button"], .hand-card[role="button"], .field-zone[data-card-preview][role="button"]')) { event.preventDefault(); const card=findCardPreview(event.target.dataset.cardPreview); const tooltip=document.getElementById('card-tooltip'); if(card){showCardTooltip(card,{target:event.target,clientX:window.innerWidth/2,clientY:window.innerHeight/2});tooltip.classList.add('pinned');} }
 });
 document.querySelectorAll('dialog').forEach((dialog) => dialog.addEventListener('close', hideCardTooltip)); document.getElementById('close-zone').addEventListener('click', () => document.getElementById('zone-dialog').close());
 document.addEventListener('pointerover', (event) => {
-  if (isTouchInput() || activeCardDrag || handDragCandidate || activeAttackDrag || attackDragCandidate || activeAbilityDrag || abilityDragCandidate || document.getElementById('card-tooltip')?.classList.contains('pinned')) { if (activeCardDrag || activeAttackDrag || activeAbilityDrag) hideCardTooltip(); return; }
+  if (isTouchInput() || activeCardDrag || handDragCandidate || activeAttackDrag || attackDragCandidate || document.getElementById('card-tooltip')?.classList.contains('pinned')) { if (activeCardDrag || activeAttackDrag) hideCardTooltip(); return; }
   const preview = event.target.closest('[data-card-preview]');
   if (!preview) return;
   if (preview.matches('.hand-card, .battle-card, .field-card') || preview.matches('.field-zone')) return;
@@ -3072,7 +3060,7 @@ document.addEventListener('pointerover', (event) => {
   const card = findCardPreview(preview.dataset.cardPreview);
   showCardTooltip(card, event);
 });
-document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag || activeAbilityDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !document.getElementById('card-tooltip')?.classList.contains('pinned') && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
+document.addEventListener('pointermove', (event) => { if (activeCardDrag || activeAttackDrag) { hideCardTooltip(); return; } if (!isTouchInput() && !document.getElementById('card-tooltip')?.classList.contains('pinned') && !event.target.closest('#card-tooltip')) positionCardTooltip(event); });
 document.addEventListener('pointerout', (event) => {
   if (isTouchInput()) return;
   const preview = event.target.closest('[data-card-preview]');

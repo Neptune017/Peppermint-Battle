@@ -53,6 +53,7 @@
       slimeSpring: ['l', ['#98fdc4', 0], ['#43d985', .29, .8], ['#17844e', .56, .9], ['#c9fd3e', .82, .8], ['#f1ff9e', 1]],
       slimeCoral: ['l', ['#ffe9ab', 0], ['#ff86d2', .28, .78], ['#8556b4', .54, .65], ['#22d498', .81, .88], ['#c4ff56', 1]],
       slimePink: ['l', ['#ffde9b', 0], ['#ff88de', .19], ['#be367d', .54, .82], ['#4f2066', .72, .64], ['#fa8bda', 1]],
+      fujinSilk: ['h', ['#22517b',0], ['#3d96bd',.25], ['#96e8ef',.44], ['#74c8df',.58], ['#2b86a8',.82], ['#204869',1]],
       skin: ['l', ['#fff1d9', 0], ['#eeb793', .22], ['#c98873', .53], ['#8b5357', .81], ['#d08b76', 1]],
     };
     const defs = svgNode('defs', {}, layer);
@@ -465,6 +466,8 @@
     if (attack && card.id==='peppermint') flight = impact = 'candy';
     if (card.id==='zoya') flight = impact = 'dark';
     if (attack && card.id==='ip-natsuki') flight = impact = 'water';
+    if (card.id==='ip-jet') flight = impact = 'fire';
+    if (card.id==='ip-chase') flight = impact = 'water';
     if (attack && key?.endsWith('Umbrella')) impact = 'ice';
     let aer = null;
     if (card.element === 'Aer') {

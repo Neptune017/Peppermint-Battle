@@ -65,10 +65,10 @@ ww-planting - root+leaf wood 9cf186
 cactus-creek - thorn+arch wood bde488
 ip-brody claw+fin fin+shatter drum 66dbfc
 ip-natsuki ring+wave ring+shield water 80eaff
-ip-jet wave+flame flame+orbit brass ffab60
+ip-jet kick+flame flame+orbit brass ffab60
 ip-sabrina kick+bolt wing+bolt circuit 8effcd
 ip-coyote crescent+wave crescent+echo pulse 76e9e4
-ip-chase wave+coil wave+heart water f697de
+ip-chase wave+coil wave+heart water 65dff3
 ip-academy-chase kick+drop drop+orbit fabric 7ee7fb
 ip-zodiac-aqua-kentaur arrow+wave gem+wave water 7cefff
 ip-zodiac-psycho-chicken feather+star gem+feather whistle e29bff
@@ -102,7 +102,7 @@ lt-wind-up-toy - spring+portal circuit b5a0ed
 lt-toy-capsule - egg+box bubble a9a5ff
 drinking-tea - steam+cup glass b7f2f9
 christmas-mall - arch+gift chime eed6fa
-academy-diamond cup+gem cup+wing glass b3eaff
+academy-diamond whirl+wing whirl+wing wind b3eaff
 academy-topaz bolt+drum bolt+crown brass ffc970
 academy-dimitri umbrella+ice umbrella+book glass a4e6ff
 wb-topaz-diamond drum+gem gem+leap bell b4ccff

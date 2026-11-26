@@ -75,7 +75,35 @@
     }
 
     const beats = window.peppermintCombatScenes.beats[mode];
-    if (mode==='cymbals') {
+    if (mode==='flamePunch' || mode==='kindle') {
+      const punch=mode==='flamePunch';
+      texture(t-(punch?.15:.38),punch?.31:.56,380,1710,.135*weight,1.4);
+      texture(t+.03,.48,1950,510,.128*weight,1.5);
+      if (punch) sweep(t,.27,138,41,.14*weight,'triangle');
+      for(let i=0;i<7;i++)texture(t+.048+i*.036,.094,1120+(seed+i*313)%3200,590+i*95,.034,1.4);
+    } else if (mode==='lifebuoy') {
+      texture(t-.63,.46,950,2720,.065,1.9);
+      sweep(t-.51,.32,438,265,.061);
+      texture(t-.025,.25,3580,1000,.171*weight,1.57);
+      texture(t+.061,.52,660,249,.13,2.2);
+      for(let i=0;i<5;i++)sweep(t+.12+i*.072,.138,510+(seed+i*73)%276,168+i*31,.073/(1+i*.18));
+    } else if (mode==='harpRestore') {
+      [note(57),note(62),note(66),note(69),note(74),note(78)].forEach((hz,i)=>
+        resonator(t-.49+i*.137,hz,.52,.095-i*.007,i===3?'reed':'wood'));
+      resonator(t+.12,note(81),.67,.058,'bell');
+    } else if (mode==='fujin') {
+      texture(t-.57,.56,500,1880,.12,1.28);
+      texture(t-.21,.61,2850,587,.126*weight,1.5);
+      sweep(t-.47,.45,566,1030,.049);
+      sweep(t+.012,.33,290,109,.061);
+    } else if (mode==='carousel') {
+      [72,76,79,84,81,79,76].forEach((key,i)=>{
+        const at=t-.67+i*.205;
+        resonator(at,note(key),.46,.09,'reed');
+        resonator(at+.043,note(key+12),.34,.038,'bell');
+      });
+      texture(t-.75,.43,465,1150,.052,2.1);
+    } else if (mode==='cymbals') {
       const hit=t-window.peppermintCombatScenes.cymbalLead/1000;
       texture(hit-.055,.15,2450,6020,.08,3.0);
       texture(hit,.67,8320,2940,.163*weight,2.4);

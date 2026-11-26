@@ -27,7 +27,7 @@
     if (card?.role === 'Brawler') return false;
     if (card?.role === 'Shooter') return true;
     const scene = window.peppermintCombatDirection[card?.id]?.strike?.move;
-    return ['cymbals','raijin','mirrors','beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
+    return ['cymbals','raijin','mirrors','fujinWind','buoyThrow','beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
   }
   const attackImpactTime = 910;
   const attackResolutionTime = attackImpactTime + 240;

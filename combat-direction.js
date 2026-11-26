@@ -66,10 +66,10 @@ ww-planting - bloom/vines/roots
 cactus-creek - panorama/splinters/air
 ip-brody swing/gashes/claws river/tide/splash
 ip-natsuki river/drops/splash armor/ripples/water
-ip-jet river/embers/fire fountain/sun/solar
+ip-jet fireFist/fistFire/flamePunch kindle/fireRise/kindle
 ip-sabrina leap/tidalShock/surge swarm/tidalNet/surge
 ip-coyote slimeClaws/tide/slimeClaws score/whorl/pulse
-ip-chase river/tide/water fountain/drops/splash
+ip-chase buoyThrow/poolSplash/lifebuoy buoyThrow/poolSplash/lifebuoy
 ip-academy-chase leap/drops/splash orbit/ripples/water
 ip-zodiac-aqua-kentaur dart/tide/bow orbit/drops/crystal
 ip-zodiac-psycho-chicken volley/feathers/air swarm/facets/whistle
@@ -92,7 +92,7 @@ lt-rat-king chains/gashes/chain curtain/plates/shadow
 lt-boxy sling/shell/gears sendParcel/parcelArrival/parcel
 lt-teddy swing/cloth/fabric stitch/fault/fabric
 lt-broomy gale/splinters/air portal/whorl/shadow
-lt-melodoll score/notes/harp fountain/threads/harp
+lt-melodoll score/notes/harp lullaby/harpRestore/harpRestore
 lt-clapster cymbals/cymbalRings/cymbals stamp/circuit/gears
 lt-beatcracker slam/ripples/drum gate/marks/drum
 lt-zodiac-fritz curtain/notes/flute trap/mask/shadow
@@ -103,7 +103,7 @@ lt-wind-up-toy - windup/coil/windup
 lt-toy-capsule - hatch/shell/ceramic
 drinking-tea - serving/steam/tea
 christmas-mall - carousel/sleet/bells
-academy-diamond gale/windShear/air gale/drift/air
+academy-diamond fujinWind/windShear/fujin fujinWind/drift/fujin
 academy-topaz raijin/wireStrike/raijin score/sparkComb/electric
 academy-dimitri swing/sleet/ice pages/facets/paper
 wb-topaz-diamond kettles/porcelain/tea kettles/tea/tea
@@ -111,7 +111,7 @@ wb-bearnardo slam/sleet/ice stamp/facets/ice
 wb-dimitri swing/cleave/steel frost/sleet/ice
 wb-gillusion river/sleet/ice portal/facets/ice
 wb-ladyfeather volley/windShear/air gale/drift/whistle
-wb-merryhound swing/sleet/claws leap/facets/ice
+wb-merryhound swing/sleet/claws merryGoRound/carouselTrails/carousel
 wb-rebeccah bloom/petals/harp escort/whorl/fabric
 wb-magnus swing/plates/steel armor/sleet/metal
 wb-sageape swing/facets/claws frost/folds/ice
@@ -126,13 +126,13 @@ wb-merry-christmas - tree/ornaments/bells
 zodiac-valkyrie-chicken volley/needleArc/electric bloom/sparkComb/electric
 zodiac-guardian-sabrina swing/coronaPunch/storm orbit/coronaPunch/storm
 valhalla-axir swing/splinters/steel armor/cleave/wood
-valhalla-barfy river/foam/splash fountain/foam/boil
+valhalla-barfy river/foam/splash tavern/foam/boil
 valhalla-khendal swing/gashes/claws lash/roar/thunder
 valhalla-bar - tavern/foam/wood
 valhalla-miss-ragna slam/plates/metal armor/feathers/metal
 valhalla-mjolknir volley/floorArc/thunder beams/wireStrike/thunder
 valhalla-morrikyn beams/rift/shadow portal/folds/shadow
-valhalla-pryce swing/sun/steel fountain/ornaments/brass
+valhalla-pryce swing/sun/steel forge/ornaments/brass
 valhalla-ryota beam/roar/fire implosion/embers/solar
 valhalla-sabrina swing/thunderPunch/thunder armor/grounding/thunder
 valhalla-sloetunn slam/embers/metal trap/fault/fire

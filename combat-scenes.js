@@ -164,6 +164,7 @@
       case 'seaGate': return repeat(5,i=>group(`translate(${(i-2)*20} ${i%2*16}) rotate(${(i-2)*13})`,path('M-31 26C-11-24 17-36 27-21Q3-26 4-4Q6 21 29 28Z',fill('liquid'),hot,1.7)));
       case 'rib': return path('M-51 14C-31-10-21 10 0-10Q23-30 50-12Q18-19 6 4Q-15 28-51 14Z',fill('flame'),hot,1)+path('M-34 12Q-12 18 8-4Q20-16 38-14','none',fine,1.2);
       case 'paper': return path('M-29-18L22-22 12 19-22 23Z',fill('pearlCloth'),hot,1.2);
+      case 'ember': return path('M-4 9Q-17-4 2-16Q0-10 10-10Q13 6-4 9Z',fill('flame'))+oval(1,1,3,5,fill('core'));
       case 'slimeDrop': return path('M-2-30C8-21 21-5 18 10Q14 29-5 29Q-23 23-20 9Q-16-9-2-30Z',fill('slimeGreen'),'#cdf98a',.95)+path('M-13 3Q-17 11-10 20','none','#e6ffb4',1.5);
       case 'bubble': return oval(0,0,36,32,fill('liquid'),'stroke="#b2fbff" stroke-width="1.8"')+oval(-13,-15,8,4,fine);
       default: return oval(0,0,17,15,fill('core'));
@@ -176,7 +177,7 @@
 
   function productionTime(direction, attack, sharedField) {
     if (attack) return null;
-    return { sendParcel: 1090, healing: 830, prism: 960, mirrors: 850, horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
+    return { sendParcel: 1090, healing: 830, fujinWind: 880, buoyThrow: 935, kindle: 890, lullaby: 960, merryGoRound: 1060, prism: 960, mirrors: 850, horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
       brew: 950, hatch: 950, carnival: 970, carousel: 1050, panorama: 1020 }[direction?.move] || (sharedField ? 900 : 735);
   }
 
@@ -544,11 +545,182 @@
 
   const winterTeaCards = new Set(['drinking-tea','wb-topaz-diamond','wb-steepod']);
 
+
+  function flameTongue(fill) {
+    return path('M-14 15C-26 4-16-15 6-26C27-37 29-49 41-60C40-40 61-44 80-57C75-33 61-25 43-21C29-16 37-11 56-8C39 8 10-2 3 10C0 16-6 20-14 15Z',fill('flame'))+
+      path('M-12 11C-6-9 26-15 36-32C35-21 47-21 58-25C44-11 11-5-2 16Z','#ffb74cba')+
+      path('M-13 5C2-12 18-13 24-16M28-33Q39-38 42-49M51-21Q65-28 72-43','none','#ffe7a5',1.22);
+  }
+
+  function fujinBag(fill) {
+    return path('M55-4Q62 4 58 17L47 26Q42 28 41 19Q42 11 39 7Z',fill('blueCloth'),'#28526e',1.45)+
+      path('M-67 14C-79-6-59-22-40-32C-15-46 27-42 45-22C63-5 48 15 37 15C24 15 22-1 7-7C-11-14-27-10-33 4C-35 15-47 23-58 22Z',fill('fujinSilk'),'#3d779b',2.15)+
+      path('M-68 8Q-62-13-44-22Q-7-43 21-30Q40-24 46-12M-43-2C-33-14-20-21-3-17Q22-16 33 5','none','#b8f3ffb4',2)+
+      path('M-56-7C-63-14-54-22-43-17C-37-24-25-23-23-16Q-10-19-6-11C-8-4-17-4-23-6Q-33-2-42-8Q-53-3-56-7Z M0-28C4-37 17-35 21-29Q34-33 39-26Q42-18 27-18Q18-21 12-18Q0-17 0-28Z',
+        '#f8d9eb','#9976ae',1.4)+
+      path('M-50-13Q-42-17-37-12Q-32-9-34-6M4-29Q10-32 17-27L17-24M-61 12Q-59 19-54 22M43 13Q48 16 48 25','none','#e0b3d2',1.28)+
+      path('M-64 14l13 13-5 3-10-11M37 15l10 14 7-7m-10 8-7 13m10-12 5 8M-57 29l-5 12m10-11 4 13',
+        'none',fill('gold'),2.8)+oval(55,17,7,5,'#24415d','stroke="#deb8d8" stroke-width="1.4"');
+  }
+
+  function rescueBuoy(fill) {
+    const ring='M-61 0a61 41 0 1 1 122 0a61 41 0 1 1 -122 0ZM-30 0a30 20 0 1 0 60 0a30 20 0 1 0 -60 0Z';
+    return `<g fill-rule="evenodd">${path(ring,fill('ruby'),'#ffbd9f',2.05)}</g>`+
+      path('M-58-10C-49-29-18-41 10-37M19 37Q47 30 55 17M-24 10Q-16 23 8 19','none','#ffbec8',2.4)+
+      path('M-48-26Q-36-35-25-36L-11-19Q-22-16-27-10Z M35-33Q44-31 52-22L26-8Q24-15 16-17Z M51 25Q39 34 30 35L16 17Q24 15 27 8Z M-34 35Q-45 32-52 23L-27 8Q-24 15-16 17Z',fill('pearlCloth'),'#ffc97f',1.6)+
+      path('M-59 5Q-51 12-60 19Q-48 32-37 35M35-35Q49-39 59-28Q65-21 59-12','none',fill('gold'),3.2)+
+      path('M-16-26Q-3-30 13-27M9 30Q21 26 26 24','none','#fff3a4',1.42);
+  }
+
+  function carouselHorse(fill) {
+    return path('M-38-5Q-44-5-53 8L-61 7Q-54-5-46-13L-38-10 M-31 5Q-14 13 5 6L21 20 35 19 37 24 16 27 0 15Q-11 15-18 17L-29 31-40 33-41 28-32 25-25 10Z',
+      fill('gold'),'#765741',1.45)+
+      path('M-36-6Q-34-16-21-15L3-14Q8-29 17-34L19-45 23-41 24-33 31-40 34-32 43-26 46-16 38-14 30-23Q24-22 19-13C17 5 3 13-12 11C-31 13-44 8-36-6Z',fill('pearlCloth'),'#725339',1.4)+
+      path('M7-15Q4-32 17-35L15-23 28-33Q17-21 19-12L13-6Z',fill('gold'),'#9b613b',1.1)+
+      path('M-28-14L2-14 5 1Q-8 8-24 3Z',fill('blueCloth'),'#f5cb82',1.9)+
+      path('M-30-8Q-20 1-6-3M26-26L39-20M-18 12L-29 23','none','#e2bc81',1.25)+oval(32,-27,1.8,1.9,'#412a36');
+  }
+
+  function melodollHarp(fill) {
+    return path('M-32 40Q-13 52 35 42L33 49Q-6 59-40 50Z',fill('gold'),'#6e4747',1.5)+
+      path('M-33 38C-42 5-33-21-48-46Q-53-67-26-60Q-10-54-21-48C0-47 28-13 37 39L30 44Q22 7 3-18Q-8-34-22-36C-27-15-28 15-24 42Z',fill('wood'),'#896044',2.2)+
+      path('M-34 40C-41 7-31-27-42-47Q-42-55-32-54C-26-54-17-42-12-42Q14-28 23-2','none',fill('gold'),2.7)+
+      repeat(9,i=>path(`M${i*5.6-20} ${-37+i*4.5+i*i*.43}V${43-i*.13}`,'none',i%2?'#a9efaa':'#fce1a8',.77))+
+      path('M-33 42Q-37-4-28-34M4-28Q19-13 25 5','none','#e6d598',1.22);
+  }
+
+  function fireBurstFromFist(ctx, target, angle) {
+    const d=angle*Math.PI/180, size=ctx.scale;
+    const point={x:target.x-Math.cos(d)*20*size,y:target.y-Math.sin(d)*20*size};
+    const directions=[-110,-66,-25,18,63,118];
+    directions.forEach((turn,i)=>{
+      const plume=ctx.art(flameTongue(ctx.palette.fill),point.x,point.y,angle+turn);
+      plume.setAttribute('data-combat-prop','fistFlame');
+      const stretch=size*(i%3===0?.66:i%3===1?.91:1.12);
+      ctx.motion(plume, ctx.reduced
+        ? [{opacity:0,transform:`scale(${stretch*.68})`},{opacity:.84,offset:.18},{opacity:0}]
+        : [{opacity:0,transform:`scale(${stretch*.32},${stretch*.50})`},{opacity:.96,transform:`scale(${stretch},${stretch*.83})`,offset:.20},
+          {opacity:.73,transform:`scale(${stretch*1.24},${stretch*.71})`,offset:.56},
+          {opacity:0,transform:`scale(${stretch*1.45},${stretch*.54})`}],
+      670+i*44,ctx.hitAt+i*14,'ease-out');
+    });
+  }
+
+  function stageKindle(ctx, target) {
+    const {art,motion,palette,impactAt,effectScale,reduced}=ctx;
+    for(let i=0;i<5;i++){
+      const plume=art(flameTongue(palette.fill),target.x+(i-2)*22*effectScale,target.y+42*effectScale,-82+(i-2)*11);
+      plume.setAttribute('data-combat-prop','kindleFlame');
+      motion(plume,reduced?[{opacity:0},{opacity:.73},{opacity:0}]:[
+        {opacity:0,transform:'scale(.26)'},{opacity:.9,transform:`translateY(-9px) scale(${effectScale*.69})`,offset:.31},
+        {opacity:.57,transform:`translateY(-37px) scale(${effectScale*.91},${effectScale*.66})`,offset:.60},
+        {opacity:0,transform:'translateY(-64px) scale(.61)'}],820,impactAt-480+i*62);
+    }
+  }
+
+  function stageFujin(ctx, target) {
+    const {origin, effectScale, impactAt, palette, art, motion, reduced}=ctx;
+    const aim=Math.atan2(target.y-origin.y,target.x-origin.x);
+    const angle=aim*180/Math.PI;
+    const s=effectScale*.78;
+    const position=mix(origin,target,.16);
+    const body={x:position.x+Math.sin(aim)*12*s,y:position.y-Math.cos(aim)*12*s};
+    const bag=art(fujinBag(palette.fill),body.x,body.y,angle);
+    bag.setAttribute('data-combat-prop','fujinBag');
+    motion(bag,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.95},{opacity:0}]:[
+      {opacity:0,transform:`scale(${s*.58})`},{opacity:1,transform:`scale(${s},${s*1.15})`,offset:.31},
+      {opacity:.99,transform:`scale(${s*.96},${s*.80})`,offset:.68},
+      {opacity:0,transform:`scale(${s*.81},${s*.75})`}],impactAt+590,120,'ease-in-out');
+    if (!reduced) {
+      const spout={x:body.x+(54*Math.cos(aim)-15*Math.sin(aim))*s,y:body.y+(54*Math.sin(aim)+15*Math.cos(aim))*s};
+      channel({...ctx,hitAt:impactAt,scale:s,color:'#91dfff',hot:'#f3fcff'},spout,target,'gale');
+    }
+  }
+
+  function stageBuoyThrow(ctx, target) {
+    const {origin, art, motion, palette, reduced, impactAt, effectScale}=ctx;
+    const vx=target.x-origin.x,vy=target.y-origin.y;
+    const dist=Math.hypot(vx,vy);
+    const bend=Math.min(103,Math.max(7,dist*.27));
+    const xs=dist>1?vx/dist:1,ys=dist>1?vy/dist:0;
+    const ring=art(rescueBuoy(palette.fill),origin.x,origin.y);
+    ring.setAttribute('data-combat-prop','rescueBuoy');
+    const release=Math.round(impactAt*.28);
+    const s=effectScale*.80;
+    const travel=impactAt-release;
+    const duration=travel+270;
+    const keyframes=[0,.22,.46,.73,1].map((t,i)=>{
+      const offset=Math.sin(t*Math.PI)*bend;
+      const x=vx*t-ys*offset,y=vy*t+xs*offset;
+      return {offset:t*travel/duration,opacity:i===0?0:.98,
+        transform:`translate(${x}px,${y}px) rotate(${185*t-24}deg) scale(${s*(.72+t*.24)},${s*(.67+.31*Math.abs(Math.cos(t*Math.PI)))})`};
+    });
+    if (reduced) {
+      motion(ring,[{opacity:0,transform:`scale(${s*.73})`},{opacity:.94},{opacity:0}],540,release);
+    } else {
+      motion(ring,[...keyframes,{offset:1,opacity:0,transform:`translate(${vx}px,${vy+16}px) scale(${s*.24})`}],
+        duration,release,'linear');
+    }
+  }
+
+  function stageMerryGoRound(ctx, target) {
+    const {origin, viewport, art, motion, palette, reduced, impactAt, effectScale}=ctx;
+    const mid=mix(origin,target,.57);
+    const point={x:Math.max(100,Math.min(viewport.w-100,mid.x)),y:Math.max(119,mid.y-28)};
+    const {fill}=palette,s=Math.min(1.48,effectScale)*.97,show=130;
+    const structure=(drawing,tag)=>{
+      const node=art(drawing,point.x,point.y);
+      node.setAttribute('data-combat-prop',tag);
+      motion(node,[{opacity:0,transform:`scale(${s*.84})`},{opacity:1,transform:`scale(${s})`,offset:.20},
+        {opacity:.97,offset:.78},{opacity:0}],impactAt+1000,show);
+    };
+    structure(path('M-92 49L-92 58Q0 105 92 58L92 49Z',fill('gold'),'#9d663c',1.4)+
+      oval(0,48,92,29,fill('blueCloth'),'stroke="#f4cd86" stroke-width="2"')+
+      oval(0,48,71,20,'none','stroke="#c2a07b" stroke-width="1.3"')+
+      path('M-6-69H6V50Q0 54-6 50Z',fill('gold'),'#7c5162',1.5),'carouselBase');
+    for(let i=0;i<4;i++){
+      const horse=art(path('M-1-57H2V33H-1Z',fill('gold'))+carouselHorse(fill),point.x,point.y);
+      horse.setAttribute('data-combat-prop','carouselHorse');
+      const turns=32;
+      const frames=Array.from({length:turns+1},(_,step)=>{
+        const t=step/turns,phi=i*Math.PI/2+(reduced?0:t*2.45*Math.PI);
+        const back=Math.sin(phi),x=Math.cos(phi)*62*s,y=(16*back+6+(reduced?0:Math.sin(t*5*Math.PI+i)*7))*s;
+        const size=s*(.64+.13*back),side=Math.sin(phi+Math.PI/16)<0?-1:1;
+        return {offset:t,opacity:Math.min(1,step/5,(turns-step)/7)*(.80+back*.17),
+          transform:`translate(${x}px,${y}px) scale(${size*side},${size})`};
+      });
+      motion(horse,frames,impactAt+1000,show,'linear');
+    }
+    const roof=path('M-90-49Q-45-59-4-104L0-111 4-104Q48-58 90-49Q0-23-90-49Z',fill('blueCloth'),'#dbaa68',2)+
+      path('M-67-43Q-32-63-4-103Q-22-56-36-38M-12-37Q0-69 0-110Q3-71 23-38M51-38Q34-63 7-102Q48-62 72-44Z',fill('pearlCloth'),'#ecbd77',1.7)+
+      path('M-90-48Q0-15 90-48M-90-43Q-77-32-66-38Q-53-24-39-31Q-27-20-14-26Q2-17 17-26Q31-19 44-32Q58-26 69-38Q81-32 90-43','none',fill('gold'),3.25)+
+      oval(0,-110,5.4,5.8,fill('gold'));
+    structure(roof,'carouselCanopy');
+  }
+
+  function stageHarp(ctx,target) {
+    const {origin, impactAt, art, motion, palette, reduced, effectScale}=ctx;
+    const start=mix(origin,target,.27), point={x:start.x+30,y:Math.max(65,start.y-53)};
+    const harp=art(melodollHarp(palette.fill),point.x,point.y,-9);
+    harp.setAttribute('data-combat-prop','melodollHarp');
+    const s=effectScale*.92;
+    motion(harp,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.94},{opacity:0}]:[
+      {opacity:0,transform:'translateY(19px) scale(.35)'},{opacity:1,transform:`scale(${s})`,offset:.33},
+      {opacity:.94,transform:`rotate(7deg) scale(${s})`,offset:.70},{opacity:0,transform:`translateY(-14px) scale(${s*.86})`}],
+    impactAt+660,123);
+    if(!reduced) channel({...ctx,hitAt:impactAt,scale:s,color:'#b8ecac',hot:'#ecbaff'},point,target,'score');
+  }
+
   function setPiece(ctx) {
     const {direction, origin, targets, palette, motion, hot, color, impactAt, reduced, effectScale, viewport} = ctx;
     const move=direction.move;
     const scale=Math.min(1.55,effectScale*.83);
     if (move==='sendParcel') { stageParcel(ctx, targets[0]); return true; }
+    if (move==='fujinWind') { stageFujin(ctx, targets[0]); return true; }
+    if (move==='buoyThrow') { stageBuoyThrow(ctx, targets[0]); return true; }
+    if (move==='kindle') { stageKindle(ctx, targets[0]); return true; }
+    if (move==='lullaby') { stageHarp(ctx, targets.at(-1)); return true; }
+    if (move==='merryGoRound') { stageMerryGoRound(ctx, targets.at(-1)); return true; }
     if (move==='cymbals') { stageCymbals(ctx, targets[0]); return true; }
     if (move==='healing') { stageHealingBottle(ctx, targets[0]); return true; }
     if (move==='raijin' || move==='mirrors' || move==='prism') {
@@ -719,6 +891,7 @@
       return true;
     }
     if (ctx.fist) flashFist(ctx,to,rotation);
+    if (move==='fireFist') { fireBurstFromFist(ctx,to,rotation); return true; }
     const distance=Math.hypot(to.x-origin.x,to.y-origin.y);
     if (!reduced && ctx.aer === 'electric' && !melee && distance > 16 && !channelMoves.has(move)) {
       const charged = mix(origin, to, move === 'score' ? .53 : .23);
@@ -767,7 +940,9 @@
     const stage=groundSets[move];
     if(!stage) return false;
     const [defaultPrimary, defaultSecondary, count] = stage;
-    const [primary, secondary] = !ctx.attack && locationProps[ctx.card.id] || [defaultPrimary, defaultSecondary];
+    const fountain = move==='fountain' && ctx.card.element!=='Aqua'
+      ? ['shard', 'orb'] : [defaultPrimary, defaultSecondary];
+    const [primary, secondary] = !ctx.attack && locationProps[ctx.card.id] || fountain;
     const anchor=move==='panorama'||move==='carousel'?mix(origin,to,.68):to;
     const from=move==='escort'?origin:anchor;
     if (move==='escort' && !reduced && distance>16) channel(ctx,origin,to,'ribbon');
@@ -808,6 +983,8 @@
     ornaments:['rain','bell',11], coil:['echo','gear',8],
     prismBloom:['prism','shard',8], gelSnap:['fluid','slimeDrop',10],
     crystalRenewal:['heart','shard',11], parcelArrival:['parcel','orb',4], cymbalRings:['metalWave','shard',7],
+    fistFire:['fireFan','ember',11], fireRise:['fireRise','ember',9], poolSplash:['splash','drop',12],
+    harpRestore:['harpWave','note',5], carouselTrails:['wind','shard',6],
     windShear:['wind','feather',5], drift:['wind','steam',5],
     forkPunch:['arc','shard',5], tidalShock:['arc','drop',7], tidalNet:['arc','steam',5], coronaPunch:['arc','shard',5],
     thunderPunch:['arc','shard',8], grounding:['arc','shard',5], wireStrike:['arc','shard',5],
@@ -924,6 +1101,22 @@
           path(`M-${size+18} 32C-33-4 22-44 63-23Q83-12 61 2C73-12 65-21 43-20Q8-20-${size+18} 32Z`,palette.fill('mist'))+
           path('M-65 22Q17-42 61-21M-38 15Q18-23 46-17','none',i%2?color:hot,1.38-i*.22)));
         break;
+      case 'fireFan':
+        graphic=repeat(5,i=>group(`rotate(${angle-135+i*62+take(i)*.6}) scale(${.49+i%3*.12})`,flameTongue(palette.fill)));
+        break;
+      case 'fireRise':
+        graphic=repeat(4,i=>group(`translate(${(i-1.5)*24} ${13+i%2*14}) rotate(${-117+i*16}) scale(${.54+i%3*.16})`,flameTongue(palette.fill)));
+        break;
+      case 'splash':
+        graphic=path('M-78 29Q-55 15-30 19C-37 4-53-8-56-33C-35-15-24 8-11 6C1-6-9-29-2-51C9-28 16-7 24-7C37-12 34-37 47-52C55-27 47-3 45 9C61 5 71 2 80-4C77 18 58 34 35 38Q-23 48-78 29Z',palette.fill('liquid'),'#a9faff',1.5)+
+          path('M-68 29Q-21 42 50 33M-43-18Q-38 2-16 19M-3-41Q0-21 7-12M44-41Q42-17 28-3M40 23Q64 20 72 8','none','#e2fdff',2.4)+
+          repeat(9,i=>oval(i*14-57,-30-(i*19)%33,1.6+i%4,1.3+i%3,'#cafbffb8'));
+        break;
+      case 'harpWave':
+        graphic=repeat(5,i=>path(`M-70 ${i*11+15}C-38 ${-37+i*6} 14 ${i*16-60} 69 ${i*3-22}`,
+          'none',i%2?'#bde8a1':'#dcaeff',1.8-i*.22))+
+          repeat(3,i=>group(`translate(${i*38-32} ${11-i*13}) rotate(${i*11-13}) scale(.62)`,prop('note',palette.fill,hot,color)));
+        break;
       case 'heart':
         graphic=prop('crystalHeart',palette.fill,hot,color)+
           oval(0,31,64,25,'none','stroke="#fd668d" stroke-width="1.55" opacity=".55"');
@@ -1011,6 +1204,11 @@
       ] : shape==='arc' || shape==='crack' || shape==='circuit' ? [
         {opacity:0,transform:`scale(${scale*.56})`},{opacity:.84,transform:`scale(${scale})`,offset:.16},
         {opacity:.33,transform:`scale(${scale*1.07})`,offset:.63},{opacity:0,transform:`scale(${scale*1.08})`},
+      ] : shape==='splash' ? [
+        {opacity:0,transform:`scale(${scale*.70},${scale*.32})`},
+        {opacity:1,transform:`translateY(-9px) scale(${scale*.97},${scale*1.06})`,offset:.21},
+        {opacity:.83,transform:`translateY(12px) scale(${scale*1.25},${scale*.61})`,offset:.58},
+        {opacity:0,transform:`translateY(26px) scale(${scale*1.42},${scale*.22})`},
       ] : mark==='foam' ? [
         {opacity:0,transform:`translateY(8px) scale(${scale*.49})`},
         {opacity:.91,transform:`scale(${scale})`,offset:.27},
@@ -1050,14 +1248,14 @@
     motion(glint,[{opacity:0,transform:'scale(.48)'},{opacity:.40+baseAttack*.032,offset:.29},
       {opacity:0,transform:`scale(${scale*1.27})`}],500,start);
     const count=Math.round(density*.82+baseAttack*1.6);
-    const fan = ['cut','wind','surf'].includes(shape);
+    const fan = ['cut','wind','surf','splash'].includes(shape);
     const course = angle * Math.PI / 180;
     for(let i=0;i<count;i++){
       const heading = fan ? course + (i / count - .5) * 1.9 + take(i%20) * .008
         : i * Math.PI * 2 / count + take(i%20) * .22;
       const spread=(35+take(i%17)*2.9)*scale*(shape==='parcel'?.32:1);
       const xx=Math.cos(heading)*spread,yy=Math.sin(heading)*spread;
-      const grav=mark==='foam'?-27:shape==='wind'?-14:['rain','fluid','splinter','break','surf'].includes(shape)?45:6;
+      const grav=mark==='foam'?-27:shape==='wind'?-14:['rain','fluid','splinter','break','surf','splash'].includes(shape)?45:6;
       const scaleFactor=(.18+take((i+13)%22)/83)*scale;
       const fragment = shape==='prism'
         ? path('M-15 1L-3-18 11-11 14-2 4 13-12 11Z',prismColors[i%prismColors.length],'#ffefda',.8)
