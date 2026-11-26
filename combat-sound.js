@@ -8,7 +8,7 @@
     ice:[4650,1810,.21,4.5], glass:[6430,5700,.16,7], crystal:[5950,2600,.23,8], ceramic:[2700,1350,.17,7],
     chain:[4680,2050,.17,4.6], gears:[3900,2300,.17,5.3], motor:[780,2120,.43,3], roots:[860,1420,.4,2.7],
     fabric:[880,2210,.29,1.3], cloth:[1720,740,.20,1.2], shadow:[250,960,.37,2.1], pulse:[250,910,.28,3],
-    electric:[2170,7680,.26,4.9], fire:[610,2400,.36,1.8], solar:[400,1700,.34,2],
+    fire:[610,2400,.36,1.8], solar:[400,1700,.34,2],
     brass:[920,1810,.24,2.1], chime:[4650,2500,.14,5], flute:[2700,1600,.17,4], whistle:[2400,3150,.2,4],
     string:[2700,2100,.146,5], harp:[2500,1770,.17,4], drum:[230,1100,.23,1.7], hall:[810,1370,.31,3.7],
   };
@@ -17,7 +17,7 @@
     hollow:[1,1.23,1.77,2.36], buzz:[1,1.5,2], reed:[1,2,3.03,4],
   };
   const note = (midi) => 440 * 2 ** ((midi-69)/12);
-  function play({audio, mode, seed, strike, release, impact, baseAttack, finish, count = 1}) {
+  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, finish, count = 1}) {
     if (!audio || audio.state!=='running') return;
     const start=audio.currentTime+.015;
     const gain=audio.createGain();
@@ -62,6 +62,13 @@
       source.start(time,(seed%13)*.008); source.stop(time+len+.02);
     }
 
+    function discharge(at, length, strength) {
+      const spark = at + .026;
+      texture(at, .102, 6190, 2770, .17 * strength, 2.8);
+      texture(spark, length, 2200, 530, .088 * strength, 1.4);
+      sweep(spark, .088, 183 + seed % 57, 81, .082 * strength, 'triangle');
+    }
+
     if(mode==='hooves'){
       for(let horse=0;horse<4;horse++){
         const entry=.16+horse*.135;
@@ -103,12 +110,29 @@
         if(i%2===0)texture(at,.085,2300,670,.062,3.4);
       }
       resonator(t+.13,940+seed%170,.35,.068,'glass');
+      if (aer === 'mixed' || aer === 'electric') discharge(t - .04,.21,.59 * weight);
+    } else if (['electric','static','surge','storm','thunder'].includes(mode)) {
+      const [charge, strength, sparks, tail] = {
+        electric:[.20,.65,3,.24], static:[.16,.91,4,.16], surge:[.14,.76,4,.31],
+        storm:[.29,.74,6,.39], thunder:[.25,1.06,5,.52],
+      }[mode];
+      texture(r - .04, charge, 1300, 5050, .065, 3.2);
+      if (strike) sweep(t - .025, .17, 147, 48, .152 * weight, 'triangle');
+      if (mode === 'surge') texture(t + .09, .41, 1030, 570, .13 * weight, 2.6);
+      if (mode === 'thunder') {
+        sweep(t + .034, .48, 98, 30, .163 * weight, 'triangle');
+        texture(t + .081, .57, 540, 170, .13 * weight, 1.3);
+      }
+      for (let i = 0; i < sparks; i++) {
+        const at = t + i * (mode === 'storm' ? .061 : .035) + (seed >>> (i * 2)) % 19 / 1000;
+        discharge(at, tail / (1 + i * .16), strength * weight / (1 + i * .42));
+      }
     } else {
       const [lo,hi,len,q]=bands[mode]||bands.hall;
       const voice = ['ice','glass','crystal','ceramic'].includes(mode)?'glass':
         ['wood','clay','roots','paper','drum','claws','steel','shot','chain','gears','metal'].includes(mode)?'wood':
         ['flute','whistle','string','harp','chime','hall'].includes(mode)?'reed':
-        ['pulse','electric','motor','brass','fire','solar'].includes(mode)?'buzz':'hollow';
+        ['pulse','motor','brass','fire','solar'].includes(mode)?'buzz':'hollow';
       const hard=['claws','steel','shot','wood','gears','metal','crystal','ice','ceramic'].includes(mode);
       const soft=['water','splash','syrup','boil','pour','fabric','paper','air','rustle'].includes(mode);
       texture(r-.13,Math.min(.54,len+.09),lo,hi,.060,Math.max(1.1,q-1));
@@ -124,6 +148,7 @@
       }
       if(finish==='fault'||finish==='mud'||finish==='roar') sweep(t,.38,141,42,.153*weight,'triangle');
       if(finish==='bolts'||finish==='circuit') texture(t+.15,.25,5100,1580,.10,6);
+      if(aer==='electric') discharge(t + .09,.18,.57 * weight);
     }
     window.setTimeout(()=>gain.disconnect(),(t+2.14)*1000);
   }

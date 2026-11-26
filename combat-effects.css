@@ -73,6 +73,13 @@
   mix-blend-mode: screen;
 }
 .combat-channel-core { filter: drop-shadow(0 0 5px var(--combat-color)); }
+
+.combat-lightning-halo,
+.combat-lightning-channel,
+.combat-lightning-filament { stroke-dasharray: 1 1; }
+
+.combat-lightning-halo { filter: blur(3px); }
+.combat-lightning-channel { filter: drop-shadow(0 0 3px #90c8ff); }
 .combat-scene-limb { transform-box: fill-box; transform-origin: center top; }
 .combat-painted { filter: drop-shadow(0 2px 3px #10091b66); }
 .shatter-overlay {

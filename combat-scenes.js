@@ -79,6 +79,8 @@
       case 'bell': return path('M-25 17Q-16 7-15-8Q-13-28 0-30Q16-29 18-6Q20 11 26 17Q0 24-25 17Z',fill('gold'),'#ffe1a8',1.4)+oval(0,20,25,5,'#6a402c')+oval(0,25,5,6,fill('gold'));
       case 'egg': return path('M-23 13C-21-12-9-35 2-39Q20-28 25 10Q24 36 0 35Q-25 36-23 13Z',fill('pearlCloth'),hot,1.6)+
         path('M-23 6L-10-4-2 6 8-8 21-2','none','#d5ad6d',1.6);
+      case 'feather': return path('M-26 23C-4 21 23 0 31-26C14-24-6-18-18-2Q-18 7-19 14Z',fill('pearlCloth'))+
+        path('M-27 24Q-7 10 24-19M-15 13l3-12m5 5 4-12m3 8 15-4m-8-1 5-10','none',hot,1);
       case 'leaf': return path('M-19 18Q-34-24 26-26Q35 14-19 18Z',fill('leaf'),hot,1.35)+path('M-21 22L24-24M-7 9L-9-10M6-4L19 0','none','#fff0c0a8',.95);
       case 'hammer': return path('M-4 2H4L5 50H-5Z',fill('wood'),'#dfb474',1.2)+path('M-35-32H35L32 5H-32Z',fill('silver'),hot,1.8)+path('M-24-24H24M-26-4H25','none',fine,2.2);
       case 'shield': return path('M-42-32Q0-45 42-32L32 12Q21 37 0 50Q-23 36-33 12Z',fill('silver'),hot,2)+path('M-29-24Q0-33 29-24L20 9Q12 25 0 33Q-13 25-22 9Z',fill('core'),'#f1db93',1.8)+path('M0-24V27M-22-9L22-9','none',fine,1.5);
@@ -155,7 +157,7 @@
       beam:[2,4,.02,12], beams:[5,5,.10,7], chains:[4,6,.08,10], lash:[3,8,.20,6],
       roots:[6,6,.17,5], river:[5,4,.13,12], surf:[7,3,.22,13], gale:[6,4,.23,11],
       ink:[4,7,.24,12], ribbon:[5,7,.27,9], stitch:[4,9,.08,5], cross:[4,3,.26,7],
-      score:[4,6,.10,6],
+      score:[4,6,.10,6], crosswind:[3,4,.25,3],
     };
     const [lines,cruise,curve,width]=pairs[style]||pairs.beam;
     const hold = hitAt - 405 - (seed%57);
@@ -177,6 +179,88 @@
         const link=ctx.art(art,p.x,p.y,Math.atan2(dy,dx)*180/Math.PI);
         motion(link,[{opacity:0,transform:'scale(.28)'},{opacity:.96,transform:`scale(${.42*scale})`},{opacity:0}],650,hold+i*57);
       }
+    }
+  }
+
+
+  function discharge(ctx, from, to, start, {spread = 12, branches = 2, width = 2, tint = '#7fafff', time = 440, salt = 0} = {}) {
+    const {layer, svgNode, motion, seed, reduced} = ctx;
+    const dx = to.x - from.x, dy = to.y - from.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < 8) return;
+    const nx = -dy / distance, ny = dx / distance;
+    const jitter = (i) => (((Math.imul(seed ^ salt, 31 + i * 37) >>> 6) % 97) / 48 - 1);
+    const spine = [from];
+    const segments = Math.min(10, Math.max(4, Math.round(distance / 27)));
+    for (let i = 1; i < segments; i++) {
+      const at = mix(from, to, (i + jitter(i + 5) * .22) / segments);
+      const bend = spread * (i % 2 ? -.42 : .42) + jitter(i) * spread * .7;
+      spine.push({x: at.x + nx * bend, y: at.y + ny * bend});
+    }
+    spine.push(to);
+    const trace = (points) => points.map(({x, y}, i) => `${i ? 'L' : 'M'}${x.toFixed(2)} ${y.toFixed(2)}`).join('');
+    const bolt = trace(spine);
+    const forks = [];
+    for (let i = 0; i < branches; i++) {
+      const index = 1 + Math.floor(i * (segments - 1) / branches);
+      const root = spine[index];
+      const side = i % 2 ? -1 : 1;
+      const branchSpread = spread * side * (1.4 + Math.abs(jitter(i + 23)));
+      const at = (advance, bend) => ({x: root.x + dx * advance + nx * bend, y: root.y + dy * advance + ny * bend});
+      const branch = [root, at(.115, branchSpread * .70), at(.185, branchSpread * .46), at(.26, branchSpread)];
+      forks.push(trace(branch));
+      if (width > 2) forks.push(trace([branch[2], at(.24, branchSpread * .31), at(.32, branchSpread * .43)]));
+    }
+    const draw = (d, color, weight, className) => svgNode('path', {
+      d, pathLength: 1, fill: 'none', stroke: color, 'stroke-width': weight, 'stroke-linecap': 'round',
+      'stroke-linejoin': 'round', class: className,
+    }, layer);
+    const halo = draw(bolt + forks.join(''), tint, width * 3.15, 'combat-lightning-halo');
+    const core = draw(bolt, '#edfcff', width, 'combat-lightning-channel');
+    const filament = draw(forks.join(''), tint, width * .59, 'combat-lightning-filament');
+    const reveal = (node, opacity, delay) => motion(node, reduced
+      ? [{opacity:0}, {opacity:opacity * .65}, {opacity:0}]
+      : [{opacity:0, strokeDashoffset:1}, {opacity, strokeDashoffset:0, offset:.22},
+        {opacity:opacity * .46, strokeDashoffset:0, offset:.56}, {opacity:0, strokeDashoffset:-.2}],
+      time, start + delay, 'ease-out');
+    reveal(halo, .47, 0);
+    reveal(core, .96, 0);
+    reveal(filament, .91, 29);
+  }
+
+  const electricalContacts = {
+    forkPunch: {count:4, reach:107, spread:18, width:2.75, time:520, fan:1.16},
+    tidalShock: {count:5, reach:122, spread:16, width:2.2, time:655, fan:.83, flatten:.43, tint:'#62ecf5'},
+    tidalNet: {count:5, reach:93, spread:11, width:1.65, time:730, fan:2.7, flatten:.35, tint:'#77e4ef'},
+    coronaPunch: {count:7, reach:123, spread:17, width:2.4, time:750, fan:2.9, tint:'#a0adff'},
+    thunderPunch: {count:5, reach:142, spread:24, width:3.3, time:720, fan:1.15, vertical:true, tint:'#93b8ff'},
+    grounding: {count:3, reach:101, spread:15, width:2.1, time:560, fan:1, flatten:.39, tint:'#9bbdff'},
+    wireStrike: {count:3, reach:102, spread:15, width:1.95, time:440, fan:.64, tint:'#bca6ff'},
+    sparkComb: {count:5, reach:80, spread:13, width:1.7, time:520, fan:1.19, tint:'#c6b2ff'},
+    needleArc: {count:2, reach:101, spread:10, width:1.3, time:405, fan:.34, tint:'#9beaff'},
+    floorArc: {count:4, reach:93, spread:12, width:2.15, time:520, fan:1.8, flatten:.32},
+    staticWeave: {count:4, reach:67, spread:13, width:1.7, time:550, fan:2.1},
+  };
+
+  function electricalContact(ctx, mark, target, angle, scale) {
+    const profile = electricalContacts[mark] || {count:2, reach:69, spread:12, width:1.5, time:440, fan:.86};
+    const {count, reach, spread, width, time, fan, flatten = .79, vertical, tint} = profile;
+    const attackWeight = 1 + Math.min(8, ctx.baseAttack) * .04;
+    const initial = ctx.hitAt - 14;
+    for (let i = 0; i < count; i++) {
+      const direction = angle * Math.PI / 180 + (i / (count - 1) - .5) * 2 * fan;
+      const length = reach * scale * (.66 + ((ctx.seed >>> (i * 3)) % 11) / 30);
+      const from = {x:target.x, y:target.y + (flatten < .5 ? 23 * scale : 0)};
+      const to = {x:from.x + Math.cos(direction) * length, y:from.y + Math.sin(direction) * length * flatten};
+      discharge(ctx, from, to, initial + i * (mark === 'coronaPunch' ? 52 : 29), {
+        spread:spread * scale, branches:i % 2 ? 1 : 2, width:width * attackWeight,
+        tint, time:time + i * 22, salt:(i + 1) * 313,
+      });
+    }
+    if (vertical) {
+      discharge(ctx, {x:target.x + 33 * scale, y:Math.max(10, target.y - 154 * scale)}, target, initial - 25, {
+        spread:19 * scale, branches:3, width:3.4 * attackWeight, tint, time, salt:733,
+      });
     }
   }
 
@@ -281,6 +365,15 @@
       ],impactAt+725,130+i*138);
       if (!reduced) {
         const entry={x:x+36*sign*s,y:y+16-i%2*33}, tip={x:relevant.x+(i-1)*19,y:relevant.y+13};
+        const scene = {...ctx, hitAt:impactAt + i * 90, scale:s};
+        if (ctx.aer === 'electric' || (ctx.aer === 'mixed' && i === 1)) {
+          discharge(scene, entry, tip, impactAt - 235 + i * 96, {
+            spread:14 * s, branches:3, width:1.65 * s, tint:'#b8a8ff', time:570, salt:211 * (i + 1),
+          });
+        }
+        if (ctx.aer === 'wind' || (ctx.aer === 'mixed' && i !== 1)) {
+          channel({...scene, color:'#a8d6f5', hot:'#eef7fe'}, {x:entry.x, y:entry.y-14*s}, tip, 'crosswind');
+        }
         const stream=ctx.svgNode('path',{d:`M${entry.x} ${entry.y}Q${entry.x+29*sign} ${entry.y-34} ${tip.x} ${tip.y}`,
           pathLength:1,fill:'none',stroke:i===1?'#ffc252':'#c78731','stroke-width':6*s,'stroke-linecap':'round','stroke-dasharray':'.63 .37',class:'combat-channel-core'},ctx.layer);
         motion(stream,[{opacity:0,strokeDashoffset:1},{opacity:.94,strokeDashoffset:0,offset:.67},{opacity:0,strokeDashoffset:-.28}],650,impactAt-400+i*105,'linear');
@@ -331,8 +424,16 @@
     const move=direction.move;
     if (ctx.special) return true;
     const distance=Math.hypot(to.x-origin.x,to.y-origin.y);
+    if (!reduced && ctx.aer === 'electric' && !melee && distance > 16 && !channelMoves.has(move)) {
+      const charged = mix(origin, to, move === 'score' ? .53 : .23);
+      discharge(ctx, origin, charged, hitAt - 520, {width:1.2*scale, spread:12*scale, tint:'#98c7ff', time:385});
+    }
     if (!reduced && channelMoves.has(move) && distance>16 && !melee) {
-      channel(ctx,origin,to,move);
+      if (ctx.aer === 'electric') {
+        discharge(ctx, origin, to, hitAt - 345, {width:2.1*scale, spread:18*scale, branches:4, time:620});
+      } else {
+        channel(ctx, origin, to, ctx.aer === 'wind' ? 'crosswind' : move);
+      }
       if(ctx.attack && ctx.card.role==='Shooter'){
         const shot=ctx.art(missile,origin.x,origin.y,rotation);
         const dx=to.x-origin.x,dy=to.y-origin.y;
@@ -409,14 +510,58 @@
     paper:['fold','card',7], ink:['fluid','drop',14], foam:['fluid','orb',14], porcelain:['splinter','shard',12],
     tea:['fluid','drop',14], chamomile:['fluid','flower',11], steam:['spiral','steam',7],
     ornaments:['rain','bell',11], coil:['echo','gear',8],
+    windShear:['wind','feather',5], drift:['wind','steam',5],
+    forkPunch:['arc','shard',5], tidalShock:['arc','drop',7], tidalNet:['arc','steam',5], coronaPunch:['arc','shard',5],
+    thunderPunch:['arc','shard',8], grounding:['arc','shard',5], wireStrike:['arc','shard',5],
+    sparkComb:['arc','shard',5], needleArc:['arc','shard',4], floorArc:['arc','shard',5], staticWeave:['arc','shard',4],
   };
   const timeScale = { crack:.78, cut:.73, fluid:1.12, rain:1.24, spiral:1.18, echo:1.13, inward:.89 };
+
+
+  function liquidImpact(mark, size, fluid, light, palette) {
+    const ribbon = (d, width = 1.3) => path(d, 'none', light, width);
+    switch (mark) {
+      case 'tea': case 'chamomile':
+        return path('M-66 12C-38 12-33-5-29-20Q-24-37-14-24C-7-15-15 10 15 14Q45 17 67-1C49 29 17 36-27 27Z',fluid)+
+          ribbon('M-62 13Q-35 19-25-12M-39 24C-8 35 39 25 58 13',1.6)+
+          oval(7,24,43,10,palette.fill('liquid'),'opacity=".35"')+
+          repeat(6,i=>path(`M${i*15-40} ${-8-i%3*9}q-6-10-1-15q7 3 4 11Z`,fluid,light,.45));
+      case 'tide':
+        return path('M-85 29C-56 25-40 31-25 16C-11 1-8-37 22-42Q55-55 69-26Q70-9 52-13Q47-16 53-24Q62-33 44-31C31-27 28-2 18 12Q5 29 83 27Q43 49-85 29Z',fluid)+
+          ribbon('M-76 25Q-41 34-18 13C-5 0-6-32 23-41Q51-54 64-32M-60 37Q15 47 73 31M12 10Q29-9 30-22',2.15)+
+          repeat(7,i=>oval(i*9+21,-25-(i%3)*8,1.9+i%3,1.4,light,'opacity=".73"'));
+      case 'ink':
+        return path('M-75 24C-48 27-32 10-42-5Q-64-28-51-35Q-37-38-27-14C-19-2-8-7-12-26Q-9-51 9-57C24-57-1-18 22-8C42 3 37-28 54-24Q70-19 46 4C32 18 66 11 77 23Q48 43-25 38Z',fluid)+
+          path('M-75 24Q-44 45 39 36Q62 33 77 23',palette.fill('shade'))+
+          ribbon('M-40 19Q-15 5-24-11M-9 23Q17 26 30 14M17 2Q27 12 42-3',1);
+      case 'mud':
+        return oval(3,26,63,21,palette.fill('mist'),'opacity=".55"')+
+          repeat(7,i=>group(`translate(${i*18-53} ${(i%3)*9-5}) rotate(${i*31})`,
+            path('M-11 2Q-15-8-4-13L11-9 17 3 7 13-8 10Z',fluid)+ribbon('M-10-5L-4-10 7-8',.9)))+
+          ribbon('M-61 30q41 15 103 8m-63-3 47 9',.7);
+      case 'foam':
+        return oval(0,14,76,29,palette.fill('mist'))+repeat(12,i=>{
+          const x=(i%6)*22-55+(i>5?9:0),y=i>5?13:-4-(i%3)*8,r=6+(i*5)%13;
+          return oval(x,y,r,r*.81,palette.fill('liquid'),`stroke="${light}" stroke-width=".85" opacity=".64"`)+
+            ribbon(`M${x-r*.7} ${y-1}q${r*.33} ${-r*.53} ${r*.83} ${-r*.56}`,1.2);
+        });
+      case 'sugar':
+        return path('M-56 23C-30 23-24-18-2-25C19-31 31-10 48-17Q61-25 66-17Q44 16 61 23C29 47-24 43-56 23Z',fluid)+
+          ribbon('M-47 24Q-24 15-16-5Q-5-20 14-17M4 24Q27 25 39 11',1.8)+
+          repeat(7,i=>oval(i*15-44,10-(i%3)*10,3+i%3,2,light,'opacity=".64"'));
+      default:
+        return path(`M-${size} 28Q-12 24 5 6Q10-11 2-35Q-3-53 8-55C24-47 29-8 40 6Q53 20 ${size} 22C45 42-28 43-${size} 28Z`,fluid)+
+          ribbon('M-46 29Q-16 29 1 14M11-43Q24-21 22-6M28 19Q48 28 59 23',1)+
+          oval(5,29,52,8,palette.fill('mist'));
+    }
+  }
 
   function contactArt(ctx, mark, target, angle) {
     const {palette, effectScale, motion, hot, color, seed, baseAttack, impactMaterial, hitAt, reduced, art} = ctx;
     const [shape, object, density] = contactDetails[mark];
     const aw = Math.max(target.w, target.h);
     const scale = Math.min(1.43, Math.max(.78, aw / 125))*effectScale;
+    if (ctx.aer === 'electric' || ctx.aer === 'mixed') electricalContact(ctx, mark, target, angle, scale);
     const size = 50 + seed % 31;
     const take = (n) => (seed >>> n) % 29;
     const isTea=mark==='tea'||mark==='chamomile';
@@ -425,42 +570,105 @@
     let graphic = '';
     switch (shape) {
       case 'cut':
-        graphic=repeat(mark==='gashes'?4:2,i=>group(`translate(${i*12-17} ${i*16-22}) rotate(${(i-1)*13})`,
-          path(`M-${size} 34Q-13 31 ${size} -41Q37 20-4 37Q-33 50-${size} 34Z`,palette.fill('ice'),hot,1.28)+
-          path('M-53 34Q-4 40 56-31','none',fine,2.1)));
+        graphic = mark === 'gashes'
+          ? repeat(4,i=>group(`translate(${i*8-12} ${i*13-18}) rotate(${-8+i*5})`,
+              path(`M-${size} 32Q-26 27 10 0L${size-4} -33Q29 5 11 16Q-24 43-${size} 32Z`,palette.fill('silver'))+
+              path('M-47 31Q-2 26 47-28','none',hot,1.2)))
+          : path(`M-${size+20} 36C-18 38 39 16 ${size} -42C44 10 26 35-25 47Q-49 49-${size+20} 36Z`,palette.fill('ice'))+
+            path(`M-${size+15} 37C-19 40 34 19 ${size-5} -34M-40 51Q7 49 34 28`,'none',hot,1.65);
         break;
-      case 'fluid':
-      case 'surf':
-        if(mark==='syrup') graphic=palette.paint('candy','impact',seed,mark);
-        else graphic=path(`M-${size+8} 23C-37 18-40-14-57-20C-57-30-25-18-23-23C-26-40-11-49-7-35Q0-2 17-26C28-46 42-45 37-30C25-6 45 3 ${size} -8C${size+17} 1 ${size-6} 25 35 31Q-1 46-39 35Z`,fluid,liquidLight,1.5)+
-          path('M-47 20C-28 18-35-11-23-10M-21 22Q5 33 36 17M22-12q14-15 24-9','none',liquidLight,2.55)+
-          oval(12,23,32,7,fluid, 'opacity=".59"')+oval(-18,28,6,2,fine);
+      case 'fluid': case 'surf':
+        graphic = mark === 'syrup' ? palette.paint('candy','impact',seed,mark)
+          : liquidImpact(mark, size, fluid, liquidLight, palette);
         break;
-      case 'crack': case 'circuit': case 'briar': case 'threads': case 'splinter':
-        graphic=repeat(4+seed%3,i=>group(`rotate(${i*61+take(i)})`,
-          path(`M-5 2L13-${3+i}L29 4L${size+i*2} -${6+i*4}L37 0L27 13L14 8ZM26 3L35-17L45-20`,
-            shape==='briar'?palette.fill('leaf'):palette.fill(shape==='splinter'?'wood':'ice'),hot,shape==='threads'?1.01:1.65)+
-          path('M-4 1L16 5 29 6M27 9L41 18M16 2L19-12','none',fine,.95)));
-        if(shape==='crack')graphic=oval(0,0,63,39,palette.fill('shade'))+graphic;
+      case 'crack':
+        graphic=oval(0,10,size,37,palette.fill('shade'))+repeat(5,i=>group(`rotate(${i*71+take(i)})`,
+          path(`M0 2L13-7 26 2 36-16 ${size+i*2}-19M25 1L32 15 43 18M36-16l3-12 15-7`,
+            'none',i%2?hot:color,1.4-i*.15)));
         break;
-      case 'crystal': case 'break': case 'rain':
-        graphic=repeat(5+seed%3,i=>group(`translate(${(i-3)*14} ${i%2?15:-8}) rotate(${(i-3)*25+take(i)}) scale(${.51+take(i)/45})`,
-          prop(object,palette.fill,hot,color)));
+      case 'circuit':
+        graphic=repeat(5,i=>group(`rotate(${i*71+take(i)})`,
+          path(`M7 ${i*3}h22v-12h19v-10h${10+i*3}M29 ${i*3}v9h10`,'none',hot,1.22)+
+          oval(60+i*3,-22+i*3,2.9,2.9,'none',`stroke="${color}" stroke-width="1.2"`)));
         break;
-      case 'spiral': case 'fold': case 'inward':
-        graphic=repeat(3+seed%3,i=>group(`rotate(${i*71+(seed%44)})`,
-          path(`M-${size+5} 14C-32-${33+i*2}-2-${44+i} 30-29Q57-11 41 14C31 25 14 21 2 10Q24 13 32 0Q39-17 16-20C-7-24-33-8-${size+5} 14Z`,
-            palette.fill(shape==='inward'?'shade':'mist'),hot,1.23)+path('M-40 2Q-3-25 23-14','none',fine,1.27)));
-        if(object==='mask')graphic+=prop('mask',palette.fill,hot,color);
+      case 'briar':
+        graphic=repeat(5,i=>group(`rotate(${i*77+take(i)})`,
+          path(`M-3 12C18 25 39 1 38-14Q36-35 ${size+3} -28M29 12l-9-11M39-7l14-3`,'none',hot,2.0)+
+          path('M28 10q-17 0-17-13q16 1 17 13M39-4q13-13 24-8q-6 16-24 8',palette.fill('leaf'))));
         break;
-      case 'echo': case 'seal':
-        graphic=repeat(4,i=>oval(0,i*3,22+i*14,13+i*8,'none',`stroke="${i%2?hot:color}" stroke-width="${2.8-i*.4}" opacity="${.97-i*.16}"`));
-        if(shape==='seal')graphic+=prop('coin',palette.fill,hot,color);
+      case 'threads':
+        graphic=repeat(8,i=>group(`rotate(${i*23+take(i)})`,
+          path(`M-${size} ${i*5-29}Q3 ${-43+i*11} ${size} ${21-i*4}`,'none',i%3?hot:color,i%2?.72:1.38)));
+        break;
+      case 'splinter':
+        graphic=repeat(8,i=>group(`translate(${(i-3)*16} ${take(i)*1.5-24}) rotate(${i*27+take(i)})`,
+          path(i%2?'M-4-14L4-22 9-7 3 17-3 23-6 9Z':'M-6-8L7-17 13-6 3 11-10 9Z',palette.fill(mark==='porcelain'?'pearlCloth':'wood'),hot,.8)+
+          path('M-2 9L2-7 5-10','none',fine,.55)));
+        break;
+      case 'crystal':
+        graphic=repeat(6,i=>group(`translate(${i*17-46} ${24-i%3*15}) rotate(${(i-2)*19+take(i)}) scale(${.52+take(i)/46})`,
+          prop('shard',palette.fill,hot,color)))+path('M-62 30L-32 33-12 23 23 32 69 24','none',hot,1.25);
+        break;
+      case 'break':
+        graphic=repeat(6,i=>group(`translate(${i*23-57} ${i%3*17-23}) rotate(${i*27+take(i)}) scale(${.53+take(i)/62})`,
+          path(i%2?'M-28-8L-1-19 13-14 20 3 6 7-3 18-21 12Z':'M-25-13L-1-11 9-24 25-7 13 7 15 22-13 16-22 5Z',
+            palette.fill(mark==='shell'?'pearlCloth':'silver'),hot,1.3)+path('M-20-7 L-2-3 7-12','none',fine,1.12)));
+        break;
+      case 'rain':
+        graphic=repeat(8,i=>group(`translate(${i*19-65} ${-48+take(i)*2.55}) rotate(${-15+i*7}) scale(${.28+take(i)/72})`,
+          prop(object,palette.fill,hot,color)+path('M-5-2L0-49','none',hot,.9)));
+        break;
+      case 'wind':
+        graphic=repeat(mark==='drift'?4:3,i=>group(`translate(0 ${i*12-18})`,
+          path(`M-${size+18} 32C-33-4 22-44 63-23Q83-12 61 2C73-12 65-21 43-20Q8-20-${size+18} 32Z`,palette.fill('mist'))+
+          path('M-65 22Q17-42 61-21M-38 15Q18-23 46-17','none',i%2?color:hot,1.38-i*.22)));
+        break;
+      case 'arc':
+        graphic=mark==='tidalShock'
+          ? liquidImpact('tide',size,palette.fill('liquid'),'#9ee6f4',palette)
+          : mark==='tidalNet'
+            ? liquidImpact('foam',size,palette.fill('liquid'),'#93e8f4',palette)
+            : oval((seed % 31)-15,8,40+baseAttack*3+take(3)*.5,mark==='coronaPunch'?42+take(6)*.12:18+take(7)*.25,palette.fill('mist'),'opacity=".55"');
+        break;
+      case 'spiral':
+        graphic=repeat(4,i=>group(`rotate(${i*78+take(i)})`,
+          path('M-64 27Q-41-39 9-30Q38-23 38 2C24-18 7-23-12-19Q-40-11-64 27Z',palette.fill('mist'))+
+          path('M-55 15Q-28-30 4-26','none',hot,1.1)));
+        break;
+      case 'fold':
+        graphic = mark === 'paper'
+          ? repeat(4,i=>group(`translate(${i*30-58} ${-22+i*9}) rotate(${i*19-32}) scale(.74)`,prop('paper',palette.fill,hot,color)))
+          : repeat(4,i=>group(`rotate(${i*74+take(i)})`,
+              path('M-67 35Q-32-30 21-28Q57-23 62 0Q39-8 23-8C-1-11-15 1-39 16Z',palette.fill('shade'))+
+              path('M-53 24Q-12-29 40-16','none',color,1.16)));
+        break;
+      case 'inward':
+        graphic=repeat(5,i=>group(`rotate(${i*67+take(i)})`,
+          path('M-69-17Q-24-50 15-21Q-17-32-26-9Q-28 6-10 19Q-51 18-69-17Z',palette.fill('shade'))+
+          path('M-57-17Q-31-31-4-22','none',color,1.17)))+prop('mask',palette.fill,hot,color);
+        break;
+      case 'echo':
+        if(mark==='notes'){
+          graphic=repeat(5,i=>path(`M-70 ${i*8+3}q45-34 103-22l32-4`,'none',i%2?hot:color,1.12))+
+            repeat(3,i=>group(`translate(${i*32-24} ${7-i*11}) scale(.52)`,prop('note',palette.fill,hot,color)));
+        }else if(mark==='coil'){
+          graphic=path('M-1-10C17-10 22 4 15 17C5 33-30 18-30-3C-31-31 15-48 39-20C69 16 31 50-17 46','none',hot,2.3)+
+            path('M-4-15C19-17 33 9 15 26C-9 44-45 25-40-8','none',color,1.3);
+        }else{
+          graphic=repeat(4,i=>oval(0,i*3,19+i*17,8+i*5,'none',`stroke="${i%2?hot:color}" stroke-width="${2.1-i*.36}" opacity="${.75-i*.12}"`));
+        }
+        break;
+      case 'seal':
+        graphic=group('rotate(-12)',path('M-49 15Q-43-24-13-40L29-34 52-9 44 23 11 38-33 31Z',
+          'none',color,1.9)+path('M-37 12L-29-12-14-23 29-23 42-7 28 20-12 28Z','none',hot,1.1))+
+          prop('coin',palette.fill,hot,color);
         break;
       default:
-        graphic=repeat(9+seed%3,i=>group(`rotate(${i*37+take(i)})`,
-          path(`M-7 9Q11-15 ${size+i%3*9} -${9+i*2}Q28 3 19 15Z`,palette.fill('flame'),hot,1.0)))+
-          oval(-4,0,22,18,palette.fill('core'));
+        graphic = mark === 'sun'
+          ? oval(0,0,36,31,palette.fill('core'))+repeat(5,i=>group(`rotate(${i*73+take(i)})`,
+              path('M21 10Q36-6 71-3Q44 1 29 15Z',palette.fill('flame'))))
+          : repeat(7,i=>group(`rotate(${i*49+take(i)})`,
+              path(`M0 6Q19-26 ${size+i%3*8} -${10+i*3}Q32-16 14 14Z`,palette.fill('flame'))));
     }
     const variation = repeat(2+seed%4,i=>{
       const bend=(seed >>> (i*5))%29;
@@ -470,13 +678,26 @@
         path(`M${-size*.44+i*5} ${top}q${12+bend} ${-8-bend*.47} ${30+bend} ${-12+i*5}`,'none',
           i%2?hot:fine,.68+i*.31));
     });
-    const direction = ['cut','crystal','splinter','threads','fold'].includes(shape) ? angle*.52 : seed%17-8;
-    const main = art(graphic+variation,target.x,target.y,direction);
+    const direction = ['wind','surf'].includes(shape) ? angle : ['cut','crystal','splinter','threads','fold'].includes(shape) ? angle*.52 : seed%17-8;
+    const main = art(graphic + (shape === 'arc' ? '' : `<g opacity=".44">${variation}</g>`),target.x,target.y,direction);
     main.setAttribute('data-contact',mark);
     const duration = reduced?420:Math.round((880+baseAttack*34)*(timeScale[shape]||1));
     const start=hitAt-30;
     const frames = reduced ? [{opacity:0,transform:`scale(${scale*.9})`},{opacity:.85},{opacity:0}]
-      : mark==='syrup' || isTea || shape==='surf' || shape==='fluid' ? [
+      : shape==='wind' || shape==='surf' ? [
+        {opacity:0,transform:`translateX(${-35*scale}px) scale(${scale*.68},${scale*.63})`},
+        {opacity:.93,transform:`translateX(${6*scale}px) scale(${scale})`,offset:.31},
+        {opacity:.57,transform:`translateX(${45*scale}px) scale(${scale*1.19},${scale*.78})`,offset:.63},
+        {opacity:0,transform:`translateX(${79*scale}px) scale(${scale*1.31},${scale*.55})`},
+      ] : shape==='arc' || shape==='crack' || shape==='circuit' ? [
+        {opacity:0,transform:`scale(${scale*.56})`},{opacity:.84,transform:`scale(${scale})`,offset:.16},
+        {opacity:.33,transform:`scale(${scale*1.07})`,offset:.63},{opacity:0,transform:`scale(${scale*1.08})`},
+      ] : mark==='foam' ? [
+        {opacity:0,transform:`translateY(8px) scale(${scale*.49})`},
+        {opacity:.91,transform:`scale(${scale})`,offset:.27},
+        {opacity:.79,transform:`translateY(-9px) scale(${scale*1.1})`,offset:.59},
+        {opacity:0,transform:`translateY(-24px) scale(${scale*1.15})`},
+      ] : mark==='syrup' || isTea || shape==='fluid' ? [
         {opacity:0,transform:`scale(${scale*.14},${scale*.51})`},
         {opacity:1,transform:`scale(${scale*.99},${scale*.92})`,offset:.24},
         {opacity:.87,transform:`translateY(10px) scale(${scale*1.22},${scale*.64})`,offset:.56},
@@ -505,20 +726,24 @@
     motion(main,frames,duration,start);
     if(reduced)return;
     const glint=art(oval(0,0,45+baseAttack*6,26+baseAttack*3,palette.fill('mist')),target.x,target.y);
-    motion(glint,[{opacity:0,transform:'scale(.48)'},{opacity:.65+baseAttack*.032,offset:.29},
+    motion(glint,[{opacity:0,transform:'scale(.48)'},{opacity:.40+baseAttack*.032,offset:.29},
       {opacity:0,transform:`scale(${scale*1.27})`}],500,start-35);
-    const count=density+Math.round(baseAttack*1.7);
+    const count=Math.round(density*.82+baseAttack*1.6);
+    const fan = ['cut','wind','surf'].includes(shape);
+    const course = angle * Math.PI / 180;
     for(let i=0;i<count;i++){
-      const angle=i*Math.PI*2/count+(take(i%20)*.22);
+      const heading = fan ? course + (i / count - .5) * 1.9 + take(i%20) * .008
+        : i * Math.PI * 2 / count + take(i%20) * .22;
       const spread=(35+take(i%17)*2.9)*scale;
-      const xx=Math.cos(angle)*spread,yy=Math.sin(angle)*spread;
-      const grav=['rain','fluid','splinter','break','surf'].includes(shape)?45:6;
+      const xx=Math.cos(heading)*spread,yy=Math.sin(heading)*spread;
+      const grav=mark==='foam'?-27:shape==='wind'?-14:['rain','fluid','splinter','break','surf'].includes(shape)?45:6;
       const scaleFactor=(.18+take((i+13)%22)/83)*scale;
-      const fragment = object==='orb'||mark==='syrup'?palette.particle(impactMaterial,i):prop(object,palette.fill,hot,color);
+      const fragment = object==='orb'||mark==='syrup'||(shape==='arc'&&!mark.startsWith('tidal'))
+        ? palette.particle(impactMaterial,i):prop(object,palette.fill,hot,color);
       const piece=art(fragment,target.x,target.y,i*97);
       motion(piece,[
         {opacity:0,transform:'scale(.084)'},
-        {opacity:.97,transform:`translate(${xx*.59}px,${yy*.65}px) scale(${scaleFactor})`,offset:.25},
+        {opacity:mark==='syrup'?.97:.77,transform:`translate(${xx*.59}px,${yy*.65}px) scale(${scaleFactor})`,offset:.25},
         {opacity:0,transform:`translate(${xx}px,${yy+grav}px) rotate(${take(i%18)*6}deg) scale(${scaleFactor*.42})`},
       ],Math.min(duration+190,490+i*22+baseAttack*34),hitAt+i*8);
     }

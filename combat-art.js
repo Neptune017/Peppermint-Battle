@@ -258,10 +258,12 @@
               path(`M5 7Q28 1 ${47+(i%4)*9} 0Q33-4 13-7L-2-2Z`,fill('flame')) +
               path('M12 0Q28-2 47 0','none','#fff5e6a0',.9))) +
             ellipse(0,0,22,18,fill('core')) + ellipse(-6,-4,7,4,'#fffff3bb'));
-        case 'electric':
-          return pose(ellipse(0,0,68,45,fill('mist')) + repeat(5,i=>group(`rotate(${i*70 + seed%39})`,
-            path(`M-6 4L18-6l5 4 8-9 7 1 ${18+i*3}-6-16 11-8-1-9 10-7-2-23 6Z`,fill('ice'), hot,1.15) +
-            path('M31-10L25-23 33-30M24 2L43 9 48 4L61 10','none','#ddffff',1.5))));
+        case 'electric': {
+          const strands = repeat(4,i=>group(`rotate(${i*83+seed%39})`,
+            path(`M-4 5L7 0 19 3 27-8 39-7 ${49+i*4}-16`,'none',hot,1.25-i*.15) +
+            path(`M19 3L25 9 35 8 46 18M27-8L26-17 36-26M35 8l5 9 9 3`,'none','#83b8ff',.72)));
+          return pose(ellipse(0,0,68,45,fill('mist'),'opacity=".47"') + strands);
+        }
         case 'growth':
           return pose(ellipse(0,23,59,27,fill('mist')) + repeat(8,i=>{
             const x=(i-3.5)*8, y=8+(i*17+(seed%19))%31;
@@ -314,7 +316,7 @@
     return { weapon, paint, particle, missile, fill };
   }
 
-  const elementMaterial = {Ignis:'fire',Glacial:'ice',Terra:'earth',Aer:'wind',Aqua:'water',Mind:'magic',Dark:'dark',Solar:'solar'};
+  const elementMaterial = {Ignis:'fire',Glacial:'ice',Terra:'earth',Aer:'electric',Aqua:'water',Mind:'magic',Dark:'dark',Solar:'solar'};
   const motifMaterial = {
     flame:'fire',ice:'ice',icicle:'ice',wave:'water',drop:'water',fin:'water',steam:'wind',whirl:'wind',
     feather:'wind',root:'growth',leaf:'growth',thorn:'growth',petal:'growth',wood:'earth',mud:'earth',
@@ -329,6 +331,8 @@
     electric:['#4661b7','#ddffff'], steel:['#594651','#fff7dc'], ink:['#1b132f','#d3c7f5'],
     impact:['#6e4134','#ffdcab'], candy:['#90184e','#ffc2e6'],
   };
+  const windAerCards = new Set(['academy-diamond', 'wb-ladyfeather']);
+
   function describe(card, kind, lead, mark) {
     const attack = kind === 'strike';
     const key = weaponByCard[card.id] || weaponMotifs[lead] || null;
@@ -342,8 +346,13 @@
     if (card.id==='zoya') flight = impact = 'dark';
     if (attack && card.id==='ip-natsuki') flight = impact = 'water';
     if (attack && key?.endsWith('Umbrella')) impact = 'ice';
+    let aer = null;
+    if (card.element === 'Aer') {
+      aer = card.id === 'wb-topaz-diamond' ? 'mixed' : windAerCards.has(card.id) ? 'wind' : 'electric';
+      flight = impact = aer === 'wind' ? 'wind' : 'electric';
+    }
     const [dark, hot] = tones[impact] || tones.impact;
-    return { key, flight, impact, dark, hot };
+    return { key, flight, impact, dark, hot, aer };
   }
   window.peppermintCombatArt = { mount, describe };
 })();

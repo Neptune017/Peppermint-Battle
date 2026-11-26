@@ -106,7 +106,7 @@
     const scene = {
       art: (drawing, x, y, rotation) => painted(layer, drawing, x, y, rotation),
       layer, svgNode, palette, motion, direction, card, origin, attack, melee, reduced, color,
-      hot: theme.hot, seed: signature, effectScale, impactMaterial: theme.impact, baseAttack, impactAt,
+      hot: theme.hot, aer: theme.aer, seed: signature, effectScale, impactMaterial: theme.impact, baseAttack, impactAt,
       targets: destinations.map(({box}) => box), viewport: {w:window.innerWidth,h:window.innerHeight},
     };
     const special = scenes.setPiece(scene);
@@ -253,7 +253,7 @@
     try {
       window.peppermintCombatSound.play({
         audio, mode: direction.sound, seed: signature, strike: attack, release: prepared, impact: impactAt, baseAttack,
-        finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
+        aer: theme.aer, finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
       });
     } catch { /* Visual feedback remains available without audio. */ }
     return duration;
