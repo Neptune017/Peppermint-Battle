@@ -135,7 +135,7 @@
         { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
       ], prepared + 280);
     }
-    if (!weapon && !reduced && !special && direction.move !== 'slimeClaws') {
+    if (!weapon && !reduced && !special && !['slimeClaws','fireFist'].includes(direction.move)) {
       const swell = painted(layer, palette.paint(theme.flight, 'projectile', signature, lead), origin.x, origin.y, facing);
       motion(swell, [
         { opacity: 0, transform: `scale(${projectileScale * .30})` },
@@ -256,7 +256,7 @@
     try {
       window.peppermintCombatSound.play({
         audio, mode: direction.sound, seed: signature, strike: attack, release: prepared, impact: impactAt, baseAttack,
-        aer: theme.aer, fist: Boolean(fist), finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
+        aer: theme.aer, melee, fist: Boolean(fist), finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
       });
     } catch { /* Visual feedback remains available without audio. */ }
     if (onImpact) window.setTimeout(onImpact, Math.max(0, impactAt - (clock() - startedAt)));

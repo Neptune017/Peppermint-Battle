@@ -17,7 +17,7 @@
     hollow:[1,1.23,1.77,2.36], buzz:[1,1.5,2], reed:[1,2,3.03,4],
   };
   const note = (midi) => 440 * 2 ** ((midi-69)/12);
-  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, fist, finish, count = 1}) {
+  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, melee, fist, finish, count = 1}) {
     if (!audio || audio.state!=='running') return;
     const start=audio.currentTime+.015;
     const gain=audio.createGain();
@@ -82,8 +82,9 @@
       if (punch) sweep(t,.27,138,41,.14*weight,'triangle');
       for(let i=0;i<7;i++)texture(t+.048+i*.036,.094,1120+(seed+i*313)%3200,590+i*95,.034,1.4);
     } else if (mode==='lifebuoy') {
-      texture(t-.63,.46,950,2720,.065,1.9);
-      sweep(t-.51,.32,438,265,.061);
+      const lead=melee?.27:.63;
+      texture(t-lead,melee?.22:.46,950,2720,.065,1.9);
+      sweep(t-lead*.81,melee?.17:.32,438,265,.061);
       texture(t-.025,.25,3580,1000,.171*weight,1.57);
       texture(t+.061,.52,660,249,.13,2.2);
       for(let i=0;i<5;i++)sweep(t+.12+i*.072,.138,510+(seed+i*73)%276,168+i*31,.073/(1+i*.18));

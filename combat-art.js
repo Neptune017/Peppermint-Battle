@@ -34,6 +34,10 @@
       shade: ['r', [color, 0, .54], [dark, .51, .85], ['#080516', .78, .78], ['#090214', 1, 0]],
       mist: ['r', [hot, 0, .86], [color, .31, .55], [dark, .69, .31], [color, 1, 0]],
       flame: ['l', [color, 0, .66], [dark, .24], [color, .57], [hot, .83], ['#fff5c9', 1]],
+      jetFire: ['h', ['#fff3c0', 0, .35], ['#ffb142', .16, .75], ['#ff6814', .36, .86], ['#eb420f', .59, .76], ['#a22718', .83, .42], ['#622c23', 1, 0]],
+      jetCore: ['h', ['#fff9e1', 0, .76], ['#fff4bf', .21, .99], ['#ffce53', .42, .91], ['#ffa42e', .64, .61], ['#f05018', .86, .29], ['#ed400c', 1, 0]],
+      jetSmoke: ['r', ['#877477', 0, .51], ['#655459', .44, .46], ['#4e414a', .71, .26], ['#261e2a', 1, 0]],
+      jetHeat: ['r', ['#fff4cb', 0, .96], ['#ffc34a', .24, .85], ['#ff641e', .47, .66], ['#c42a0e', .70, .25], ['#b13114', 1, 0]],
       ice: ['l', ['#f2ffff', 0, .95], [hot, .21, .83], [color, .43, .74], [dark, .72, .92], ['#effbff', 1, .96]],
       silver: ['h', ['#24182b', 0], ['#948594', .19], ['#f7eeeb', .38], ['#a494af', .53], ['#4c3759', .77], ['#191627', 1]],
       gold: ['h', ['#412122', 0], ['#a5652c', .2], ['#ffe6a2', .39], ['#d9a74a', .53], ['#603414', .79], ['#f3bf75', 1]],
@@ -70,6 +74,20 @@
       for (const [stopColor, offset, opacity = 1] of stops) svgNode('stop', { offset, 'stop-color': stopColor, 'stop-opacity': opacity }, gradient);
       return reference;
     };
+
+    let flameFilter;
+    function softenFlame() {
+      if (flameFilter) return flameFilter;
+      const filterId = `${id}-flame-turbulence`;
+      const filter = svgNode('filter', {
+        id: filterId, x: '-16%', y: '-35%', width: '132%', height: '170%', 'color-interpolation-filters': 'sRGB',
+      }, defs);
+      svgNode('feTurbulence', {type:'fractalNoise', baseFrequency:'.043 .070', numOctaves:2, seed:8, result:'air'}, filter);
+      svgNode('feDisplacementMap', {in:'SourceGraphic', in2:'air', scale:9, xChannelSelector:'R', yChannelSelector:'G'}, filter);
+      svgNode('feGaussianBlur', {stdDeviation:.80}, filter);
+      flameFilter = `url(#${filterId})`;
+      return flameFilter;
+    }
 
     function candyStaff() {
       const glass = ellipse(0, -49, 27, 27, fill('glass'), 'stroke="#eec7ec" stroke-width="1.15"');
@@ -434,7 +452,7 @@
     function missile(spec, material) {
       return window.peppermintProjectiles.drawing(spec, material, { fill, accent: color, highlight: hot });
     }
-    return { weapon, paint, particle, missile, fill, signature };
+    return { weapon, paint, particle, missile, fill, signature, softenFlame };
   }
 
   const elementMaterial = {Ignis:'fire',Glacial:'ice',Terra:'earth',Aer:'electric',Aqua:'water',Mind:'magic',Dark:'dark',Solar:'solar'};
@@ -467,7 +485,7 @@
     if (card.id==='zoya') flight = impact = 'dark';
     if (attack && card.id==='ip-natsuki') flight = impact = 'water';
     if (card.id==='ip-jet') flight = impact = 'fire';
-    if (card.id==='ip-chase') flight = impact = 'water';
+    if (card.id==='ip-chase' || card.id==='ip-chase-zodiac') flight = impact = 'water';
     if (attack && key?.endsWith('Umbrella')) impact = 'ice';
     let aer = null;
     if (card.element === 'Aer') {

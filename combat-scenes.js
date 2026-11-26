@@ -164,7 +164,6 @@
       case 'seaGate': return repeat(5,i=>group(`translate(${(i-2)*20} ${i%2*16}) rotate(${(i-2)*13})`,path('M-31 26C-11-24 17-36 27-21Q3-26 4-4Q6 21 29 28Z',fill('liquid'),hot,1.7)));
       case 'rib': return path('M-51 14C-31-10-21 10 0-10Q23-30 50-12Q18-19 6 4Q-15 28-51 14Z',fill('flame'),hot,1)+path('M-34 12Q-12 18 8-4Q20-16 38-14','none',fine,1.2);
       case 'paper': return path('M-29-18L22-22 12 19-22 23Z',fill('pearlCloth'),hot,1.2);
-      case 'ember': return path('M-4 9Q-17-4 2-16Q0-10 10-10Q13 6-4 9Z',fill('flame'))+oval(1,1,3,5,fill('core'));
       case 'slimeDrop': return path('M-2-30C8-21 21-5 18 10Q14 29-5 29Q-23 23-20 9Q-16-9-2-30Z',fill('slimeGreen'),'#cdf98a',.95)+path('M-13 3Q-17 11-10 20','none','#e6ffb4',1.5);
       case 'bubble': return oval(0,0,36,32,fill('liquid'),'stroke="#b2fbff" stroke-width="1.8"')+oval(-13,-15,8,4,fine);
       default: return oval(0,0,17,15,fill('core'));
@@ -546,10 +545,58 @@
   const winterTeaCards = new Set(['drinking-tea','wb-topaz-diamond','wb-steepod']);
 
 
-  function flameTongue(fill) {
-    return path('M-14 15C-26 4-16-15 6-26C27-37 29-49 41-60C40-40 61-44 80-57C75-33 61-25 43-21C29-16 37-11 56-8C39 8 10-2 3 10C0 16-6 20-14 15Z',fill('flame'))+
-      path('M-12 11C-6-9 26-15 36-32C35-21 47-21 58-25C44-11 11-5-2 16Z','#ffb74cba')+
-      path('M-13 5C2-12 18-13 24-16M28-33Q39-38 42-49M51-21Q65-28 72-43','none','#ffe7a5',1.22);
+  function flameOutline(center, widths, expansion) {
+    const edge = (side) => center.map(([x,y],i)=>[x,y+widths[i]*side*expansion]);
+    const polygon=[...edge(-1), ...edge(1).reverse()];
+    const trace=polygon.map(([x,y],i)=>{
+      const [nx,ny]=polygon[(i+1)%polygon.length];
+      return `Q${x} ${y} ${(x+nx)*.5} ${(y+ny)*.5}`;
+    }).join('');
+    const [x,y]=polygon[0];
+    const [lx,ly]=polygon.at(-1);
+    return `M${(x+lx)*.5} ${(y+ly)*.5}${trace}Z`;
+  }
+
+  function firePlume(palette, seed) {
+    const {fill, softenFlame}=palette;
+    const drift=(i)=>((seed >>> (i*3)) % 15)-7;
+    const length=.82+(seed>>>24)%21/55;
+    const curlSide=seed&1?1:-1;
+    const center=[[-13,2],[1,0],[16,drift(1)*.54],[34,drift(2)+8*curlSide],[55,drift(3)-14*curlSide],
+      [74,drift(4)-8*curlSide],[101,drift(5)-9]].map(([x,y])=>[x*length,y]);
+    const curl=center.map(([x,y],i)=>[x*.76+3,y-3+i*1.28]);
+    const lick=center.map(([x,y],i)=>[x*1.02+2,y+5+drift(i%6)*.91]);
+    const skin=flameOutline(center,[2,11,20,16,12,6,0],1.15);
+    const air=flameOutline(lick,[0,0,7,9,6,3,0],1.22);
+    const melt=flameOutline(curl,[1,4,9,8,4,1,0],.96);
+    const threads=flameOutline(lick,[.5,2,5,3,2,1,0],.63);
+    return `<g filter="${softenFlame()}">${path(skin,fill('jetFire'))}${path(air,fill('jetFire'))}${path(melt,fill('jetCore'))}${path(threads,fill('jetCore'))}</g>`;
+  }
+
+  function renderFireAir(ctx, point, start, heading, count) {
+    if (ctx.reduced) return;
+    const {art,motion,palette,effectScale,seed}=ctx;
+    const s=effectScale;
+    for(let i=0;i<4;i++){
+      const drift=(-37+((seed>>>(i*4))%67))*s;
+      const cloud=art(`<g filter="${palette.softenFlame()}">${oval(-19,6,41,27,palette.fill('jetSmoke'))}${oval(14,-7,39,30,palette.fill('jetSmoke'))}${oval(35,7,26,21,palette.fill('jetSmoke'))}</g>`,
+        point.x+(i-1.5)*13*s,point.y+(i%2)*9);
+      cloud.setAttribute('data-combat-prop','fireSmoke');
+      motion(cloud,[{opacity:0,transform:'scale(.38)'},{opacity:.65,transform:`translate(${drift*.27}px,-17px) scale(${s*.83})`,offset:.25},
+        {opacity:.51,transform:`translate(${drift*.56}px,-49px) scale(${s*1.04})`,offset:.60},
+        {opacity:0,transform:`translate(${drift}px,${-83-i*6}px) rotate(${i*13-18}deg) scale(${s*1.36})`}],994+i*62,start+85+i*50,'ease-out');
+    }
+    for(let i=0;i<count;i++){
+      const direction=heading+((i*47)%173-86)*Math.PI/180;
+      const speed=(27+(i*23)%82)*s;
+      const vx=Math.cos(direction)*speed,vy=Math.sin(direction)*speed;
+      const spark=art(oval(0,0,4,1.6,palette.fill('jetHeat'))+oval(0,0,1.75,.8,i%3?'#ffd687':'#ff7d34'),
+        point.x+(i%3-1)*8*s,point.y+(i%5-2)*4*s,direction*180/Math.PI);
+      spark.setAttribute('data-combat-prop','fireSpark');
+      motion(spark,[{opacity:0,transform:'scale(.61)'},{opacity:.96,transform:`translate(${vx*.38}px,${vy*.37-6}px) scale(${.84+i%4*.13})`,offset:.17},
+        {opacity:.51,transform:`translate(${vx*.87}px,${vy*.85-22}px) scale(.67)`,offset:.67},
+        {opacity:0,transform:`translate(${vx}px,${vy-41-i%6*7}px) scale(.28)`}],560+(i*31)%295,start+(i*17)%109,'ease-out');
+    }
   }
 
   function fujinBag(fill) {
@@ -563,13 +610,14 @@
         'none',fill('gold'),2.8)+oval(55,17,7,5,'#24415d','stroke="#deb8d8" stroke-width="1.4"');
   }
 
-  function rescueBuoy(fill) {
+  function rescueBuoy(fill, zodiac) {
     const ring='M-61 0a61 41 0 1 1 122 0a61 41 0 1 1 -122 0ZM-30 0a30 20 0 1 0 60 0a30 20 0 1 0 -60 0Z';
-    return `<g fill-rule="evenodd">${path(ring,fill('ruby'),'#ffbd9f',2.05)}</g>`+
+    return `<g fill-rule="evenodd">${path(ring,fill(zodiac?'pearlCloth':'ruby'),zodiac?'#fff0d2':'#ffbd9f',2.05)}</g>`+
       path('M-58-10C-49-29-18-41 10-37M19 37Q47 30 55 17M-24 10Q-16 23 8 19','none','#ffbec8',2.4)+
-      path('M-48-26Q-36-35-25-36L-11-19Q-22-16-27-10Z M35-33Q44-31 52-22L26-8Q24-15 16-17Z M51 25Q39 34 30 35L16 17Q24 15 27 8Z M-34 35Q-45 32-52 23L-27 8Q-24 15-16 17Z',fill('pearlCloth'),'#ffc97f',1.6)+
+      path('M-48-26Q-36-35-25-36L-11-19Q-22-16-27-10Z M35-33Q44-31 52-22L26-8Q24-15 16-17Z M51 25Q39 34 30 35L16 17Q24 15 27 8Z M-34 35Q-45 32-52 23L-27 8Q-24 15-16 17Z',fill(zodiac?'gold':'pearlCloth'),'#ffc97f',1.6)+
       path('M-59 5Q-51 12-60 19Q-48 32-37 35M35-35Q49-39 59-28Q65-21 59-12','none',fill('gold'),3.2)+
-      path('M-16-26Q-3-30 13-27M9 30Q21 26 26 24','none','#fff3a4',1.42);
+      path('M-16-26Q-3-30 13-27M9 30Q21 26 26 24','none','#fff3a4',1.42)+
+      (zodiac ? path('M-45-24l19 13M39-28l-17 15M47 22L28 11M-48 25l21-14','none','#fff4c5',1.8) : '');
   }
 
   function carouselHorse(fill) {
@@ -590,32 +638,54 @@
   }
 
   function fireBurstFromFist(ctx, target, angle) {
-    const d=angle*Math.PI/180, size=ctx.scale;
-    const point={x:target.x-Math.cos(d)*20*size,y:target.y-Math.sin(d)*20*size};
-    const directions=[-110,-66,-25,18,63,118];
+    const radians=angle*Math.PI/180, size=ctx.scale;
+    const point={x:target.x+Math.cos(radians)*9*size,y:target.y+Math.sin(radians)*9*size};
+    const flash=ctx.art(oval(0,0,44,29,ctx.palette.fill('jetHeat')),point.x,point.y,angle);
+    flash.setAttribute('data-combat-prop','fireHeat');
+    ctx.motion(flash,[{opacity:0,transform:`scale(${size*.48})`},
+      {opacity:.91,transform:`scale(${size})`,offset:.18},{opacity:0,transform:`scale(${size*1.33})`}],
+      395,ctx.hitAt-22);
+    const directions=[-103,-59,-18,14,48,112];
     directions.forEach((turn,i)=>{
-      const plume=ctx.art(flameTongue(ctx.palette.fill),point.x,point.y,angle+turn);
+      const travelAngle=(angle+turn)*Math.PI/180;
+      const seed=Math.imul(ctx.seed^(i+7),887);
+      const plume=ctx.art(firePlume(ctx.palette,seed),point.x,point.y,angle+turn);
       plume.setAttribute('data-combat-prop','fistFlame');
-      const stretch=size*(i%3===0?.66:i%3===1?.91:1.12);
+      const s=size*[.40,.69,1.16,.91,.63,.47][i];
+      const driftX=Math.cos(travelAngle)*(21+i%3*10)*s,driftY=Math.sin(travelAngle)*(21+i%3*10)*s;
       ctx.motion(plume, ctx.reduced
-        ? [{opacity:0,transform:`scale(${stretch*.68})`},{opacity:.84,offset:.18},{opacity:0}]
-        : [{opacity:0,transform:`scale(${stretch*.32},${stretch*.50})`},{opacity:.96,transform:`scale(${stretch},${stretch*.83})`,offset:.20},
-          {opacity:.73,transform:`scale(${stretch*1.24},${stretch*.71})`,offset:.56},
-          {opacity:0,transform:`scale(${stretch*1.45},${stretch*.54})`}],
-      670+i*44,ctx.hitAt+i*14,'ease-out');
+        ? [{opacity:0,transform:`scale(${s*.68})`},{opacity:.84,offset:.22},{opacity:0}]
+        : [{opacity:0,transform:`scale(${s*.25},${s*.64}) rotate(${i%2?-7:9}deg)`},
+          {opacity:.99,transform:`translate(${driftX*.10}px,${driftY*.10-3}px) scale(${s*.83},${s*.94})`,offset:.16},
+          {opacity:.81,transform:`translate(${driftX*.53}px,${driftY*.54-8}px) scale(${s*1.12},${s*.77}) rotate(${i%2?9:-13}deg)`,offset:.43},
+          {opacity:.41,transform:`translate(${driftX*.85}px,${driftY*.92-26}px) scale(${s*1.14},${s*.52}) rotate(${i%2?16:-17}deg)`,offset:.71},
+          {opacity:0,transform:`translate(${driftX}px,${driftY-53}px) scale(${s*1.21},${s*.35}) rotate(${i%2?10:-21}deg)`}],
+        685+i*37,ctx.hitAt+[0,35,8,23,56,84][i],'ease-out');
     });
+    renderFireAir(ctx,point,ctx.hitAt,radians,14+ctx.baseAttack);
   }
 
   function stageKindle(ctx, target) {
-    const {art,motion,palette,impactAt,effectScale,reduced}=ctx;
-    for(let i=0;i<5;i++){
-      const plume=art(flameTongue(palette.fill),target.x+(i-2)*22*effectScale,target.y+42*effectScale,-82+(i-2)*11);
+    const {art,motion,palette,impactAt,effectScale,reduced,seed}=ctx;
+    const root={x:target.x,y:target.y+45*effectScale};
+    const bed=art(oval(0,0,54,20,palette.fill('jetHeat')),root.x,root.y);
+    bed.setAttribute('data-combat-prop','fireHeat');
+    motion(bed,[{opacity:0,transform:`scale(${effectScale*.39})`},
+      {opacity:.77,transform:`scale(${effectScale})`,offset:.29},{opacity:.51,offset:.61},{opacity:0}],940,impactAt-430);
+    const runs=[[-32,-105,.52],[-17,-97,.74],[4,-88,1.04],[17,-75,.69],[33,-65,.53]];
+    runs.forEach(([x,angle,weight],i)=>{
+      const plume=art(firePlume(palette,Math.imul(seed+i+13,991)),root.x+x*effectScale,root.y+(i%2)*6,angle);
       plume.setAttribute('data-combat-prop','kindleFlame');
-      motion(plume,reduced?[{opacity:0},{opacity:.73},{opacity:0}]:[
-        {opacity:0,transform:'scale(.26)'},{opacity:.9,transform:`translateY(-9px) scale(${effectScale*.69})`,offset:.31},
-        {opacity:.57,transform:`translateY(-37px) scale(${effectScale*.91},${effectScale*.66})`,offset:.60},
-        {opacity:0,transform:'translateY(-64px) scale(.61)'}],820,impactAt-480+i*62);
-    }
+      const s=effectScale*weight, drift=(i-2)*9;
+      motion(plume,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.79},{opacity:0}]:[
+        {opacity:0,transform:`scale(${s*.29},${s*.79}) rotate(-8deg)`},
+        {opacity:.97,transform:`translate(${drift*.25}px,-11px) scale(${s},${s*.92})`,offset:.24},
+        {opacity:.70,transform:`translate(${drift*.53}px,-28px) scale(${s*.87},${s*1.05}) rotate(${drift*.8}deg)`,offset:.55},
+        {opacity:.43,transform:`translate(${drift*.78}px,-47px) scale(${s*1.14},${s*.71})`,offset:.76},
+        {opacity:0,transform:`translate(${drift}px,-70px) scale(${s*.66},${s*.42})`}],
+        1040+i*43,impactAt-525+[130,60,0,96,164][i],'ease-out');
+    });
+    renderFireAir(ctx,{x:target.x,y:target.y+12*effectScale},impactAt-235,-Math.PI/2,10+ctx.baseAttack);
   }
 
   function stageFujin(ctx, target) {
@@ -638,14 +708,18 @@
   }
 
   function stageBuoyThrow(ctx, target) {
-    const {origin, art, motion, palette, reduced, impactAt, effectScale}=ctx;
-    const vx=target.x-origin.x,vy=target.y-origin.y;
+    const {origin, art, motion, palette, reduced, impactAt, effectScale, card, melee}=ctx;
+    const zodiac=card.id==='ip-chase-zodiac';
+    const span=Math.hypot(target.x-origin.x,target.y-origin.y);
+    const launch=melee?mix(origin,target,Math.max(.52,1-105*effectScale/Math.max(1,span))):origin;
+    const vx=target.x-launch.x,vy=target.y-launch.y;
     const dist=Math.hypot(vx,vy);
     const bend=Math.min(103,Math.max(7,dist*.27));
     const xs=dist>1?vx/dist:1,ys=dist>1?vy/dist:0;
-    const ring=art(rescueBuoy(palette.fill),origin.x,origin.y);
+    const ring=art(rescueBuoy(palette.fill,zodiac),launch.x,launch.y);
     ring.setAttribute('data-combat-prop','rescueBuoy');
-    const release=Math.round(impactAt*.28);
+    ring.setAttribute('data-buoy-trim',zodiac?'gold':'pearl');
+    const release=melee?impactAt-270:Math.round(impactAt*.28);
     const s=effectScale*.80;
     const travel=impactAt-release;
     const duration=travel+270;
@@ -983,7 +1057,7 @@
     ornaments:['rain','bell',11], coil:['echo','gear',8],
     prismBloom:['prism','shard',8], gelSnap:['fluid','slimeDrop',10],
     crystalRenewal:['heart','shard',11], parcelArrival:['parcel','orb',4], cymbalRings:['metalWave','shard',7],
-    fistFire:['fireFan','ember',11], fireRise:['fireRise','ember',9], poolSplash:['splash','drop',12],
+    fistFire:['fireFan','orb',0], fireRise:['fireRise','orb',0], poolSplash:['splash','drop',12], zodiacSplash:['splash','drop',15],
     harpRestore:['harpWave','note',5], carouselTrails:['wind','shard',6],
     windShear:['wind','feather',5], drift:['wind','steam',5],
     forkPunch:['arc','shard',5], tidalShock:['arc','drop',7], tidalNet:['arc','steam',5], coronaPunch:['arc','shard',5],
@@ -1102,10 +1176,12 @@
           path('M-65 22Q17-42 61-21M-38 15Q18-23 46-17','none',i%2?color:hot,1.38-i*.22)));
         break;
       case 'fireFan':
-        graphic=repeat(5,i=>group(`rotate(${angle-135+i*62+take(i)*.6}) scale(${.49+i%3*.12})`,flameTongue(palette.fill)));
+        graphic=oval(-4-take(3)*.29,4,55+take(5)*.57,29,palette.fill('jetHeat'))+
+          oval(19,10,28,19,palette.fill('jetHeat'),'opacity=".45"');
         break;
       case 'fireRise':
-        graphic=repeat(4,i=>group(`translate(${(i-1.5)*24} ${13+i%2*14}) rotate(${-117+i*16}) scale(${.54+i%3*.16})`,flameTongue(palette.fill)));
+        graphic=oval(0,28,60+take(5)*.4,20,palette.fill('jetHeat'),'opacity=".71"')+
+          oval(0,16-take(6)*.15,37,15,palette.fill('jetHeat'),'opacity=".42"');
         break;
       case 'splash':
         graphic=path('M-78 29Q-55 15-30 19C-37 4-53-8-56-33C-35-15-24 8-11 6C1-6-9-29-2-51C9-28 16-7 24-7C37-12 34-37 47-52C55-27 47-3 45 9C61 5 71 2 80-4C77 18 58 34 35 38Q-23 48-78 29Z',palette.fill('liquid'),'#a9faff',1.5)+
@@ -1191,7 +1267,8 @@
           i%2?hot:fine,.68+i*.31));
     });
     const direction = ['wind','surf'].includes(shape) ? angle : ['cut','crystal','splinter','threads','fold'].includes(shape) ? angle*.52 : seed%17-8;
-    const main = art(graphic + (shape === 'arc' ? '' : `<g opacity=".44">${variation}</g>`),target.x,target.y,direction);
+    const jetFire=shape==='fireFan'||shape==='fireRise';
+    const main = art(graphic + (shape==='arc'||jetFire ? '' : `<g opacity=".44">${variation}</g>`),target.x,target.y,direction);
     main.setAttribute('data-contact',mark);
     const duration = reduced?420:Math.round((880+baseAttack*34)*(timeScale[shape]||1));
     const start=hitAt;
@@ -1242,7 +1319,7 @@
       ];
     const openingOpacity = shape==='heart' ? .62 : shape==='parcel' ? .30 : .48;
     motion(main,[{...frames[0],offset:0},{...frames[0],offset:.012,opacity:openingOpacity},...frames.slice(1)],duration,start);
-    if(reduced)return;
+    if(reduced||jetFire)return;
     const glowSize=shape==='parcel'?22:45+baseAttack*6;
     const glint=art(oval(0,0,glowSize,glowSize*.57,palette.fill('mist')),target.x,target.y);
     motion(glint,[{opacity:0,transform:'scale(.48)'},{opacity:.40+baseAttack*.032,offset:.29},

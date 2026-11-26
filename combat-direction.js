@@ -81,7 +81,7 @@ ip-floatbite swing/tide/claws orbit/drops/water
 ip-octospray ink/ink/splash lash/ink/water
 ip-field - panorama/tide/water
 ip-coyote-zodiac slimeClaws/facets/slimeClaws orbit/cleave/air
-ip-chase-zodiac river/sun/water fountain/facets/crystal
+ip-chase-zodiac buoyThrow/zodiacSplash/lifebuoy buoyThrow/zodiacSplash/lifebuoy
 ip-ride-the-wave - surf/tide/splash
 ip-no-pain-no-gain - forge/bolts/metal
 ip-swim-dont-sink - armor/drops/water
