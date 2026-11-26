@@ -27,7 +27,7 @@
     if (card?.role === 'Brawler') return false;
     if (card?.role === 'Shooter') return true;
     const scene = window.peppermintCombatDirection[card?.id]?.strike?.move;
-    return ['beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
+    return ['raijin','mirrors','beam','beams','river','twin','kettles','serving','dart','volley','ink','swarm'].includes(scene) || rangedMotifs.has(lead);
   }
   const attackImpactTime = 910;
   const attackResolutionTime = attackImpactTime + 240;
@@ -103,9 +103,10 @@
     window.setTimeout(() => { layers.delete(layer); layer.remove(); }, duration);
     const palette = reference.mount(layer, svgNode, color, theme.dark, theme.hot);
     const weapon = theme.key ? palette.weapon(theme.key) : '';
+    const fist = melee && card.role === 'Brawler' ? scenes.fistStyles[card.id] : null;
     const scene = {
       art: (drawing, x, y, rotation) => painted(layer, drawing, x, y, rotation),
-      layer, svgNode, palette, motion, direction, card, origin, attack, melee, reduced, color,
+      layer, svgNode, palette, motion, direction, card, origin, attack, melee, reduced, color, fist,
       hot: theme.hot, aer: theme.aer, seed: signature, effectScale, impactMaterial: theme.impact, baseAttack, impactAt,
       targets: destinations.map(({box}) => box), viewport: {w:window.innerWidth,h:window.innerHeight},
     };
@@ -131,7 +132,7 @@
         { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
       ], prepared + 280);
     }
-    if (!weapon && !reduced && !special) {
+    if (!weapon && !reduced && !special && direction.move !== 'slimeClaws') {
       const swell = painted(layer, palette.paint(theme.flight, 'projectile', signature, lead), origin.x, origin.y, facing);
       motion(swell, [
         { opacity: 0, transform: `scale(${projectileScale * .30})` },
@@ -253,7 +254,7 @@
     try {
       window.peppermintCombatSound.play({
         audio, mode: direction.sound, seed: signature, strike: attack, release: prepared, impact: impactAt, baseAttack,
-        aer: theme.aer, finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
+        aer: theme.aer, fist: Boolean(fist), finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
       });
     } catch { /* Visual feedback remains available without audio. */ }
     return duration;

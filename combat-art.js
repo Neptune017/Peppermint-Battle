@@ -18,7 +18,7 @@
     'wb-magnus': 'longsword', 'valhalla-pryce': 'longsword', 'valhalla-mjolknir': 'runeHammer',
     'wb-bearnardo': 'frostHammer', 'valhalla-sloetunn': 'runeHammer', 'valhalla-axir': 'axe',
     'ww-eggscythe': 'scythe', 'valhalla-wendy': 'scythe', 'lt-scribble': 'quill', 'lt-broomy': 'broom',
-    'lt-beatcracker': 'drum', 'wb-zodiac-topaz': 'drum',
+    'lt-beatcracker': 'drum',
   };
   const weaponMotifs = {
     staff: 'vineStaff', book: 'spellbook', hammer: 'maul', scythe: 'scythe', axe: 'axe',
@@ -28,7 +28,6 @@
 
   function mount(layer, svgNode, color, dark, hot) {
     const id = `pb-fx-${++sequence}`;
-    const fill = (key) => `url(#${id}-${key})`;
     const gradients = {
       core: ['r', ['#fffaf3', 0], [hot, .24], [color, .57], [dark, 1]],
       liquid: ['r', ['#fef8ff', 0, .93], [hot, .18, .88], [color, .44, .9], [dark, .81, .94], [color, 1, .56]],
@@ -47,15 +46,29 @@
       blueCloth: ['h', ['#102647', 0], ['#3974a8', .21], ['#356bc4', .39], ['#143455', .59], ['#4e9adb', .81], ['#112b56', 1]],
       pearlCloth: ['h', ['#81739b', 0], ['#cfc5e0', .2], ['#fff3ef', .42], ['#c19fb9', .61], ['#e6dcec', .82], ['#7f7297', 1]],
       ruby: ['r', ['#fff1d8', 0], ['#ffb3bb', .25], ['#eb3657', .42], ['#640b2c', .79], ['#210d26', 1]],
+      drumHide: ['r', ['#fffaf2', 0], ['#f9e0d3', .32], ['#d8b5ae', .81], ['#9e726d', 1]],
+      mirrorViolet: ['l', ['#160a33', 0], ['#71549e', .26], ['#321750', .48], ['#d784ff', .86], ['#241331', 1]],
+      mirrorBlue: ['l', ['#151b38', 0], ['#4b8ad4', .29], ['#223659', .52], ['#69dbfd', .85], ['#182945', 1]],
+      slimeGreen: ['r', ['#eeffab', 0], ['#a8f535', .27, .87], ['#4ba90b', .54, .84], ['#246516', .77, .84], ['#bbff3e', 1, .87]],
+      slimeSpring: ['l', ['#98fdc4', 0], ['#43d985', .29, .8], ['#17844e', .56, .9], ['#c9fd3e', .82, .8], ['#f1ff9e', 1]],
+      slimeCoral: ['l', ['#ffe9ab', 0], ['#ff86d2', .28, .78], ['#8556b4', .54, .65], ['#22d498', .81, .88], ['#c4ff56', 1]],
+      slimePink: ['l', ['#ffde9b', 0], ['#ff88de', .19], ['#be367d', .54, .82], ['#4f2066', .72, .64], ['#fa8bda', 1]],
+      skin: ['l', ['#fff1d9', 0], ['#eeb793', .22], ['#c98873', .53], ['#8b5357', .81], ['#d08b76', 1]],
     };
     const defs = svgNode('defs', {}, layer);
-    for (const [key, [axis, ...stops]] of Object.entries(gradients)) {
+    const mountedGradients = new Set();
+    const fill = (key) => {
+      const reference = `url(#${id}-${key})`;
+      if (mountedGradients.has(key)) return reference;
+      mountedGradients.add(key);
+      const [axis, ...stops] = gradients[key];
       const radial = axis === 'r';
       const points = radial ? { cx: '48%', cy: '45%', fx: '30%', fy: '20%', r: '63%' }
         : { x1: '0%', y1: '0%', x2: axis === 'h' ? '100%' : '10%', y2: axis === 'h' ? '5%' : '100%' };
       const gradient = svgNode(radial ? 'radialGradient' : 'linearGradient', { id: `${id}-${key}`, ...points }, defs);
       for (const [stopColor, offset, opacity = 1] of stops) svgNode('stop', { offset, 'stop-color': stopColor, 'stop-opacity': opacity }, gradient);
-    }
+      return reference;
+    };
 
     function candyStaff() {
       const glass = ellipse(0, -49, 27, 27, fill('glass'), 'stroke="#eec7ec" stroke-width="1.15"');
@@ -310,10 +323,117 @@
         path('M-10 8L8-7','none','#fff0b2',.65);
       return path('M-2 5C-8 3-4-5 3-10Q2-6 7-4Q10 6-2 5Z',fill(index%3?'core':'flame'));
     }
+
+    function raijinDrum(profile) {
+      // The frame and hoops are separate from the hide, so the three drums can face different angles.
+      const side = profile > 0 ? -1 : 1;
+      const shell = group(`scale(${side} 1)`,
+        path('M-32-30C-21-39 7-43 24-28C38-14 39 12 29 27C21 39-5 43-31 30Q-12 9-32-30Z',fill('wood'),'#341b28',2)+
+        path('M-12-36Q8-41 22-28Q35-13 32 7Q30 25 16 34L7 38Q25 19 22-8Q20-27-12-36Z',fill('gold'),'#663624',1.45)+
+        path('M4-30Q17-25 23-16M12 31Q29 21 32 12M17-15l10 4m-8 22 10-3','none','#ffe5b9b3',1.35));
+      const face = ellipse(0,0,35,36,fill('gold'),'stroke="#512f2a" stroke-width="1.8"')+
+        ellipse(0,0,30.5,31.5,fill('drumHide'),'stroke="#b57e58" stroke-width="1.25"')+
+        repeat(3,i=>group(`rotate(${i*120})`,
+          path('M-3-22C8-24 18-19 22-11C18-16 7-18 4-13C3-10 8-5 5 0C2 6-9 5-13-2C-17-11-11-19-3-22Z',
+            '#211c2a','#352431',.45)))+
+        repeat(14,i=>group(`rotate(${i*360/14})`,ellipse(0,-33.5,1.45,1.3,fill('gold'),'stroke="#784831" stroke-width=".55"')))+
+        path('M-24-18Q-15-29-1-28M12 28Q22 22 25 12','none','#fff8e294',1.45);
+      return shell+group(`translate(${-side*8} 0) scale(${profile ? .88 : 1} 1)`, face);
+    }
+
+    function raijinFrame() {
+      const arch='M-91 17C-72 25-67-27-38-22C-18-22-15-45 0-43C17-45 16-22 38-22C63-28 75 25 91 17';
+      const cloud='M0 4C-11 0-16-7-12-12C-6-19 5-12 3-7C1-3-5-4-5-7M-10-3C-24-6-26 9-17 10Q-8 10-10 5M4-5C12-11 22-10 25-2C28 8 17 13 12 5';
+      return path(arch,'none','#603624',10)+path(arch,'none',fill('gold'),6)+path(arch,'none','#fff0b2a3',1.4)+
+        group('translate(-51 -12) rotate(-18)',path(cloud,'none',fill('gold'),4))+
+        group('translate(51 -12) scale(-1 1) rotate(-18)',path(cloud,'none',fill('gold'),4));
+    }
+
+    function amethystMirror(blue) {
+      const glass = blue ? 'mirrorBlue' : 'mirrorViolet';
+      const light = blue ? '#b7f6ff' : '#f3c3ff';
+      const darkRim = blue ? '#273159' : '#4c2559';
+      const carving='M-16-42Q-19-51-10-51Q-2-50-7-44M9-44Q5-51 12-51Q20-51 18-43M-27-18q-12 9-7 22q6 10 10 4';
+      return ellipse(4,2,30,46,'#271a39',`stroke="${darkRim}" stroke-width="2.7"`)+
+        ellipse(0,0,29.5,46,fill('silver'),`stroke="${light}" stroke-width="1.6"`)+
+        ellipse(0,0,25.5,41.5,fill(glass),`stroke="${darkRim}" stroke-width="2"`)+
+        path('M-23-8C-17-27-4-34 13-36L17-29Q-8-27-23 1Z','#e0f8ff5a')+
+        path('M-16 22Q3 8 19 3L21 11Q3 17-12 29Z','#dce9ff4c')+
+        path('M11-35Q28-10 19 17M-19 22Q-13 33 1 38','none',light,1)+
+        path(carving,'none',fill('gold'),1.9)+group('rotate(180)',path(carving,'none',fill('gold'),1.9))+
+        repeat(4,i=>group(`rotate(${i*90})`,path('M0-46l3-4 4 5-4 4Z',fill(glass),light,.9)));
+    }
+
+    function coyoteClaw(accent) {
+      const lower = accent === 'academy' ? 'slimeGreen' : 'slimeSpring';
+      const upper = accent === 'academy' ? lower : accent === 'island' ? 'slimeCoral' : 'slimePink';
+      return path('M-53-23C-47-39-34-44-21-40C-31-29-14-21-2-28C8-36 19-27 29-35C39-42 48-59 51-61C64-39 54-16 37-7C25-2 17-9 14 1C12 9 38 19 53 16C62 15 68 10 71 5C67 27 54 39 34 43C12 49 3 35-9 34C-24 36-33 19-44 16C-60 9-61-10-53-23Z',fill(lower),'#cffa9b',1.15)+
+        path('M-49-18C-45-32-37-35-30-36C-29-22-13-18-2-24C11-32 20-23 34-37Q46-48 51-57C64-26 34-6 18-9C13-8 7-3 10 8C-4 18-28 18-41 7C-49 2-52-10-49-18Z',fill(upper),'#f1ffe2',.65)+
+        path('M-48-24Q-58-8-45 6M-30-32Q-24-22-14-21M38-32Q51-48 52-55M23 34Q41 44 62 22','none','#f7ffbe',2.0)+
+        path('M-24 18Q-18 13-8 17C-1 21-3 39 4 43C10 47 11 31 10 27Q18 20 26 25Q32 34 42 31M-45 5Q-35 5-30 14','none','#a9fa4e',1.75)+
+        repeat(7,i=>{
+          const x=-37+(i*19)%79, y=-24+(i*13)%54, size=1.9+i%3;
+          return ellipse(x,y,size,size*.84,fill('glass'),'stroke="#e5ffaa" stroke-width=".55"')+
+            ellipse(x-.52,y-.56,.7,.52,'#f8ffe0');
+        });
+    }
+
+    function avatarGem() {
+      const colors=['#fe4654','#ff962e','#ffdc48','#d7fa51','#62e93e','#23dc95',
+        '#0ed2f7','#28a5fd','#5960ff','#9a3bfa','#e14eec','#ff62b3'];
+      const point=(angle, radius)=>[Math.cos(angle)*radius, Math.sin(angle)*radius].map((n)=>n.toFixed(2)).join(' ');
+      const facets=colors.map((color,i)=>{
+        const start=i*Math.PI/6+Math.PI*.73, end=start+Math.PI/6, mid=(start+end)*.5;
+        const a=point(start,42), b=point(end,42), outer=point(mid,44), inner=point(mid,23);
+        return path(`M0 0L${a}L${outer}L${b}Z`,color,'#fffbeca0',.6)+
+          path(`M${a}L${outer}L${b}L${inner}Z`,'#1c10356a')+
+          path(`M0 0L${inner}L${b}Z`,i%3?'#efffff39':'#fff6b658')+
+          path(`M${a}L${inner}L${outer}`,'none','#fbffff66',.78);
+      }).join('');
+      return ellipse(0,0,61,61,fill('gold'),'stroke="#7c4028" stroke-width="2.1"')+
+        ellipse(0,0,55.5,55.5,fill('gold'),'stroke="#ffe9a9" stroke-width="2.4"')+
+        ellipse(0,0,47,47,'#3b231b','stroke="#b77836" stroke-width="3.1"')+facets+
+        ellipse(0,0,44.8,44.8,'none','stroke="#fff2b7" stroke-width="1.6"')+
+        repeat(8,i=>group(`rotate(${i*45})`,
+          path('M0-61L4-55 11-53 4-51 0-45-4-51-11-53-4-55Z',fill('gold'),'#ffda90',.82)+
+          path('M-8-53L0-56 6-53M12-53q8 1 13 5','none','#fff8cb',.78)))+
+        ellipse(0,0,8,8,'#fffad978')+path('M-15 0L15 0M0-15V15M-8-7L8 8M-8 8L8-7','none','#fffceb',.9);
+    }
+
+    function impactFist(style) {
+      const cuff = style === 'gold' || style === 'bronze' ? fill('gold') : style === 'black' ? fill('leather') : fill('silver');
+      const wrist = style === 'bare' ? '' :
+        path('M-47-22Q-33-24-18-18L-20 23Q-36 28-47 23Q-51 0-47-22Z',cuff,'#43364a',1.25)+
+        path('M-43-19Q-35-14-21-14M-43 21Q-34 23-23 19','none',style==='black'?'#b5d4db':'#fff1ca',1.65)+
+        (style==='gold'
+          ? path('M-38-16Q-42 2-38 21M-30-16Q-34 1-30 21M-23-15Q-27 2-23 19','none','#fff4c1',1.5)
+          : style==='bronze'
+            ? path('M-36-14L-25-5-29 13-38 17-42-2ZM-37-8l8 14m-9 3 9-10','none','#ba6c3a',1.6)
+            : ellipse(-33,3,4,6,cuff,'stroke="#a1c2cb" stroke-width=".75"'));
+      return path('M-58-16Q-44-20-25-17Q-16-19-5-28Q4-33 12-27Q22-33 28-24Q40-29 45-18Q55-18 55-5Q61 3 53 12Q52 23 42 26C32 32 19 27 9 30Q-10 33-23 24L-57 23Z',
+        fill('skin'),'#693d43',1.35)+
+        path('M-22 10Q-10-10 2-9L15-14Q22-18 29-13Q32-6 20 0L11 5L25 7Q33 9 30 15C24 25 11 23 4 18Q-3 21-7 25Z',
+          fill('skin'),'#93575a',1.12)+
+        path('M11-26Q14-23 14-15M28-23Q32-19 30-13M44-17Q47-13 43-6M54-4Q52 0 49 2M37 17q5-5 11-4','none','#905867',1.3)+
+        path('M-15-16Q-5-28 6-29M19-28q7-2 10 3m7-2q7 0 9 7m4 4q4 2 4 6','none','#ffdfbf',1.7)+wrist;
+    }
+
+    function signature(name, variant) {
+      switch (name) {
+        case 'raijinDrum': return raijinDrum(variant);
+        case 'raijinFrame': return raijinFrame();
+        case 'mirror': return amethystMirror(variant === 'blue');
+        case 'slimeClaw': return coyoteClaw(variant);
+        case 'avatarGem': return avatarGem();
+        case 'fist': return impactFist(variant);
+        default: return '';
+      }
+    }
+
     function missile(spec, material) {
       return window.peppermintProjectiles.drawing(spec, material, { fill, accent: color, highlight: hot });
     }
-    return { weapon, paint, particle, missile, fill };
+    return { weapon, paint, particle, missile, fill, signature };
   }
 
   const elementMaterial = {Ignis:'fire',Glacial:'ice',Terra:'earth',Aer:'electric',Aqua:'water',Mind:'magic',Dark:'dark',Solar:'solar'};

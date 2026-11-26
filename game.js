@@ -335,7 +335,9 @@ function followCombatCue(cue, perform) {
           card: cue.card, source, kind: cue.kind, targets: sceneTargets, audio: soundContext,
         });
         if (cue.afterContact?.length) {
-          const contact = (window.peppermintCombatScenes?.productionTime({move:'horses'}, false, false) ?? 0) - 135;
+          const direction = window.peppermintCombatDirection?.[cue.card.id]?.[cue.kind];
+          const lead = cue.card.id === 'ww-bounty-raid' ? 135 : 32;
+          const contact = (window.peppermintCombatScenes?.productionTime(direction, false, false) ?? 0) - lead;
           const present = () => {
             if (cue.owner === match.player || cue.owner === match.opponent) cue.afterContact.forEach((animate) => animate());
           };
@@ -1690,7 +1692,7 @@ function animateShatter(source, element, variant = '') {
     window.setTimeout(() => overlay.remove(), duration);
     return duration;
   });
-  if (activeCombatCue?.card.id === 'ww-bounty-raid' && !variant) {
+  if (['ww-bounty-raid', 'amethyst'].includes(activeCombatCue?.card.id) && !variant) {
     (activeCombatCue.afterContact ??= []).push(animate);
   } else animate();
   return shatterDuration - 90;

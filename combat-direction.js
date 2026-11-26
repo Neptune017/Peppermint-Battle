@@ -2,7 +2,7 @@
   // Movement, contact shape and foley are separate so variants can use the same
   // material without staging an ability or a hit in the same way.
   const cues = `
-academy-coyote twin/cleave/air ring/vines/rustle
+academy-coyote slimeClaws/gelSnap/slimeClaws ring/vines/rustle
 peppermint dart/syrup/syrup curtain/sugar/chime
 aemi dart/embers/bow pages/feathers/paper
 kage swing/cleave/steel portal/mask/shadow
@@ -12,13 +12,13 @@ berry river/tide/splash portal/drops/water
 frosty frost/sleet/ice trap/facets/ice
 gummy sling/sugar/syrup brew/embers/boil
 runny beam/staticWeave/electric pages/paper/paper
-amethyst implosion/facets/glass orbit/fault/glass
+amethyst mirrors/facets/mirrors mirrors/fault/mirrors
 den beam/circuit/electric swarm/bolts/motor
 peppermint-ally swing/facets/crystal gate/cloth/chime
 academy-grounds - gate/leaves/hall
 cooking - brew/steam/boil
 locker-room - curtain/cloth/fabric
-avatar-gem - orbit/facets/crystal
+avatar-gem - prism/prismBloom/prism
 academy-fritz score/ripples/flute pages/notes/flute
 academy-lynda pages/feathers/paper swarm/notes/harp
 dharma swing/plates/gears brew/vines/pour
@@ -68,7 +68,7 @@ ip-brody swing/gashes/claws river/tide/splash
 ip-natsuki river/drops/splash armor/ripples/water
 ip-jet river/embers/fire fountain/sun/solar
 ip-sabrina leap/tidalShock/surge swarm/tidalNet/surge
-ip-coyote twin/tide/air score/whorl/pulse
+ip-coyote slimeClaws/tide/slimeClaws score/whorl/pulse
 ip-chase river/tide/water fountain/drops/splash
 ip-academy-chase leap/drops/splash orbit/ripples/water
 ip-zodiac-aqua-kentaur dart/tide/bow orbit/drops/crystal
@@ -80,7 +80,7 @@ ip-croaktail leap/drops/splash fountain/petals/water
 ip-floatbite swing/tide/claws orbit/drops/water
 ip-octospray ink/ink/splash lash/ink/water
 ip-field - panorama/tide/water
-ip-coyote-zodiac twin/facets/pulse orbit/cleave/air
+ip-coyote-zodiac slimeClaws/facets/slimeClaws orbit/cleave/air
 ip-chase-zodiac river/sun/water fountain/facets/crystal
 ip-ride-the-wave - surf/tide/splash
 ip-no-pain-no-gain - forge/bolts/metal
@@ -104,7 +104,7 @@ lt-toy-capsule - hatch/shell/ceramic
 drinking-tea - serving/steam/tea
 christmas-mall - carousel/sleet/bells
 academy-diamond kettles/windShear/tea serving/drift/tea
-academy-topaz beam/wireStrike/electric score/sparkComb/electric
+academy-topaz raijin/wireStrike/raijin score/sparkComb/electric
 academy-dimitri swing/sleet/ice pages/facets/paper
 wb-topaz-diamond kettles/porcelain/tea kettles/tea/tea
 wb-bearnardo slam/sleet/ice stamp/facets/ice
@@ -117,7 +117,7 @@ wb-magnus swing/plates/steel armor/sleet/metal
 wb-sageape swing/facets/claws frost/folds/ice
 wb-steepod serving/tea/tea serving/chamomile/tea
 zodiac-swordtiger swing/sleet/steel orbit/gashes/crystal
-wb-zodiac-topaz kettles/sparkComb/tea score/wireStrike/electric
+wb-zodiac-topaz raijin/sparkComb/raijin score/wireStrike/electric
 wb-zodiac-dimitri swing/sleet/ice orbit/facets/crystal
 wb-zodiac-cloud-goat leap/floorArc/static beam/floorArc/thunder
 wb-wedding-proposal - orbit/petals/harp

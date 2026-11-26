@@ -132,6 +132,7 @@
       case 'seaGate': return repeat(5,i=>group(`translate(${(i-2)*20} ${i%2*16}) rotate(${(i-2)*13})`,path('M-31 26C-11-24 17-36 27-21Q3-26 4-4Q6 21 29 28Z',fill('liquid'),hot,1.7)));
       case 'rib': return path('M-51 14C-31-10-21 10 0-10Q23-30 50-12Q18-19 6 4Q-15 28-51 14Z',fill('flame'),hot,1)+path('M-34 12Q-12 18 8-4Q20-16 38-14','none',fine,1.2);
       case 'paper': return path('M-29-18L22-22 12 19-22 23Z',fill('pearlCloth'),hot,1.2);
+      case 'slimeDrop': return path('M-2-30C8-21 21-5 18 10Q14 29-5 29Q-23 23-20 9Q-16-9-2-30Z',fill('slimeGreen'),'#cdf98a',.95)+path('M-13 3Q-17 11-10 20','none','#e6ffb4',1.5);
       case 'bubble': return oval(0,0,36,32,fill('liquid'),'stroke="#b2fbff" stroke-width="1.8"')+oval(-13,-15,8,4,fine);
       default: return oval(0,0,17,15,fill('core'));
     }
@@ -143,8 +144,8 @@
 
   function productionTime(direction, attack, sharedField) {
     if (attack) return null;
-    return { horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
-      brew: 950, hatch: 950, carnival: 970, carousel: 1050, panorama: 1020 }[direction.move] || (sharedField ? 900 : 735);
+    return { prism: 960, mirrors: 850, horses: 1290, kettles: 1040, serving: 1010, windup: 1290, tree: 1080, forge: 920, gate: 880,
+      brew: 950, hatch: 950, carnival: 970, carousel: 1050, panorama: 1020 }[direction?.move] || (sharedField ? 900 : 735);
   }
 
   // Attack delivery for ropes, light, water, sound and textiles. Each strand is built in stage space.
@@ -264,9 +265,191 @@
     }
   }
 
+
+  function placeSignature(ctx, name, variant, point, angle = 0) {
+    const node = ctx.art(ctx.palette.signature(name, variant), point.x, point.y, angle);
+    node.setAttribute('data-combat-prop', name);
+    return node;
+  }
+
+  const beats = {
+    raijin: [460, 312, 145],
+    mirrors: [390, 190],
+    slimeClaws: [115, 0],
+    prism: [580, 380, 175, 0],
+  };
+
+  function stageRaijin(ctx, target, scale) {
+    const {origin, viewport, reduced, impactAt, motion} = ctx;
+    const pivot = mix(origin, target, .16);
+    const height = Math.min(viewport.h-65, Math.max(75, pivot.y - 32 * scale));
+    const width = Math.min(pivot.x, viewport.w - pivot.x);
+    const spacing = Math.max(37, Math.min(77 * scale, width - 30 * scale));
+    const center = Math.min(viewport.w-spacing-29, Math.max(spacing+29, pivot.x));
+    const frame = placeSignature(ctx, 'raijinFrame', null, {x:center, y:height - 6*scale});
+    motion(frame,[{opacity:0,transform:`scale(${scale*.83})`},{opacity:.98,offset:.26},{opacity:0}],1200,130);
+    const drums = [-1,0,1].map((side)=>({x:center+side*spacing,y:height-(side===0?37:4)*scale}));
+    const order = target.x >= origin.x ? [0,1,2] : [2,1,0];
+    order.forEach((index,i)=>{
+      const point = drums[index];
+      const side = index - 1;
+      const drum = placeSignature(ctx,'raijinDrum',side,point,side*13);
+      const hit = impactAt - beats.raijin[i];
+      const delay = 118 + i * 38, duration = impactAt + 580 - delay;
+      const strike = (hit - delay) / duration;
+      const s = scale * (side ? .86 : 1);
+      drum.setAttribute('data-beat',hit);
+      motion(drum,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:strike},{opacity:.85,offset:.74},{opacity:0}]
+        : [{opacity:0,transform:`translateY(19px) scale(${s*.49})`},
+          {opacity:1,transform:`scale(${s})`,offset:strike*.64},
+          {opacity:1,transform:`scale(${s*1.10},${s*.89})`,offset:strike},
+          {opacity:1,transform:`scale(${s})`,offset:strike+.10},
+          {opacity:.9,offset:.78},{opacity:0,transform:`translateY(-20px) scale(${s*.92})`}],duration,delay,'linear');
+      if (!reduced) {
+        const pulse = ctx.art(oval(0,0,35,36,'none','stroke="#fff0c2" stroke-width="1.25"'),point.x,point.y);
+        motion(pulse,[{opacity:0,transform:`scale(${s*.90})`},{opacity:.84,offset:.12},
+          {opacity:0,transform:`scale(${s*1.7})`}],385,hit);
+        const next = i < 2 ? drums[order[i+1]] : target;
+        discharge(ctx,point,next,hit,{
+          width:(i===2?2.85:1.45)*scale,spread:(i===2?19:9)*scale,branches:i===2?5:2,
+          tint:i===2?'#86caff':'#9ab1ff',time:i===2?650:365,salt:(i+3)*173,
+        });
+      }
+    });
+  }
+
+  function luminousTrace(ctx, from, to, start, duration, tint, width, bend = 0) {
+    const vx = to.x-from.x, vy = to.y-from.y;
+    const span = Math.max(1, Math.hypot(vx,vy));
+    const d = `M${from.x} ${from.y}Q${(from.x+to.x)/2-vy/span*bend} ${(from.y+to.y)/2+vx/span*bend} ${to.x} ${to.y}`;
+    for (const [weight, color, css] of [[width*2.8,tint,'combat-channel-halo'],[width,'#fff5ff','combat-channel-core'],[width*.37,tint,'']]) {
+      const ray=ctx.svgNode('path',{d,pathLength:1,fill:'none',stroke:color,'stroke-width':weight,class:css,
+        'stroke-dasharray':'.59 .41','stroke-linecap':'round'},ctx.layer);
+      ctx.motion(ray,[{opacity:0,strokeDashoffset:1},{opacity:.88,strokeDashoffset:0,offset:.35},
+        {opacity:.73,strokeDashoffset:0,offset:.60},{opacity:0,strokeDashoffset:-.34}],duration,start,'linear');
+    }
+  }
+
+  function stageMirrors(ctx, target, scale) {
+    const {origin, viewport, motion, impactAt, reduced} = ctx;
+    const dx=target.x-origin.x,dy=target.y-origin.y;
+    const towardRight = target.x >= viewport.w*.5 ? -1 : 1;
+    const near = Math.hypot(dx,dy) < 110;
+    const clamp = (val, hi) => Math.max(26, Math.min(hi-26, val));
+    const points = [.29,.64].map((step,i)=>{
+      const center = mix(origin,target,step);
+      return {x:clamp(center.x+(i ? -1 : 1)*towardRight*(near?49:63)*scale,viewport.w),
+        y:clamp(center.y+(near?(i?-35:28)*scale:0),viewport.h)};
+    });
+    points.forEach((point,i)=>{
+      const hit = impactAt-beats.mirrors[i];
+      const mirror = placeSignature(ctx,'mirror',i?'blue':'violet',point,i?28:-25);
+      mirror.setAttribute('data-beat',hit);
+      const s=scale*(i?.93:1.03), duration=impactAt+820, delay=55+i*75;
+      motion(mirror,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.36},{opacity:.9,offset:.74},{opacity:0}]
+        : [{opacity:0,transform:`scale(.32,${s*.55}) rotate(-10deg)`},
+          {opacity:1,transform:`scale(${s},${s})`,offset:.28},
+          {opacity:.98,transform:`scale(${s*.79},${s*1.03}) rotate(${i?12:-12}deg)`,offset:(hit+155-delay)/duration},
+          {opacity:.95,transform:`scale(${s},${s})`,offset:.71},
+          {opacity:0,transform:`scale(.30,${s*.82}) rotate(16deg)`}],duration,delay,'ease-out');
+      if (!reduced) {
+        const reflection = ctx.art(path('M-17-21Q0-4 17 21','none',i?'#8ceaff':'#e6b6ff',3),point.x,point.y);
+        motion(reflection,[{opacity:0,transform:`scale(${s*.4})`},{opacity:.88,offset:.27},{opacity:0,transform:`scale(${s*1.1})`}],430,hit);
+      }
+    });
+    if (!reduced) {
+      luminousTrace(ctx, origin, points[0], impactAt-565, 460, '#ae61e9', 2.5*scale, -9);
+      luminousTrace(ctx, points[0], points[1], impactAt-beats.mirrors[0], 490, '#bc95ff', 2.7*scale);
+      luminousTrace(ctx, points[1], target, impactAt-beats.mirrors[1], 520, '#80c7ff', 3.1*scale, 11);
+    }
+  }
+
+  const prismColors=['#ff6374','#ffb254','#ffe784','#85f79a','#65e5ff','#80a5ff','#c87aff'];
+  function stageAvatarGem(ctx, target, scale) {
+    const {origin, viewport, motion, impactAt, reduced} = ctx;
+    const point={x:Math.max(57,Math.min(viewport.w-57,target.x)), y:Math.max(62,target.y-35*scale)};
+    const gem=placeSignature(ctx,'avatarGem',null,point);
+    const position=mix(origin,point,.67);
+    const dx=position.x-point.x,dy=Math.min(88,position.y-point.y);
+    const s=scale*.89;
+    motion(gem,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.40},{opacity:1,offset:.76},{opacity:0}]
+      : [{opacity:0,transform:`translate(${dx}px,${dy}px) rotate(-17deg) scale(.38)`},
+        {opacity:.95,transform:`translate(${dx*.40}px,${dy*.40}px) rotate(-8deg) scale(${s*.84})`,offset:.30},
+        {opacity:1,transform:`translate(0,0) rotate(1deg) scale(${s})`,offset:.51},
+        {opacity:1,transform:`rotate(9deg) scale(${s*1.11})`,offset:.65},
+        {opacity:0,transform:`translateY(-31px) rotate(20deg) scale(${s*.94})`}],1540,impactAt-750,'linear');
+    if (reduced) return;
+    for (let i=0;i<prismColors.length;i++){
+      const angle=(i/(prismColors.length-1)-.5)*2.32;
+      const light = ctx.art(path(`M0 0Q${(i-3)*3} -51 0 -109`,'none',prismColors[i],1.85),point.x,point.y,angle*180/Math.PI);
+      motion(light,[{opacity:0,transform:`scale(${s*.27})`},{opacity:.83,transform:`scale(${s})`,offset:.30},
+        {opacity:.67,transform:`scale(${s*1.17})`,offset:.62},{opacity:0,transform:`scale(${s*1.30})`}],745,impactAt-185+i*21);
+      const glaze=ctx.art(path('M-68 5C-18-38 47-32 72-2C54 25 6 45-41 30','none',prismColors[i],1.2),point.x,point.y);
+      motion(glaze,[{opacity:0,transform:'rotate(-17deg) scale(.42)'},{opacity:.65,transform:`rotate(${i*9-29}deg) scale(${s})`,offset:.28},
+        {opacity:0,transform:`rotate(${i*10+38}deg) scale(${s*1.24})`}],850,impactAt-480+i*48);
+    }
+  }
+
+  function stageSlimeClaws(ctx,target,angle) {
+    const {card,origin,motion,hitAt,reduced,scale,palette,hot} = ctx;
+    const kind=card.id==='academy-coyote'?'academy':card.id==='ip-coyote'?'island':'zodiac';
+    const a=angle*Math.PI/180, nx=-Math.sin(a), ny=Math.cos(a);
+    for (let i=0;i<2;i++) {
+      const side=i?1:-1, s=scale*(i?.76:.71);
+      const from=mix(origin,target,.28+i*.11);
+      const end={x:target.x+nx*side*20*scale,y:target.y+ny*side*20*scale};
+      const distance=(1-i*.18)*Math.min(145,Math.hypot(end.x-from.x,end.y-from.y));
+      const travelX=Math.cos(a)*distance,travelY=Math.sin(a)*distance;
+      const hit=hitAt-beats.slimeClaws[i], windup=510-i*75;
+      const claw=placeSignature(ctx,'slimeClaw',kind,end,angle+side*16);
+      claw.setAttribute('data-beat',hit);
+      const flip=i?1:-1;
+      motion(claw,reduced ? [{opacity:0,transform:`scale(${s},${s*flip})`},{opacity:.96},{opacity:0}]
+        : [{opacity:0,transform:`translate(${-travelX}px,${-travelY}px) scale(${s*.46},${s*flip*.64})`},
+          {opacity:.91,transform:`translate(${-travelX*.54}px,${-travelY*.54}px) scale(${s},${s*flip})`,offset:.39},
+          {opacity:1,transform:`translate(0,0) scale(${s*1.16},${s*flip*.69})`,offset:windup/850},
+          {opacity:.68,transform:`translate(${nx*side*16}px,${ny*side*16}px) scale(${s*.91},${s*flip*1.06})`,offset:.79},
+          {opacity:0,transform:`translateY(30px) scale(${s*.6},${s*flip*.62})`}],850,reduced?hit-145:hit-windup,'linear');
+      if (reduced) continue;
+      for(let n=0;n<6;n++){
+        const drop=ctx.art(path('M0-8C3-5 9 2 6 6Q0 12-5 6Q-7 2 0-8Z',palette.fill('slimeGreen'),hot,.65),end.x,end.y);
+        const aim=a+side*(.6+n*.19);
+        const speed=(28+n*11)*s;
+        motion(drop,[{opacity:0,transform:'scale(.30)'},{opacity:.88,offset:.24},
+          {opacity:0,transform:`translate(${Math.cos(aim)*speed}px,${Math.sin(aim)*speed+29}px) rotate(27deg) scale(.48)`}],540,hit+n*19);
+      }
+    }
+  }
+
+  const fistStyles = {
+    'academy-sabrina':'black', 'ip-sabrina':'bare', 'zodiac-guardian-sabrina':'gold',
+    'valhalla-sabrina':'bronze', 'ip-jet':'bare',
+  };
+
+  function flashFist(ctx, target, angle) {
+    const {fist, motion, hitAt, reduced, scale} = ctx;
+    const a=angle*Math.PI/180;
+    const dx=Math.cos(a)*56*scale,dy=Math.sin(a)*56*scale;
+    const x=target.x-Math.cos(a)*20*scale, y=target.y-Math.sin(a)*20*scale;
+    const s=scale*.76;
+    const node=placeSignature(ctx,'fist',fist,{x,y},angle);
+    motion(node,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:.94},{opacity:0}]
+      : [{opacity:0,transform:`translate(${-dx}px,${-dy}px) scale(${s*.61})`},
+        {opacity:.95,transform:`translate(0,0) scale(${s})`,offset:.33},
+        {opacity:.9,transform:`translate(${dx*.15}px,${dy*.15}px) scale(${s*1.09},${s*.97})`,offset:.52},
+        {opacity:0,transform:`translate(${-dx*.08}px,${-dy*.08}px) scale(${s*.79})`}],530,hitAt-175,'linear');
+  }
+
   function setPiece(ctx) {
     const {direction, origin, targets, palette, motion, hot, color, impactAt, reduced, effectScale, viewport} = ctx;
     const move=direction.move;
+    const scale=Math.min(1.55,effectScale*.83);
+    if (move==='raijin' || move==='mirrors' || move==='prism') {
+      if (move==='raijin') stageRaijin(ctx, targets[0], scale);
+      if (move==='mirrors') stageMirrors(ctx, targets[0], scale);
+      if (move==='prism') stageAvatarGem(ctx, targets[0], scale);
+      return true;
+    }
     if (!['horses','windup','tree','kettles','serving'].includes(move)) return false;
     const first=targets[0], last=targets.at(-1);
     const sign=last.x>=origin.x?1:-1;
@@ -404,7 +587,7 @@
   };
 
   const locationProps = {
-    'academy-grounds':['tome','lantern'], 'avatar-gem':['potion','shard'], cooking:['teapot','salt'],
+    'academy-grounds':['tome','lantern'], cooking:['teapot','salt'],
     'locker-room':['bag','rib'], 'mana-potion':['potion','drop'], 'health-potion':['potion','flower'],
     'ww-wanted-poster':['notice','paper'], 'cactus-creek':['cactus','leaf'], 'ww-root':['leaf','shard'],
     'ww-planting':['leaf','flower'], 'ip-field':['seaGate','drop'], 'ip-swim-dont-sink':['bubble','drop'],
@@ -423,6 +606,11 @@
     const {direction, origin, seed, scale, reduced, motion, palette, hot, color, hitAt, melee} = ctx;
     const move=direction.move;
     if (ctx.special) return true;
+    if (move==='slimeClaws') {
+      stageSlimeClaws(ctx,to,rotation);
+      return true;
+    }
+    if (ctx.fist) flashFist(ctx,to,rotation);
     const distance=Math.hypot(to.x-origin.x,to.y-origin.y);
     if (!reduced && ctx.aer === 'electric' && !melee && distance > 16 && !channelMoves.has(move)) {
       const charged = mix(origin, to, move === 'score' ? .53 : .23);
@@ -510,6 +698,7 @@
     paper:['fold','card',7], ink:['fluid','drop',14], foam:['fluid','orb',14], porcelain:['splinter','shard',12],
     tea:['fluid','drop',14], chamomile:['fluid','flower',11], steam:['spiral','steam',7],
     ornaments:['rain','bell',11], coil:['echo','gear',8],
+    prismBloom:['prism','shard',8], gelSnap:['fluid','slimeDrop',10],
     windShear:['wind','feather',5], drift:['wind','steam',5],
     forkPunch:['arc','shard',5], tidalShock:['arc','drop',7], tidalNet:['arc','steam',5], coronaPunch:['arc','shard',5],
     thunderPunch:['arc','shard',8], grounding:['arc','shard',5], wireStrike:['arc','shard',5],
@@ -521,6 +710,9 @@
   function liquidImpact(mark, size, fluid, light, palette) {
     const ribbon = (d, width = 1.3) => path(d, 'none', light, width);
     switch (mark) {
+      case 'gelSnap':
+        return path('M-66 13C-44 15-44-13-33-12C-23-10-19 1-6-4Q3-9-3-28C-8-41 0-49 10-42C23-31 20-15 30-9C44 0 46-19 57-20C72-24 73-6 63 4Q51 18 70 24C46 50 11 42-18 42Q-52 41-66 13Z',fluid,'#a7ee5b',.72)+
+          ribbon('M-63 14C-47 19-40 3-37-6M-12 32Q9 36 37 24M-3-35Q8-47 15-25M40 5Q54 1 60-11',1.7);
       case 'tea': case 'chamomile':
         return path('M-66 12C-38 12-33-5-29-20Q-24-37-14-24C-7-15-15 10 15 14Q45 17 67-1C49 29 17 36-27 27Z',fluid)+
           ribbon('M-62 13Q-35 19-25-12M-39 24C-8 35 39 25 58 13',1.6)+
@@ -565,8 +757,8 @@
     const size = 50 + seed % 31;
     const take = (n) => (seed >>> n) % 29;
     const isTea=mark==='tea'||mark==='chamomile';
-    const fluid = isTea ? '#c77626' : mark==='ink' ? '#391c66' : mark==='mud' ? '#8d4b31' : palette.fill('liquid');
-    const liquidLight = isTea ? '#ffd780' : mark==='ink' ? '#db8ce0' : mark==='mud' ? '#eea978' : hot;
+    const fluid = mark==='gelSnap' ? palette.fill('slimeGreen') : isTea ? '#c77626' : mark==='ink' ? '#391c66' : mark==='mud' ? '#8d4b31' : palette.fill('liquid');
+    const liquidLight = mark==='gelSnap' ? '#e0ff92' : isTea ? '#ffd780' : mark==='ink' ? '#db8ce0' : mark==='mud' ? '#eea978' : hot;
     let graphic = '';
     switch (shape) {
       case 'cut':
@@ -622,6 +814,12 @@
         graphic=repeat(mark==='drift'?4:3,i=>group(`translate(0 ${i*12-18})`,
           path(`M-${size+18} 32C-33-4 22-44 63-23Q83-12 61 2C73-12 65-21 43-20Q8-20-${size+18} 32Z`,palette.fill('mist'))+
           path('M-65 22Q17-42 61-21M-38 15Q18-23 46-17','none',i%2?color:hot,1.38-i*.22)));
+        break;
+      case 'prism':
+        graphic=oval(0,0,72,35,palette.fill('mist'),'opacity=".35"')+
+          repeat(prismColors.length,i=>group(`rotate(${i*46+take(i)})`,
+            path(`M6 0L${29+i*3} -6 ${43+i*5} -17 ${36+i*4} 1Z`,prismColors[i],'#fff5dc',.6)+
+            path(`M6 0L${36+i*4} 1 ${43+i*5} -17Z`,'#fffaf978')));
         break;
       case 'arc':
         graphic=mark==='tidalShock'
@@ -738,8 +936,10 @@
       const xx=Math.cos(heading)*spread,yy=Math.sin(heading)*spread;
       const grav=mark==='foam'?-27:shape==='wind'?-14:['rain','fluid','splinter','break','surf'].includes(shape)?45:6;
       const scaleFactor=(.18+take((i+13)%22)/83)*scale;
-      const fragment = object==='orb'||mark==='syrup'||(shape==='arc'&&!mark.startsWith('tidal'))
-        ? palette.particle(impactMaterial,i):prop(object,palette.fill,hot,color);
+      const fragment = shape==='prism'
+        ? path('M-15 1L-3-18 11-11 14-2 4 13-12 11Z',prismColors[i%prismColors.length],'#ffefda',.8)
+        : object==='orb'||mark==='syrup'||(shape==='arc'&&!mark.startsWith('tidal'))
+          ? palette.particle(impactMaterial,i):prop(object,palette.fill,hot,color);
       const piece=art(fragment,target.x,target.y,i*97);
       motion(piece,[
         {opacity:0,transform:'scale(.084)'},
@@ -749,5 +949,5 @@
     }
   }
 
-  window.peppermintCombatScenes = { productionTime, setPiece, choreograph, contactArt, contactDetails };
+  window.peppermintCombatScenes = { productionTime, setPiece, choreograph, contactArt, contactDetails, beats, fistStyles };
 })();

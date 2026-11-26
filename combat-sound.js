@@ -17,7 +17,7 @@
     hollow:[1,1.23,1.77,2.36], buzz:[1,1.5,2], reed:[1,2,3.03,4],
   };
   const note = (midi) => 440 * 2 ** ((midi-69)/12);
-  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, finish, count = 1}) {
+  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, fist, finish, count = 1}) {
     if (!audio || audio.state!=='running') return;
     const start=audio.currentTime+.015;
     const gain=audio.createGain();
@@ -69,7 +69,57 @@
       sweep(spark, .088, 183 + seed % 57, 81, .082 * strength, 'triangle');
     }
 
-    if(mode==='hooves'){
+    if (fist) {
+      sweep(t - .018, .23, 132, 39, .17 * weight, 'triangle');
+      texture(t - .007, .13, 1790, 460, .14 * weight, 1.15);
+    }
+
+    const beats = window.peppermintCombatScenes.beats[mode];
+    if (mode === 'raijin') {
+      beats.forEach((before, i) => {
+        const at = t - before / 1000, skin = [114, 147, 86][i] - baseAttack * 1.35;
+        sweep(at, .35 + i * .05, skin * 1.75, skin * .48, (.16 + i * .04) * weight, 'triangle');
+        resonator(at + .009, skin * 1.35, .38, .13 * weight, 'hollow');
+        texture(at, .13, 1840, 380, .153, 1.67);
+        texture(at + .017, .18, 720, 350, .082, 2.10);
+        discharge(at + .067, .19, i===2 ? .93 : .43);
+      });
+      discharge(t + .014,.34,.74 * weight);
+      texture(t + .085,.41,426,174,.15 * weight,1.42);
+    } else if (mode === 'mirrors') {
+      texture(t - .53, .43, 1180, 3740, .055, 4.2);
+      beats.forEach((before,i)=>{
+        const at = t - before / 1000;
+        resonator(at,i ? 1269 : 896,.46,.13,'glass');
+        sweep(at + .046,.24,i ? 1540 : 1132,i ? 2330 : 1770,.047);
+      });
+      texture(t, .29, 6500, 2820, .16 * weight, 5.7);
+      for (let i=0; i<4; i++) {
+        resonator(t + .043 * i, 790 + ((seed >>> (i * 5)) % 450) + i * 197, .23, .067 / (1 + i*.27), 'glass');
+      }
+    } else if (mode === 'slimeClaws') {
+      texture(t - .48, .48, 1410, 368, .085, 3.4);
+      beats.forEach((before,i)=>{
+        const at = t - before / 1000;
+        texture(at - .021,.16,1310+i*270,479,.13 * weight,3.2);
+        sweep(at,.16,255+i*68,71+i*14,.15 * weight,'triangle');
+        texture(at+.019,.195,780,279,.10,2.45);
+        for(let n=0;n<4;n++) {
+          const bubble = 358 + ((seed >>> (n*5)) % 229) + i*72;
+          sweep(at+.063+n*.058,.105,bubble,bubble*.42,.042/(1+n*.24));
+        }
+      });
+    } else if (mode === 'prism') {
+      beats.forEach((before,i)=>{
+        const at = t - before / 1000;
+        const hz = note([69,74,78,81][i]);
+        resonator(at,hz,.59,.105,i<2?'glass':'bell');
+        sweep(at+.07,.21,hz*3,hz*3.045,.041);
+      });
+      resonator(t+.04,note(90),.62,.074,'glass');
+      resonator(t+.055,note(86),.58,.065,'bell');
+      texture(t+.045,.36,7430,3400,.059,5.3);
+    } else if(mode==='hooves'){
       for(let horse=0;horse<4;horse++){
         const entry=.16+horse*.135;
         for(let n=0;n<4;n++){
