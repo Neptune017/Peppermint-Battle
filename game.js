@@ -328,11 +328,20 @@ function followCombatCue(cue, perform) {
       }
       if (before.field !== after.field) targets.push(document.getElementById('field-zone'));
       if (cue.card.id === 'mana-potion' && before.energy !== after.energy) targets.push(document.querySelector('.energy'));
-      if (targets.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
+      const sceneTargets = cue.sceneTargets || targets.filter(Boolean);
+      if (sceneTargets.length || before.piles !== after.piles || before.pending !== after.pending || before.energy !== after.energy || cue.reveal) {
         cue.shown = true;
         playCombatCue({
-          card: cue.card, source, kind: cue.kind, targets: targets.filter(Boolean), audio: soundContext,
+          card: cue.card, source, kind: cue.kind, targets: sceneTargets, audio: soundContext,
         });
+        if (cue.afterContact?.length) {
+          const contact = (window.peppermintCombatScenes?.productionTime({move:'horses'}, false, false) ?? 0) - 135;
+          const present = () => {
+            if (cue.owner === match.player || cue.owner === match.opponent) cue.afterContact.forEach((animate) => animate());
+          };
+          if (currentRivalAnimations()) present();
+          else window.setTimeout(present, Math.max(0, contact));
+        }
       }
     }
   }
@@ -1578,7 +1587,14 @@ function resolveActivateAction(owner, actionInstance) {
   else if (action?.id === 'ww-bounty-raid' && match.energy >= action.cost) {
     chooseEffect(owner, 'Bounty Raid · choose a lane', 'Destroy fighters in the same lane on both fields.', [0,1,2].map((lane) => ({ value: lane, label: `Lane ${lane + 1}`, detail: 'Destroy both fighters in this lane, if present' })), (lane) => {
       const enemy = owner === match.player ? match.opponent : match.player; if (!owner.hand.includes(action) || match.energy < action.cost) return;
-      if (owner.lanes[lane]) destroyUnit(owner, Number(lane)); if (enemy.lanes[lane]) destroyUnit(enemy, Number(lane)); owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost; render(); announceEffect(`Bounty Raid cleared lane ${Number(lane) + 1}.`);
+      const index = Number(lane);
+      if (activeCombatCue?.card === action) {
+        activeCombatCue.sceneTargets = [owner, enemy].map((side) => combatLane(side, index)?.getBoundingClientRect()).filter(Boolean);
+      }
+      if (owner.lanes[index]) destroyUnit(owner, index);
+      if (enemy.lanes[index]) destroyUnit(enemy, index);
+      owner.hand.splice(owner.hand.indexOf(action), 1); owner.destroyed.push(action); match.energy -= action.cost;
+      render(); announceEffect(`Bounty Raid cleared lane ${index + 1}.`);
     });
   }
   else if (action?.id === 'ww-root' && match.energy >= action.cost) {
@@ -1668,12 +1684,15 @@ function animateShatter(source, element, variant = '') {
     shard.style.animationDelay = `${index * 14}ms`;
     overlay.appendChild(shard);
   });
-  queueRivalAnimation(() => {
+  const animate = () => queueRivalAnimation(() => {
     document.body.appendChild(overlay);
     const duration = shatterDuration + 115;
     window.setTimeout(() => overlay.remove(), duration);
     return duration;
   });
+  if (activeCombatCue?.card.id === 'ww-bounty-raid' && !variant) {
+    (activeCombatCue.afterContact ??= []).push(animate);
+  } else animate();
   return shatterDuration - 90;
 }
 function animateCardShatter(owner, laneIndex, card) {
@@ -1732,6 +1751,9 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
 function moveWinterCard(owner, from, to) {
   const card = owner.lanes[from]; if (!card || owner.lanes[to] || to < 0 || to > 2 || from === to) return false;
   if (card.cannotMoveUntilTurn && match.turn < card.cannotMoveUntilTurn) { announceEffect(`${card.name} is rooted and cannot move yet.`); return false; }
+  if (['wb-steepod', 'wb-topaz-diamond', 'ip-ride-the-wave'].includes(activeCombatCue?.card.id)) {
+    activeCombatCue.sceneTargets = [from, to].map((lane) => combatLane(owner, lane)?.getBoundingClientRect()).filter(Boolean);
+  }
   owner.lanes[to] = card; owner.lanes[from] = null;
   const familiar = owner.life.familiars?.find((item) => item?.attachedTo === card.instance);
   if (familiar) { const old = owner.life.familiars.indexOf(familiar); owner.life.familiars[old] = null; owner.life.familiars[to] = familiar; }

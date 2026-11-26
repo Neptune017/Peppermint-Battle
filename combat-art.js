@@ -311,7 +311,7 @@
     function missile(spec, material) {
       return window.peppermintProjectiles.drawing(spec, material, { fill, accent: color, highlight: hot });
     }
-    return { weapon, paint, particle, missile };
+    return { weapon, paint, particle, missile, fill };
   }
 
   const elementMaterial = {Ignis:'fire',Glacial:'ice',Terra:'earth',Aer:'wind',Aqua:'water',Mind:'magic',Dark:'dark',Solar:'solar'};

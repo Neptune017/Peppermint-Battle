@@ -1,0 +1,155 @@
+(() => {
+  // Movement, contact shape and foley are separate so variants can use the same
+  // material without staging an ability or a hit in the same way.
+  const cues = `
+academy-coyote twin/cleave/air ring/vines/rustle
+peppermint dart/syrup/syrup curtain/sugar/chime
+aemi dart/embers/bow pages/feathers/paper
+kage swing/cleave/steel portal/mask/shadow
+ryota beam/roar/solar implosion/sun/solar
+zoya beam/rift/shadow chains/folds/chain
+berry river/tide/splash portal/drops/water
+frosty frost/sleet/ice trap/facets/ice
+gummy sling/sugar/syrup brew/embers/boil
+runny gale/feathers/air pages/whorl/paper
+amethyst implosion/facets/glass orbit/fault/glass
+den beam/circuit/electric swarm/bolts/motor
+peppermint-ally swing/facets/crystal gate/cloth/chime
+academy-grounds - gate/leaves/hall
+cooking - brew/steam/boil
+locker-room - curtain/cloth/fabric
+avatar-gem - orbit/facets/crystal
+academy-fritz score/ripples/flute pages/notes/flute
+academy-lynda pages/feathers/paper swarm/notes/harp
+dharma swing/plates/gears brew/vines/pour
+horatio swarm/feathers/harp bloom/leaves/rustle
+vishnu ribbon/folds/shadow implosion/facets/crystal
+brewy sling/drops/boil brew/sugar/pour
+mana-potion - fountain/drops/water
+health-potion - fountain/facets/chime
+patchy swing/cloth/fabric stitch/threads/fabric
+zesty beam/sugar/chime portal/syrup/syrup
+zomby swing/gashes/cloth stitch/folds/fabric
+zodiac-guardian-rick swing/fault/wood roots/plates/wood
+zodiac-guardian-kage swing/mask/steel curtain/rift/shadow
+zodiac-guardian-ryota beam/sun/solar implosion/roar/solar
+zodiac-egg orbit/shell/ceramic hatch/facets/crystal
+academy-sabrina beam/bolts/electric chains/circuit/electric
+ww-rick swing/plates/wood roots/vines/rustle
+ww-wade dart/splinters/shot stamp/marks/metal
+ww-brian slam/fault/wood gate/splinters/wood
+ww-academy-brian slam/splinters/wood pages/marks/paper
+ww-zodiac-guardian-brian slam/roar/metal implosion/plates/metal
+ww-zodiac-muddy-pig slam/mud/mud orbit/fault/mud
+ww-blake swing/gashes/claws portal/whorl/shadow
+ww-fritz score/cleave/string curtain/threads/string
+ww-academy-rick swing/splinters/wood bloom/plates/rustle
+ww-academy-fritz score/notes/flute portal/ripples/flute
+ww-academy-lynda pages/notes/paper gale/feathers/harp
+ww-medusa lash/facets/glass beams/plates/shadow
+ww-wild-ox slam/mud/hooves roots/roar/hooves
+ww-eggscythe swing/shell/steel hatch/rift/ceramic
+ww-hopkin leap/leaves/rustle armor/plates/wood
+ww-purrnip sling/leaves/rustle pages/vines/paper
+ww-bandito swing/marks/steel stamp/splinters/metal
+ww-littlebeak volley/feathers/air armor/leaves/air
+ww-sunnythorn beam/embers/solar roots/splinters/rustle
+ww-galacta curtain/rift/shadow portal/folds/shadow
+ww-sangrizo volley/embers/fire beam/fault/fire
+ww-rosaluna swarm/leaves/harp portal/petals/harp
+ww-quick-draw - volley/marks/shot
+ww-duelists-gambit - cross/splinters/shot
+ww-bounty-raid - horses/mud/hooves
+ww-root - roots/vines/roots
+ww-wanted-poster - stamp/paper/paper
+ww-planting - bloom/vines/roots
+cactus-creek - panorama/splinters/air
+ip-brody swing/gashes/claws river/tide/splash
+ip-natsuki river/drops/splash armor/ripples/water
+ip-jet river/embers/fire fountain/sun/solar
+ip-sabrina leap/bolts/electric swarm/circuit/electric
+ip-coyote twin/tide/air score/whorl/pulse
+ip-chase river/tide/water fountain/drops/splash
+ip-academy-chase leap/drops/splash orbit/ripples/water
+ip-zodiac-aqua-kentaur dart/tide/bow orbit/drops/crystal
+ip-zodiac-psycho-chicken volley/feathers/air swarm/facets/whistle
+ip-banaphin river/drops/water portal/tide/splash
+ip-kokocrab swing/plates/claws armor/marks/ceramic
+ip-pinebeak volley/leaves/whistle bloom/tide/rustle
+ip-croaktail leap/drops/splash fountain/petals/water
+ip-floatbite swing/tide/claws orbit/drops/water
+ip-octospray ink/ink/splash lash/ink/water
+ip-field - panorama/tide/water
+ip-coyote-zodiac twin/facets/pulse orbit/cleave/air
+ip-chase-zodiac river/sun/water fountain/facets/crystal
+ip-ride-the-wave - surf/tide/splash
+ip-no-pain-no-gain - forge/bolts/metal
+ip-swim-dont-sink - armor/drops/water
+lt-scribble ribbon/sugar/paper pages/folds/paper
+lt-clary swing/threads/steel stitch/feathers/fabric
+lt-fritz score/threads/flute chains/mask/chain
+lt-rat-king chains/gashes/chain curtain/plates/shadow
+lt-boxy sling/shell/gears hatch/plates/gears
+lt-teddy swing/cloth/fabric stitch/fault/fabric
+lt-broomy gale/splinters/air portal/whorl/shadow
+lt-melodoll score/notes/harp fountain/threads/harp
+lt-clapster beam/plates/pulse stamp/circuit/gears
+lt-beatcracker slam/ripples/drum gate/marks/drum
+lt-zodiac-fritz curtain/notes/flute trap/mask/shadow
+lt-raterrot swing/gashes/claws chains/facets/chain
+toy-store - carousel/cloth/gears
+lt-doll-chorus - score/threads/flute
+lt-wind-up-toy - windup/coil/windup
+lt-toy-capsule - hatch/shell/ceramic
+drinking-tea - serving/steam/tea
+christmas-mall - carousel/sleet/bells
+academy-diamond kettles/facets/tea serving/feathers/tea
+academy-topaz beam/bolts/drum score/sun/brass
+academy-dimitri swing/sleet/ice pages/facets/paper
+wb-topaz-diamond kettles/porcelain/tea kettles/tea/tea
+wb-bearnardo slam/sleet/ice stamp/facets/ice
+wb-dimitri swing/cleave/steel frost/sleet/ice
+wb-gillusion river/sleet/ice portal/facets/ice
+wb-ladyfeather volley/cleave/air gale/sleet/whistle
+wb-merryhound swing/sleet/claws leap/facets/ice
+wb-rebeccah bloom/petals/harp escort/whorl/fabric
+wb-magnus swing/plates/steel armor/sleet/metal
+wb-sageape swing/facets/claws frost/folds/ice
+wb-steepod serving/tea/tea serving/chamomile/tea
+zodiac-swordtiger swing/sleet/steel orbit/gashes/crystal
+wb-zodiac-topaz kettles/bolts/drum score/porcelain/tea
+wb-zodiac-dimitri swing/sleet/ice orbit/facets/crystal
+wb-zodiac-cloud-goat leap/whorl/air gale/sleet/air
+wb-wedding-proposal - orbit/petals/harp
+wb-shopping - curtain/paper/paper
+wb-merry-christmas - tree/ornaments/bells
+zodiac-valkyrie-chicken volley/bolts/air bloom/feathers/whistle
+zodiac-guardian-sabrina beams/feathers/electric orbit/circuit/pulse
+valhalla-axir swing/splinters/steel armor/cleave/wood
+valhalla-barfy river/foam/splash fountain/foam/boil
+valhalla-khendal swing/gashes/claws lash/roar/hooves
+valhalla-bar - tavern/foam/wood
+valhalla-miss-ragna slam/plates/metal armor/feathers/metal
+valhalla-mjolknir volley/bolts/metal beams/circuit/electric
+valhalla-morrikyn beams/rift/shadow portal/folds/shadow
+valhalla-pryce swing/sun/steel fountain/ornaments/brass
+valhalla-ryota beam/roar/fire implosion/embers/solar
+valhalla-sabrina gale/bolts/electric armor/feathers/metal
+valhalla-sloetunn slam/embers/metal trap/fault/fire
+valhalla-wendy swing/feathers/steel tavern/folds/shadow
+valhalla-meadsting lash/sun/whistle serving/leaves/tea
+valkyries-mead - tavern/foam/splash
+golden-egg-flatbread - forge/shell/ceramic
+training - target/marks/wood
+`;
+  const decode = (cue) => {
+    if (cue === '-') return null;
+    const [move, contact, sound] = cue.split('/');
+    return { move, contact, sound };
+  };
+  const scenes = Object.fromEntries(cues.trim().split('\n').map((line) => {
+    const [id, strike, skill] = line.split(' ');
+    return [id, { strike: decode(strike), skill: decode(skill) }];
+  }));
+  window.peppermintCombatDirection = scenes;
+})();

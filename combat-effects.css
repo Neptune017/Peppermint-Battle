@@ -68,14 +68,12 @@
 .combat-wake-silk { stroke-dasharray: .48 .52; }
 .combat-wake-drops, .combat-wake-leaves { stroke-dasharray: .11 .29; }
 .combat-wake-charge { stroke-dasharray: .09 .15 .12 .64; }
-.combat-contact-light { filter: blur(9px); mix-blend-mode: screen; }
-.combat-impact-wave {
-  fill: none;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 5px var(--combat-color));
-  transform-box: fill-box;
-  transform-origin: center;
+.combat-channel-halo {
+  filter: blur(4px) drop-shadow(0 0 7px var(--combat-color));
+  mix-blend-mode: screen;
 }
+.combat-channel-core { filter: drop-shadow(0 0 5px var(--combat-color)); }
+.combat-scene-limb { transform-box: fill-box; transform-origin: center top; }
 .combat-painted { filter: drop-shadow(0 2px 3px #10091b66); }
 .shatter-overlay {
   position: fixed;
