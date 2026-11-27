@@ -6,7 +6,7 @@
   const duration = 860;
   const atlases = new Map(elements.map((element) => {
     const atlas = new Image();
-    atlas.src = 'assets/effects/summons/' + element + '-summon-v2.webp';
+    atlas.src = 'assets/effects/summons/' + element + '-summon-v3.webp';
     atlas.decode?.().catch(() => {});
     return [element, atlas];
   }));
@@ -23,10 +23,10 @@
     canvas.height = cellHeight;
     const context = canvas.getContext('2d');
     if (!context) return false;
-    const width = Math.min(cardElement.offsetWidth * 1.95, lane.clientWidth * 1.38);
+    const width = Math.min(cardElement.offsetWidth * 2.05, lane.clientWidth * 1.33);
     canvas.style.width = width + 'px';
-    canvas.style.height = width * .72 + 'px';
-    canvas.style.top = cardElement.offsetTop + cardElement.offsetHeight * .96 + 'px';
+    canvas.style.height = Math.max(width * .86, cardElement.offsetHeight * 1.62) + 'px';
+    canvas.style.top = cardElement.offsetTop + cardElement.offsetHeight / 2 + 'px';
     lane.appendChild(canvas);
 
     function draw(frame) {
