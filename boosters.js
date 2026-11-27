@@ -9,12 +9,13 @@
     { id: 'living-toy', name: 'Living Toy', logo: 'assets/deck-logos/living-toy.webp', pack: 'assets/booster-packs/living-toy-dollmaster-fritz-booster-pack-cutout.webp', field: 'assets/backgrounds/field-toy-store.webp' },
     { id: 'winter-ball', name: 'Winter Ball', logo: 'assets/deck-logos/winter-ball.webp', pack: 'assets/booster-packs/winter-ball-topaz-diamond-dimitri-booster-pack-cutout.webp', field: 'assets/backgrounds/field-christmas-mall.webp' },
     { id: 'valhalla', name: 'Valhalla', logo: 'assets/deck-logos/valhalla.webp', pack: 'assets/booster-packs/valhalla-booster-pack-cutout.webp', field: 'assets/backgrounds/field-valhalla-bar.webp' },
+    { id: 'toxic-sewer', name: 'Toxic Sewer', logo: 'assets/deck-logos/toxic-sewer.webp', pack: 'assets/booster-packs/toxic-sewer-booster-pack-cutout.webp?v=aemi-details', field: 'assets/backgrounds/field-toxic-sewers.webp' },
   ];
   const STORAGE_KEY = 'peppermint-battle-collection-v2';
   const cardsByDeck = buildBoosterCatalog();
   let profileId = null;
   let player = readLocalSave(profileId).save;
-  let activeDeck = 'wild-west';
+  let activeDeck = 'toxic-sewer';
   let editorDraft = null;
   let pendingCollectionLoad = null;
   let saveRevision = 0;
@@ -69,6 +70,7 @@
       : deckId === 'living-toy' ? livingToyLibrary
       : deckId === 'winter-ball' ? winterBallLibrary
       : deckId === 'valhalla' ? [...valhallaLibrary, ...cardLibrary.filter((card) => card.id === 'academy-sabrina')]
+      : deckId === 'toxic-sewer' ? toxicSewerLibrary
       : cardLibrary.filter((card) => !['locker-room', 'zodiac-egg'].includes(card.id));
     return source.filter((card) => card.type !== 'Transformation');
   }
@@ -85,6 +87,7 @@
   }
   function buildBoosterCatalog() {
     function transformationsForDeck(deckId) {
+    if (deckId === 'toxic-sewer') return toxicSewerLibrary.filter((card) => card.type === 'Transformation');
     const ids = { 'wild-west':['zodiac-guardian-rick','ww-zodiac-guardian-brian'], 'island-paradise':['ip-coyote-zodiac','ip-chase-zodiac'], 'living-toy':['lt-zodiac-fritz'], 'winter-ball':['wb-zodiac-topaz','wb-zodiac-dimitri'], 'valhalla':['zodiac-guardian-sabrina'] }[deckId] || [];
     return [...new Map(allCardCatalog().filter((card) => card.type === 'Transformation' && ids.includes(card.id)).map((card) => [card.id, card])).values()];
   }
@@ -122,7 +125,7 @@
     };
   }
   function collectionCards() {
-    const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...valhallaLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
+    const source = [...new Map([...mainCards('academy'), ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...valhallaLibrary, ...toxicSewerLibrary, ...allCardCatalog().filter((card) => card.type === 'Transformation')].filter((card) => card && card.art).map((card) => [card.id, card])).values()];
     const seen = new Set();
     return source.filter((card) => { const key = `${card.title}|${card.name}`; if (seen.has(key)) return false; seen.add(key); return true; }).map((card) => ({ ...card, rarity: rarityFor(card) || 'Starter' }));
   }
@@ -277,6 +280,7 @@
     const displayPanel = document.getElementById('booster-display-panel');
     displayPanel.style.setProperty('--booster-field-background', 'url(' + JSON.stringify(deck.field) + ')');
     displayPanel.dataset.boosterDeck = deck.id;
+    document.getElementById('booster-dialog').dataset.boosterDeck = deck.id;
     if (!isUnlocked(activeDeck)) {
       document.getElementById('booster-display').innerHTML = `<img class="booster-deck-logo" src="${deck.logo}" alt="${deck.name}"/><div class="booster-display-heading"><div class="booster-display-copy"><span class="eyebrow">BOOSTER LOCKED</span><h3>${deck.name}</h3><p>Defeat the ${deck.name} deck in Standard to unlock this display.</p></div><div class="booster-pack-art"><img src="${deck.pack}" alt="${deck.name} booster pack"/>${packNavigation()}</div></div>`;
       return;

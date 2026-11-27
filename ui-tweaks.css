@@ -183,10 +183,12 @@
   overflow-x: auto;
   overflow-y: hidden;
   padding: 4px 3px 7px;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: #74658c transparent;
   transform: none;
 }
-.hand-content .hand::-webkit-scrollbar { display: none; }
+.hand-content .hand::-webkit-scrollbar { height: 6px; }
+.hand-content .hand::-webkit-scrollbar-thumb { background: #74658c; border-radius: 6px; }
 .hand-content .hand-card { flex: 0 0 122px; }
 .hand-content::after {
   content: "";

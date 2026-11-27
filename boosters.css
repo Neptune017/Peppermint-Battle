@@ -146,6 +146,7 @@
 #booster-display-panel{position:relative;isolation:isolate;overflow:hidden;min-height:390px;margin-top:12px;padding:clamp(14px,2.2vw,28px);border:1px solid #bc9bd47a;border-radius:22px;background:#101321;box-shadow:0 24px 72px #0709129c,inset 0 0 0 1px #ffffff12}
 #booster-display-panel::before,#booster-display-panel::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
 #booster-display-panel::before{background-image:linear-gradient(110deg,#080d1bd9 0%,#111322b8 46%,#10101bbd 100%),var(--booster-field-background);background-position:center;background-size:cover;filter:saturate(.88)}
+#booster-dialog[data-booster-deck="toxic-sewer"]{background:linear-gradient(135deg,#101923e8,#101820c9 57%,#172018de),url("assets/backgrounds/field-toxic-sewers.webp") center/cover}
 #booster-display-panel::after{inset:1px;border:1px solid #ffffff16;border-radius:21px;background:radial-gradient(ellipse at 50% 18%,#bda0e322,transparent 56%),linear-gradient(180deg,#ffffff08,transparent 40%,#090b16a8)}
 #booster-display{position:relative;z-index:1}
 .booster-display-heading{min-height:330px;gap:clamp(18px,4vw,60px);padding:clamp(18px,3vw,36px);border-color:#e3c98850;border-radius:18px;background:linear-gradient(115deg,#101321bb,#13152680 52%,#111322c9);box-shadow:inset 0 1px #ffffff1c,0 12px 36px #06081288;backdrop-filter:blur(10px)}

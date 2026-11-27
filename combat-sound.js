@@ -68,6 +68,31 @@
       texture(spark, length, 2200, 530, .088 * strength, 1.4);
       sweep(spark, .088, 183 + seed % 57, 81, .082 * strength, 'triangle');
     }
+    function voicePulse(at, length, pitch, vowel, level) {
+      const time = start + Math.max(0, at);
+      const source = audio.createOscillator();
+      const mouth = audio.createGain();
+      source.type = 'sawtooth';
+      source.frequency.setValueAtTime(pitch * .9, time);
+      source.frequency.exponentialRampToValueAtTime(pitch * 1.13, time + length * .27);
+      source.frequency.exponentialRampToValueAtTime(pitch * .78, time + length);
+      mouth.gain.setValueAtTime(.0001, time);
+      mouth.gain.exponentialRampToValueAtTime(level, time + .038);
+      mouth.gain.exponentialRampToValueAtTime(.0001, time + length);
+      source.connect(mouth);
+      vowel.forEach((hz, index) => {
+        const filter = audio.createBiquadFilter();
+        const band = audio.createGain();
+        filter.type = 'bandpass';
+        filter.Q.value = 3.4 + index * 1.2;
+        filter.frequency.setValueAtTime(hz * 1.04, time);
+        filter.frequency.exponentialRampToValueAtTime(hz * .93, time + length);
+        band.gain.value = 1 / (1 + index * .85);
+        mouth.connect(filter).connect(band).connect(gain);
+      });
+      source.start(time);
+      source.stop(time + length + .02);
+    }
 
     if (fist) {
       sweep(t - .018, .23, 132, 39, .17 * weight, 'triangle');
@@ -75,7 +100,32 @@
     }
 
     const beats = window.peppermintCombatScenes.beats[mode];
-    if (mode==='flamePunch' || mode==='kindle') {
+    if (['witchFireLaugh','witchBrewLaugh','ogreGuffaw','hollowCry'].includes(mode)) {
+      const ogre = mode === 'ogreGuffaw';
+      const cry = mode === 'hollowCry';
+      const pitch = ogre ? 112 : cry ? 275 : 345;
+      const vowel = ogre ? [480, 960, 1770] : cry ? [435, 1430, 2590] : [760, 1760, 2980];
+      const first = cry ? t - .08 : r - .09;
+      [1, 1.12, .94, .79].slice(0, ogre ? 3 : 4).forEach((ratio,index) => {
+        const at = first + index * (ogre ? .18 : .128);
+        voicePulse(at, ogre ? .24 : cry ? .23 : .16, pitch * ratio, vowel, ogre ? .41 : .29);
+        texture(at, .115, ogre ? 870 : 2550, ogre ? 410 : 1400, .041, 2);
+      });
+      texture(t, .39, mode === 'witchFireLaugh' ? 2820 : 1250, 460, .12 * weight, 1.8);
+      if (ogre) sweep(t, .23, 95, 41, .12, 'triangle');
+    } else if (mode === 'poison' || mode === 'sewerFlood') {
+      const flood = mode === 'sewerFlood';
+      if (!flood && strike) {
+        texture(t - .016, .12, 4250, 1120, .15 * weight, 4.2);
+        resonator(t, 578 + seed % 140, .19, .07, 'glass');
+      }
+      texture(r - .08, .42, flood ? 415 : 2210, flood ? 795 : 490, .088, 2.3);
+      for (let i = 0; i < (flood ? 8 : 5); i++) {
+        const at = t + i * .052;
+        sweep(at, .135, (flood ? 275 : 540) + (seed + i * 71) % 210, 100 + i * 17, .068 / (1 + i * .20), 'sine');
+      }
+      texture(t, flood ? .72 : .36, flood ? 870 : 4100, flood ? 285 : 910, .11 * weight, 2.4);
+    } else if (mode==='flamePunch' || mode==='kindle') {
       const punch=mode==='flamePunch';
       texture(t-(punch?.15:.38),punch?.31:.56,380,1710,.135*weight,1.4);
       texture(t+.03,.48,1950,510,.128*weight,1.5);

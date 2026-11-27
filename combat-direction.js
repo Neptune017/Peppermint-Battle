@@ -141,6 +141,27 @@ valhalla-meadsting lash/sun/whistle tavern/leaves/boil
 valkyries-mead - tavern/foam/splash
 golden-egg-flatbread - forge/shell/ceramic
 training - target/marks/wood
+ts-big-troll swing/tide/syrup stamp/roots/mud
+ts-frog volley/tide/syrup leap/tide/splash
+ts-alligator swing/tide/syrup -
+ts-spider volley/tide/syrup hatch/fault/poison
+ts-troll-girl volley/embers/fire beam/embers/fire
+ts-troll-boy swing/cleave/steel stamp/marks/steel
+ts-slime swing/tide/syrup twin/tide/syrup
+ts-slime-snake lash/tide/syrup implosion/facets/crystal
+ts-hellfire-sheep volley/embers/fire implosion/facets/crystal
+ts-field - panorama/tide/sewerFlood
+ts-zodiac-aemi beam/embers/witchFireLaugh -
+ts-zodiac-ryuu beams/bolts/electric -
+academy-ryuu swing/gashes/claws brew/folds/witchBrewLaugh
+ts-zenon lash/tide/syrup stamp/roar/ogreGuffaw
+ts-momozan chains/embers/chain -
+ts-ryuu swing/folds/poison brew/fault/poison
+ts-aemi dart/embers/fire -
+ts-elyza lash/folds/poison pages/folds/paper
+ts-lorette dart/facets/glass curtain/drops/hollowCry
+ts-poison - brew/fault/poison
+ts-shady-potion - healing/folds/poison
 `;
   const decode = (cue) => {
     if (cue === '-') return null;

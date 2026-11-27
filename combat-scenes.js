@@ -378,15 +378,22 @@
     });
     points.forEach((point,i)=>{
       const hit = impactAt-beats.mirrors[i];
-      const mirror = placeSignature(ctx,'mirror',i?'blue':'violet',point,i?28:-25);
-      mirror.setAttribute('data-beat',hit);
-      const s=scale*(i?.93:1.03), duration=impactAt+820, delay=55+i*75;
-      motion(mirror,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.36},{opacity:.9,offset:.74},{opacity:0}]
-        : [{opacity:0,transform:`scale(.32,${s*.55}) rotate(-10deg)`},
-          {opacity:1,transform:`scale(${s},${s})`,offset:.28},
-          {opacity:.98,transform:`scale(${s*.79},${s*1.03}) rotate(${i?12:-12}deg)`,offset:(hit+155-delay)/duration},
-          {opacity:.95,transform:`scale(${s},${s})`,offset:.71},
-          {opacity:0,transform:`scale(.30,${s*.82}) rotate(16deg)`}],duration,delay,'ease-out');
+      const delay = 55+i*75;
+      const rasterMirror = !reduced && window.peppermintCombatFrameSheets?.playProp({
+        card:ctx.card, kind:ctx.attack?'strike':'skill', point, delay,
+        duration:impactAt+550, scale:Math.min(1.18,scale)*(i?.93:1.03), rotation:i?21:-19, flip:!!i,
+      });
+      const s=scale*(i?.93:1.03), duration=impactAt+820;
+      if (!rasterMirror) {
+        const mirror = placeSignature(ctx,'mirror',i?'blue':'violet',point,i?28:-25);
+        mirror.setAttribute('data-beat',hit);
+        motion(mirror,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.36},{opacity:.9,offset:.74},{opacity:0}]
+          : [{opacity:0,transform:`scale(.32,${s*.55}) rotate(-10deg)`},
+            {opacity:1,transform:`scale(${s},${s})`,offset:.28},
+            {opacity:.98,transform:`scale(${s*.79},${s*1.03}) rotate(${i?12:-12}deg)`,offset:(hit+155-delay)/duration},
+            {opacity:.95,transform:`scale(${s},${s})`,offset:.71},
+            {opacity:0,transform:`scale(.30,${s*.82}) rotate(16deg)`}],duration,delay,'ease-out');
+      }
       if (!reduced) {
         const reflection = ctx.art(path('M-17-21Q0-4 17 21','none',i?'#8ceaff':'#e6b6ff',3),point.x,point.y);
         motion(reflection,[{opacity:0,transform:`scale(${s*.4})`},{opacity:.88,offset:.27},{opacity:0,transform:`scale(${s*1.1})`}],430,hit);
@@ -403,16 +410,21 @@
   function stageAvatarGem(ctx, target, scale) {
     const {origin, viewport, motion, impactAt, reduced} = ctx;
     const point={x:Math.max(57,Math.min(viewport.w-57,target.x)), y:Math.max(62,target.y-35*scale)};
-    const gem=placeSignature(ctx,'avatarGem',null,point);
     const position=mix(origin,point,.67);
     const dx=position.x-point.x,dy=Math.min(88,position.y-point.y);
     const s=scale*.89;
-    motion(gem,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.40},{opacity:1,offset:.76},{opacity:0}]
-      : [{opacity:0,transform:`translate(${dx}px,${dy}px) rotate(-17deg) scale(.38)`},
-        {opacity:.95,transform:`translate(${dx*.40}px,${dy*.40}px) rotate(-8deg) scale(${s*.84})`,offset:.30},
-        {opacity:1,transform:`translate(0,0) rotate(1deg) scale(${s})`,offset:.51},
-        {opacity:1,transform:`rotate(9deg) scale(${s*1.11})`,offset:.65},
-        {opacity:0,transform:`translateY(-31px) rotate(20deg) scale(${s*.94})`}],1540,impactAt-750,'linear');
+    const rasterGem = !reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind:'skill', point, delay:impactAt-750, duration:1540, scale:s,
+    });
+    if (!rasterGem) {
+      const gem=placeSignature(ctx,'avatarGem',null,point);
+      motion(gem,reduced ? [{opacity:0,transform:`scale(${s})`},{opacity:1,offset:.40},{opacity:1,offset:.76},{opacity:0}]
+        : [{opacity:0,transform:`translate(${dx}px,${dy}px) rotate(-17deg) scale(.38)`},
+          {opacity:.95,transform:`translate(${dx*.40}px,${dy*.40}px) rotate(-8deg) scale(${s*.84})`,offset:.30},
+          {opacity:1,transform:`translate(0,0) rotate(1deg) scale(${s})`,offset:.51},
+          {opacity:1,transform:`rotate(9deg) scale(${s*1.11})`,offset:.65},
+          {opacity:0,transform:`translateY(-31px) rotate(20deg) scale(${s*.94})`}],1540,impactAt-750,'linear');
+    }
     if (reduced) return;
     for (let i=0;i<prismColors.length;i++){
       const angle=(i/(prismColors.length-1)-.5)*2.32;
@@ -478,6 +490,11 @@
 
   function stageParcel(ctx, target) {
     const {origin, impactAt, effectScale, reduced, motion, art, palette, hot, color} = ctx;
+    if (!reduced && window.peppermintCombatFrameSheets?.play({
+      card:ctx.card, kind:'skill', origin, targets:[target], impactAt, baseAttack:ctx.baseAttack,
+      viewport:ctx.viewport, layered:true, releaseAt:150,
+      amplitude:Math.min(126,Math.hypot(target.x-origin.x,target.y-origin.y)*.23+30),
+    })) return;
     const gift = art(prop('boxyParcel',palette.fill,hot,color),origin.x,origin.y);
     gift.setAttribute('data-combat-prop','boxyParcel');
     const dx=target.x-origin.x, dy=target.y-origin.y;
@@ -506,7 +523,11 @@
     const center={x:point.x,y:Math.max(58,point.y-29*effectScale)};
     const collision=impactAt-cymbalLead;
     const s=effectScale*.72;
-    [-1,1].forEach((side)=>{
+    const rasterCymbals = !reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind:'strike', point:center, delay:110, duration:collision*2-220,
+      cueAt:collision, scale:Math.min(1.22,s),
+    });
+    if (!rasterCymbals) [-1,1].forEach((side)=>{
       const x=center.x+side*16*s;
       const cymbal=art(prop('cymbal',palette.fill,hot,color),x,center.y,side*28);
       cymbal.setAttribute('data-combat-prop','cymbal');
@@ -720,12 +741,18 @@
     const s=effectScale*.78;
     const position=mix(origin,target,.16);
     const body={x:position.x+Math.sin(aim)*12*s,y:position.y-Math.cos(aim)*12*s};
-    const bag=art(fujinBag(palette.fill),body.x,body.y,angle);
-    bag.setAttribute('data-combat-prop','fujinBag');
-    motion(bag,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.95},{opacity:0}]:[
-      {opacity:0,transform:`scale(${s*.58})`},{opacity:1,transform:`scale(${s},${s*1.15})`,offset:.31},
-      {opacity:.99,transform:`scale(${s*.96},${s*.80})`,offset:.68},
-      {opacity:0,transform:`scale(${s*.81},${s*.75})`}],impactAt+590,120,'ease-in-out');
+    const rasterBag = !reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind:ctx.attack?'strike':'skill', point:body, delay:120,
+      duration:impactAt+590, cueAt:impactAt, rotation:angle, scale:Math.min(1.22,s),
+    });
+    if (!rasterBag) {
+      const bag=art(fujinBag(palette.fill),body.x,body.y,angle);
+      bag.setAttribute('data-combat-prop','fujinBag');
+      motion(bag,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.95},{opacity:0}]:[
+        {opacity:0,transform:`scale(${s*.58})`},{opacity:1,transform:`scale(${s},${s*1.15})`,offset:.31},
+        {opacity:.99,transform:`scale(${s*.96},${s*.80})`,offset:.68},
+        {opacity:0,transform:`scale(${s*.81},${s*.75})`}],impactAt+590,120,'ease-in-out');
+    }
     if (!reduced) {
       const spout={x:body.x+(54*Math.cos(aim)-15*Math.sin(aim))*s,y:body.y+(54*Math.sin(aim)+15*Math.cos(aim))*s};
       channel({...ctx,hitAt:impactAt,scale:s,color:'#91dfff',hot:'#f3fcff'},spout,target,'gale');
@@ -767,6 +794,10 @@
     const mid=mix(origin,target,.57);
     const point={x:Math.max(100,Math.min(viewport.w-100,mid.x)),y:Math.max(119,mid.y-28)};
     const {fill}=palette,s=Math.min(1.48,effectScale)*.97,show=130;
+    if (!reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind:'skill', point, delay:show,
+      duration:impactAt+1000, scale:Math.min(1.15,s),
+    })) return;
     const structure=(drawing,tag)=>{
       const node=art(drawing,point.x,point.y);
       node.setAttribute('data-combat-prop',tag);
@@ -800,13 +831,19 @@
   function stageHarp(ctx,target) {
     const {origin, impactAt, art, motion, palette, reduced, effectScale}=ctx;
     const start=mix(origin,target,.27), point={x:start.x+30,y:Math.max(65,start.y-53)};
-    const harp=art(melodollHarp(palette.fill),point.x,point.y,-9);
-    harp.setAttribute('data-combat-prop','melodollHarp');
     const s=effectScale*.92;
-    motion(harp,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.94},{opacity:0}]:[
-      {opacity:0,transform:'translateY(19px) scale(.35)'},{opacity:1,transform:`scale(${s})`,offset:.33},
-      {opacity:.94,transform:`rotate(7deg) scale(${s})`,offset:.70},{opacity:0,transform:`translateY(-14px) scale(${s*.86})`}],
-    impactAt+660,123);
+    const rasterHarp = !reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind:'skill', point, delay:123, duration:impactAt+660,
+      cueAt:impactAt, scale:Math.min(1.16,s), rotation:-9,
+    });
+    if (!rasterHarp) {
+      const harp=art(melodollHarp(palette.fill),point.x,point.y,-9);
+      harp.setAttribute('data-combat-prop','melodollHarp');
+      motion(harp,reduced?[{opacity:0,transform:`scale(${s})`},{opacity:.94},{opacity:0}]:[
+        {opacity:0,transform:'translateY(19px) scale(.35)'},{opacity:1,transform:`scale(${s})`,offset:.33},
+        {opacity:.94,transform:`rotate(7deg) scale(${s})`,offset:.70},{opacity:0,transform:`translateY(-14px) scale(${s*.86})`}],
+      impactAt+660,123);
+    }
     if(!reduced) channel({...ctx,hitAt:impactAt,scale:s,color:'#b8ecac',hot:'#ecbaff'},point,target,'score');
   }
 
@@ -823,7 +860,7 @@
     if (move==='cymbals') { stageCymbals(ctx, targets[0]); return true; }
     if (move==='healing') { stageHealingBottle(ctx, targets[0]); return true; }
     if (move==='raijin' || move==='mirrors' || move==='prism') {
-      if (move==='raijin') stageRaijin(ctx, targets[0], scale);
+      if (move==='raijin') stageRaijin(ctx, targets[0], scale*.75);
       if (move==='mirrors') stageMirrors(ctx, targets[0], scale);
       if (move==='prism') stageAvatarGem(ctx, targets[0], scale);
       return true;
@@ -843,26 +880,33 @@
       for(let i=0;i<4;i++){
         const flank=(i%2?1:-1)*width*(i<2?.35:.63);
         const position={x:start.x+flank-dx*.30,y:start.y-dy*.30};
-        const stride=ctx.art(horseBody(palette.fill),position.x,position.y,yaw);
-        const legPositions=[[-13,-28,1],[12,-26,-1],[-15,30,-1],[15,31,1]];
-        legPositions.forEach(([x,y,side],j)=>{
-          const leg=ctx.svgNode('g',{transform:`translate(${x} ${y})`},stride);
-          const joint=ctx.svgNode('g',{class:'combat-scene-limb'},leg);
-          joint.innerHTML=path(`M-3-4Q${side*11} 7 ${side*8} 17L${side*15} 31L${side*9} 36L${side*3} 24Q-5 14-3 4Z`,palette.fill('wood'),'#50302d',1.2)+
-            path(`M${side*8} 28L${side*16} 31L${side*11} 38L${side*6} 35Z`,'#36202d');
-          if(!reduced)joint.animate?.([{transform:`rotate(${32*side}deg)`},{transform:`rotate(${-30*side}deg)`},{transform:`rotate(${32*side}deg)`}],
-            {delay:160+i*123+j*26,duration:225,iterations:7,easing:'ease-in-out',fill:'both'});
-        });
-        const flight=ctx.svgNode('g',{},ctx.layer);
-        flight.appendChild(stride.parentNode);
         const horseScale=(.63+i%2*.09)*s;
-        stride.setAttribute('transform', `scale(${horseScale})`);
         const delay=105+i*135;
-        motion(flight,reduced?[{opacity:0},{opacity:.83},{opacity:0}]:[
-          {opacity:0,transform:'translate(0, 0)'},{opacity:1,offset:.13},
-          {opacity:.96,transform:`translate(${dx*.84}px,${dy*.84}px)`,offset:.55},
-          {opacity:0,transform:`translate(${dx*1.51}px,${dy*1.51}px)`},
-        ],1270,delay,'linear');
+        const rasterHorse = !reduced && window.peppermintCombatFrameSheets?.playProp({
+          card:ctx.card, kind:'skill', point:position,
+          destination:{x:position.x+dx*1.51,y:position.y+dy*1.51},
+          delay, duration:1270, scale:horseScale, rotation:yaw,
+        });
+        if (!rasterHorse) {
+          const stride=ctx.art(horseBody(palette.fill),position.x,position.y,yaw);
+          const legPositions=[[-13,-28,1],[12,-26,-1],[-15,30,-1],[15,31,1]];
+          legPositions.forEach(([x,y,side],j)=>{
+            const leg=ctx.svgNode('g',{transform:`translate(${x} ${y})`},stride);
+            const joint=ctx.svgNode('g',{class:'combat-scene-limb'},leg);
+            joint.innerHTML=path(`M-3-4Q${side*11} 7 ${side*8} 17L${side*15} 31L${side*9} 36L${side*3} 24Q-5 14-3 4Z`,palette.fill('wood'),'#50302d',1.2)+
+              path(`M${side*8} 28L${side*16} 31L${side*11} 38L${side*6} 35Z`,'#36202d');
+            if(!reduced)joint.animate?.([{transform:`rotate(${32*side}deg)`},{transform:`rotate(${-30*side}deg)`},{transform:`rotate(${32*side}deg)`}],
+              {delay:160+i*123+j*26,duration:225,iterations:7,easing:'ease-in-out',fill:'both'});
+          });
+          const flight=ctx.svgNode('g',{},ctx.layer);
+          flight.appendChild(stride.parentNode);
+          stride.setAttribute('transform', `scale(${horseScale})`);
+          motion(flight,reduced?[{opacity:0},{opacity:.83},{opacity:0}]:[
+            {opacity:0,transform:'translate(0, 0)'},{opacity:1,offset:.13},
+            {opacity:.96,transform:`translate(${dx*.84}px,${dy*.84}px)`,offset:.55},
+            {opacity:0,transform:`translate(${dx*1.51}px,${dy*1.51}px)`},
+          ],1270,delay,'linear');
+        }
         if (!reduced) for(let j=0;j<5;j++){
           const p=mix(start,finish,j/4);
           const dust=ctx.art(palette.paint('earth','impact',ctx.seed+i+j,'mud'),p.x+flank,p.y,yaw);
@@ -874,6 +918,10 @@
     if(move==='tree'){
       const x=bounds(first.x,viewport.w*.24,viewport.w*.76);
       const y=bounds(first.y,viewport.h*.48,viewport.h*.71);
+      if (!reduced && window.peppermintCombatFrameSheets?.playProp({
+        card:ctx.card, kind:'skill', point:{x,y}, delay:0, duration:impactAt+850, cueAt:impactAt,
+        scale:Math.min(1.06,s),
+      })) return true;
       const pine=figure('tree',x,y);
       motion(pine,reduced?[{opacity:0},{opacity:1},{opacity:0}]:[
         {opacity:0,transform:'translateY(20px) scale(.12)'},{opacity:1,transform:`scale(${1.56*s})`,offset:.38},
@@ -894,6 +942,10 @@
     if(move==='windup'){
       const x=bounds(first.x,viewport.w*.25,viewport.w*.75);
       const y=bounds(first.y-36,viewport.h*.30,viewport.h*.68);
+      if (!reduced && window.peppermintCombatFrameSheets?.playProp({
+        card:ctx.card, kind:'skill', point:{x,y}, delay:120, duration:impactAt+740, cueAt:impactAt,
+        scale:Math.min(1.1,s),
+      })) return true;
       const body=figure('toy',x,y,-11);
       motion(body,[{opacity:0,transform:'translateY(26px) scale(.4)'},{opacity:1,transform:`translateY(2px) scale(${s})`,offset:.27},
         {opacity:1,transform:`translateY(0) rotate(-5deg) scale(${s})`,offset:.54},
@@ -918,13 +970,21 @@
     for(let i=0;i<pots;i++){
       const offset=(i-(pots-1)/2)*73*s;
       const x=bounds(center.x+offset,48,viewport.w-48);
-      const porcelain = prop('teapot',palette.fill,hot,color);
-      const teapot = ctx.art(sign < 0 ? group('scale(-1 1)',porcelain) : porcelain,x,y-i%2*33);
       const tilt=sign>0?37:-39;
-      motion(teapot,[
-        {opacity:0,transform:'translateY(24px) scale(.24)'},{opacity:1,transform:`rotate(-8deg) scale(${s*.64})`,offset:.29},
-        {opacity:1,transform:`rotate(${tilt}deg) scale(${s*.73})`,offset:.64},{opacity:0,transform:`translateY(-28px) rotate(${tilt}deg) scale(${s*.55})`},
-      ],impactAt+725,130+i*138);
+      const potDelay=130+i*138;
+      const rasterPot = !reduced && ctx.card.id === 'wb-topaz-diamond' && window.peppermintCombatFrameSheets?.playProp({
+        card:ctx.card, kind:ctx.attack?'strike':'skill', point:{x,y:y-i%2*33},
+        delay:potDelay, duration:impactAt+725, cueAt:impactAt+i*90,
+        scale:Math.min(1.14,s), flip:sign<0,
+      });
+      if (!rasterPot) {
+        const porcelain = prop('teapot',palette.fill,hot,color);
+        const teapot = ctx.art(sign < 0 ? group('scale(-1 1)',porcelain) : porcelain,x,y-i%2*33);
+        motion(teapot,[
+          {opacity:0,transform:'translateY(24px) scale(.24)'},{opacity:1,transform:`rotate(-8deg) scale(${s*.64})`,offset:.29},
+          {opacity:1,transform:`rotate(${tilt}deg) scale(${s*.73})`,offset:.64},{opacity:0,transform:`translateY(-28px) rotate(${tilt}deg) scale(${s*.55})`},
+        ],impactAt+725,potDelay);
+      }
       if (!reduced) {
         const entry={x:x+36*sign*s,y:y+16-i%2*33}, tip={x:relevant.x+(i-1)*19,y:relevant.y+13};
         const scene = {...ctx, hitAt:impactAt + i * 90, scale:s};
@@ -1133,11 +1193,47 @@
     }
   }
 
+  function growRickVines(ctx, target, scale) {
+    const s = Math.min(1.45,scale);
+    const forks = [
+      [-48,-66,-24,-20], [-28,-95,12,-43], [9,-106,-24,-56], [43,-87,60,-36], [73,-37,34,-26],
+    ];
+    for (const [i,[endX,endY,controlX,controlY]] of forks.entries()) {
+      const x = target.x + (i-2)*9*s;
+      const y = target.y + Math.min(44,target.h*.24);
+      const duration = 780+i*27;
+      const delay = ctx.hitAt+i*34;
+      const d = `M${x} ${y} Q${x+controlX*s} ${y+controlY*s} ${x+endX*s} ${y+endY*s}`;
+      const stem = ctx.svgNode('path',{
+        d, pathLength:1, fill:'none', stroke:ctx.palette.fill('leaf'),
+        'stroke-width':(4.8-i*.35)*s, 'stroke-linecap':'round',
+        'stroke-dasharray':'1 1', 'stroke-dashoffset':1,
+      },ctx.layer);
+      ctx.motion(stem,[{opacity:.95,strokeDashoffset:1},{opacity:1,strokeDashoffset:0,offset:.47},
+        {opacity:.93,strokeDashoffset:0,offset:.76},{opacity:0,strokeDashoffset:0}],duration,delay);
+      const leaf = ctx.art(path('M0 1Q-18-18-24-7Q-14 6 0 1Q7-16 22-14Q16-2 0 1Z',
+        ctx.palette.fill('leaf'),'#b2ce61',.85),x+endX*s,y+endY*s,endX*.28);
+      ctx.motion(leaf,[{opacity:0,transform:'scale(.12)'},{opacity:.98,transform:`scale(${s})`,offset:.25},
+        {opacity:.92,offset:.70},{opacity:0}],480,delay+duration*.39);
+    }
+  }
+
   function contactArt(ctx, mark, target, angle) {
     const {palette, effectScale, motion, hot, color, seed, baseAttack, impactMaterial, hitAt, reduced, art} = ctx;
     const [shape, object, density] = contactDetails[mark];
     const aw = Math.max(target.w, target.h);
     const scale = Math.min(1.43, Math.max(.78, aw / 125))*effectScale;
+    if (ctx.attack && !reduced && ctx.card.name === 'Rick') growRickVines(ctx,target,scale);
+    const kind = ctx.attack ? 'strike' : 'skill';
+    const replacesContact = (ctx.card.id === 'frosty' && kind === 'skill') ||
+      (ctx.card.id === 'ryota' && kind === 'strike') ||
+      (ctx.card.id === 'wb-steepod' && target === ctx.targets.at(-1)) ||
+      (ctx.card.id === 'lt-broomy' && kind === 'strike') ||
+      (['valhalla-barfy','valhalla-meadsting'].includes(ctx.card.id) && kind === 'skill');
+    if (replacesContact && !reduced && window.peppermintCombatFrameSheets?.playProp({
+      card:ctx.card, kind, point:target, delay:hitAt-265, cueAt:hitAt,
+      duration:660, scale:Math.min(1.24,scale),
+    })) return;
     if (ctx.aer === 'electric' || ctx.aer === 'mixed') electricalContact(ctx, mark, target, angle, scale);
     const size = 50 + seed % 31;
     const take = (n) => (seed >>> n) % 29;

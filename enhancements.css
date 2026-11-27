@@ -86,10 +86,11 @@
   margin-bottom: 3px;
 }
 .versus-portrait > img {
+  --stance-pan: max(0px, calc(32% - 50cqw));
   position: absolute;
   bottom: 0;
   display: block;
-  width: 135%;
+  width: auto;
   height: 100%;
   max-width: none;
   object-fit: contain;
@@ -97,22 +98,13 @@
   filter: drop-shadow(0 12px 18px #080612aa);
   pointer-events: none;
 }
-.versus-player > img { right: 0; }
-.versus-rival > img { left: 0; transform: scaleX(-1); }
+.versus-player > img { right: 0; transform: translateX(var(--stance-pan)); }
+.versus-rival > img { left: 0; transform: translateX(calc(-1 * var(--stance-pan))) scaleX(-1); }
 
 .versus-portrait > img[data-versus-stance] {
-  --stance-width-limit: 190cqw;
-  --stance-visible-height: min(100cqh, calc(var(--stance-width-limit) / var(--stance-aspect)));
-  bottom: calc(var(--stance-visible-height) * var(--stance-offset-bottom));
-  width: auto;
-  max-width: none;
-  height: calc(var(--stance-visible-height) * var(--stance-height-scale));
-  transform: translateX(var(--stance-offset-inner));
-}
-.versus-portrait > img[data-versus-stance="amethyst"] { --stance-width-limit: 205cqw; }
-.versus-portrait > img[data-versus-stance="peppermint-ally"] { --stance-width-limit: 175cqw; }
-.versus-rival > img[data-versus-stance] {
-  transform: translateX(calc(-1 * var(--stance-offset-inner))) scaleX(-1);
+  --stance-pan: max(var(--stance-offset-inner), calc(32% - 50cqw));
+  bottom: calc(100cqh * var(--stance-offset-bottom));
+  height: calc(100cqh * var(--stance-height-scale));
 }
 .versus-identity {
   grid-row: 2;

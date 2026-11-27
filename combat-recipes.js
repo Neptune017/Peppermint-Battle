@@ -140,6 +140,27 @@ valhalla-meadsting thorn+sun cup+thorn buzz ffce6d
 valkyries-mead - cup+spark bubble ffce78
 golden-egg-flatbread - egg+shield wood ffe278
 training - target+clap drum b6f0d8
+ts-big-troll wave+drop wave+horn shadow 9af533
+ts-frog glob+drop leap+wave shadow a4fa49
+ts-alligator bite+drop - shadow 80db34
+ts-spider shot+drop egg+cloud shadow 9ef54c
+ts-troll-girl flame+shot flame+shatter shadow c964ff
+ts-troll-boy sword+cut sword+spark shadow 9bdd72
+ts-slime wave+drop wave+bud shadow b8fd47
+ts-slime-snake lash+drop gem+veil shadow be64ff
+ts-hellfire-sheep flame+shot gem+flame shadow d675ff
+ts-field - pipe+wave shadow a5f44c
+ts-zodiac-aemi bolt+flame - shadow ff6c62
+ts-zodiac-ryuu staff+bolt - shadow c183ff
+academy-ryuu claw+veil flask+veil shadow ba69ff
+ts-zenon lash+drop horn+wave shadow a9ec51
+ts-momozan chain+flame - shadow b8fb56
+ts-ryuu rapier+veil flask+veil shadow b974f8
+ts-aemi arrow+flame - shadow b4fd43
+ts-elyza coil+veil staff+veil shadow 9d65d8
+ts-lorette shot+thread veil+drop shadow c792f6
+ts-poison - flask+veil shadow a1fb42
+ts-shady-potion - flask+veil shadow ad75ed
   `;
   window.peppermintCombatRecipes = Object.freeze(Object.fromEntries(score.trim().split('\n').map((row) => {
     const [id, strike, skill, voice, color] = row.trim().split(' ');

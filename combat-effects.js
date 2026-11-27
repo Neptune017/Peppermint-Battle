@@ -11,7 +11,7 @@
     freeze: ['ice', '#b6edff'], stun: ['bolt', '#ffe3a4'], root: ['root', '#a6e584'], guard: ['shield', '#84e9ec'],
     revive: ['flask', '#b4ef7d'],
   };
-  const sharedFields = new Set(['academy-grounds', 'cactus-creek', 'ip-field', 'toy-store', 'christmas-mall', 'valhalla-bar']);
+  const sharedFields = new Set(['academy-grounds', 'cactus-creek', 'ip-field', 'toy-store', 'christmas-mall', 'valhalla-bar', 'ts-field']);
   const rangedMotifs = new Set([
     'arrow', 'bolt', 'book', 'coil', 'drop', 'eye', 'feather', 'flame', 'gem', 'note', 'pen',
     'portal', 'rabbit', 'shot', 'staff', 'sun', 'veil', 'wave', 'whirl',
@@ -90,8 +90,28 @@
     const effectScale = (1.24 + baseAttack * .115) * viewportScale;
     const projectileScale = (1.19 + baseAttack * .10) * viewportScale;
     const impactAt = scenes.productionTime(direction, attack, sharedField) ?? attackImpactTime;
-    const weaponScale = Math.min(1.27, Math.max(.74, origin.h / 146)) * effectScale;
     const prepared = Math.round(impactAt * .45);
+    if (attack && !reduced && card.id === 'ts-zodiac-aemi') {
+      window.peppermintCombatFrameSheets?.playProp({
+        card, kind: 'strike-omen', point: origin, delay: 30, duration: prepared + 380, cueAt: prepared,
+      });
+    }
+    const fist = melee && card.role === 'Brawler' ? scenes.fistStyles[card.id] : null;
+    const rasterDuration = window.peppermintCombatFrameSheets?.play({
+      card, kind, origin, targets:destinations.map(({box}) => box), impactAt, baseAttack,
+      viewport:{w:window.innerWidth,h:window.innerHeight},
+    });
+    if (rasterDuration) {
+      try {
+        window.peppermintCombatSound.play({
+          audio, mode:direction.sound, seed:signature, strike:attack, release:prepared, impact:impactAt, baseAttack,
+          aer:theme.aer, melee, fist:Boolean(fist), finish:direction.contact, count:direction.move === 'kettles' ? 3 : 1,
+        });
+      } catch { /* Visual feedback remains available without audio. */ }
+      if (onImpact) window.setTimeout(onImpact, Math.max(0, impactAt - (clock() - startedAt)));
+      return rasterDuration;
+    }
+    const weaponScale = Math.min(1.27, Math.max(.74, origin.h / 146)) * effectScale;
     const moveDuration = attackResolutionTime - 23;
     const color = candy ? '#fc57a9' : recipe.color;
     const layer = svgNode('svg', { class: 'combat-fx-layer', 'aria-hidden': 'true', viewBox: `0 0 ${window.innerWidth} ${window.innerHeight}` }, document.body);
@@ -106,7 +126,6 @@
     window.setTimeout(() => { layers.delete(layer); layer.remove(); }, duration);
     const palette = reference.mount(layer, svgNode, color, theme.dark, theme.hot);
     const weapon = theme.key ? palette.weapon(theme.key) : '';
-    const fist = melee && card.role === 'Brawler' ? scenes.fistStyles[card.id] : null;
     const scene = {
       art: (drawing, x, y, rotation) => painted(layer, drawing, x, y, rotation),
       layer, svgNode, palette, motion, direction, card, origin, attack, melee, reduced, color, fist,
@@ -126,16 +145,23 @@
       const haze = svgNode('ellipse', { cx: first.x, cy: first.y, rx: Math.min(window.innerWidth * .28, 380), ry: Math.min(window.innerHeight * .23, 200), class: 'combat-fx-haze' }, layer);
       motion(haze, [{ opacity: 0 }, { opacity: .17 }, { opacity: 0 }], 1320);
     }
-    if (weapon && !melee && !special) {
-      const prop = painted(layer, weapon, origin.x, origin.y, weaponAngle);
-      motion(prop, [
-        { opacity: 0, transform: `translateY(12px) scale(${weaponScale * .76})` },
-        { opacity: 1, transform: `translateY(0) scale(${weaponScale})`, offset: .35 },
-        { opacity: .94, transform: `translateY(0) scale(${weaponScale})`, offset: .73 },
-        { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
-      ], prepared + 280);
+    const lyndaStrike = attack && ['academy-lynda', 'ww-academy-lynda'].includes(card.id);
+    const hasRasterWeapon = !reduced && !melee && !special && (lyndaStrike || card.id === 'zoya' || card.id === 'den' && attack) &&
+      window.peppermintCombatFrameSheets?.playProp({
+        card, kind:lyndaStrike ? 'strike-weapon' : kind, point:origin, delay:55, duration:prepared+400,
+        cueAt:prepared, scale:Math.min(1.18,weaponScale),
+        rotation:card.id === 'den' ? facing : facing < 0 ? -13 : 13,
+      });
+    if (weapon && !melee && !special && !hasRasterWeapon) {
+        const prop = painted(layer, weapon, origin.x, origin.y, weaponAngle);
+        motion(prop, [
+          { opacity: 0, transform: `translateY(12px) scale(${weaponScale * .76})` },
+          { opacity: 1, transform: `translateY(0) scale(${weaponScale})`, offset: .35 },
+          { opacity: .94, transform: `translateY(0) scale(${weaponScale})`, offset: .73 },
+          { opacity: 0, transform: `translateY(4px) scale(${weaponScale * .90})` },
+        ], prepared + 280);
     }
-    if (!weapon && !reduced && !special && !['slimeClaws','fireFist'].includes(direction.move)) {
+    if (!weapon && !hasRasterWeapon && !reduced && !special && !['slimeClaws','fireFist'].includes(direction.move)) {
       const swell = painted(layer, palette.paint(theme.flight, 'projectile', signature, lead), origin.x, origin.y, facing);
       motion(swell, [
         { opacity: 0, transform: `scale(${projectileScale * .30})` },
@@ -152,7 +178,16 @@
       const deg = rotation * 180 / Math.PI;
       const hitAt = impactAt;
       const sceneContext = { ...scene, special, hitAt, scale: effectScale };
-      const performed = scenes.choreograph(sceneContext, target, deg, missile);
+      const rasterSwarm = attack && !reduced && card.id === 'horatio' &&
+        [0, 1, 2].map((index) => window.peppermintCombatFrameSheets?.play({
+          card, kind, origin, targets:[target], impactAt, baseAttack, viewport:scene.viewport,
+          layered:true, releaseAt:210 + index * 95, amplitude:[-52, 0, 52][index],
+        })).some(Boolean);
+      const rasterAttack = attack && !reduced && card.id !== 'horatio' &&
+        window.peppermintCombatFrameSheets?.play({
+          card, kind, origin, targets:[target], impactAt, baseAttack, viewport:scene.viewport, layered:true,
+        });
+      const performed = rasterSwarm || rasterAttack || scenes.choreograph(sceneContext, target, deg, missile);
       if (melee && distance > 12 && !reduced) {
         const reach = Math.max(.22, 1 - Math.min(distance * .7, Math.min(origin.h, target.h) * .45) / distance);
         const [back, bend, hold] = closeMoves[lead] || [.08, -.075, .32];
@@ -171,7 +206,7 @@
           ? { ...frame, transform: `${frame.transform} scale(${contactScale})`, filter: 'brightness(1.26)' }
           : frame
         ), { duration: moveDuration, easing: 'linear' });
-        if (weapon) {
+        if (weapon && !rasterAttack) {
           const carried = svgNode('g', { class: 'combat-carried' }, layer);
           const prop = painted(carried, weapon, origin.x, origin.y, weaponAngle);
           motion(prop, [
@@ -244,7 +279,8 @@
         motion(body, [{ opacity: 0 }, { opacity: .86 }, { opacity: 0 }], 380, hitAt - 275);
       }
 
-      scenes.contactArt(sceneContext, direction.contact, target, deg);
+      const rasterContact = rasterAttack && window.peppermintCombatFrameSheetManifest?.assets?.[`${card.id}:${kind}`]?.replaceContact;
+      if (!rasterContact) scenes.contactArt(sceneContext, direction.contact, target, deg);
       if (!attack && !reduced && cardElement?.matches?.('.battle-card, .life-card')) {
         cardElement.animate?.([
           { filter: 'brightness(1)', transform: 'scale(1)' },
@@ -278,6 +314,7 @@
   function clear() {
     for (const layer of layers) layer.remove();
     layers.clear();
+    window.peppermintCombatFrameSheets?.clear();
   }
 
   window.peppermintCombatEffects = {
