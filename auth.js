@@ -45,7 +45,7 @@
     });
   }
   function selectAvatar(cardId) {
-    selectedAvatarCardId = cardId || '';
+    selectedAvatarCardId = window.peppermintProfileAvatarId?.(cardId) || cardId || '';
     avatarChoices?.querySelectorAll('.account-avatar-choice').forEach((choice) => {
       const selected = !choice.disabled && choice.dataset.avatarCardId === selectedAvatarCardId;
       choice.classList.toggle('selected', selected);

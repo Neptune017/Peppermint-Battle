@@ -16,7 +16,7 @@ const cardLibrary = [
   { id: 'cooking', title: 'General', name: 'Cooking', type: 'Action', cost: 3, attack: 0, element: 'Ignis', role: 'Action', art: 'assets/cards/Cooking.webp', ability: 'Return a Fighter or Creature card from your Pandemonium Zone to your hand.' },
   { id: 'locker-room', title: 'General', name: 'Locker Room', type: 'Action', cost: 2, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/LockerRoom.webp', ability: 'If a Fighter you control shares a name with a card in your hand or deck that has a different title, destroy your Fighter and summon that card in its lane.' },
   { id: 'avatar-gem', title: 'General', name: 'Avatar Gem', type: 'Action', deckCopies: 1, cost: 4, attack: 0, element: 'None', role: 'Action', art: 'assets/cards/AvatarGem.webp', ability: 'Replace a card in a battle zone with a card from the Ascendance Deck that has the same name.' },
-  { id: 'academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261120a', ability: 'Draw an Academy card with a different element.' },
+  { id: 'academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261127-fritz-familiar', webpCrops: true, ability: 'Draw an Academy card with a different element.' },
   { id: 'academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.webp', ability: 'Draw an Academy card with a different element.' },
   { id: 'dharma', title: 'Academy', name: 'Dharma', cost: 5, attack: 4, element: 'Terra', role: 'Healer', art: 'assets/cards/AcademyDharma.webp?v=20261125dharma2', ability: 'On summon, choose a Fighter or Creature in your Pandemonium Zone. At the start of your next turn, summon it to an open Battle Zone if Dharma is still on the field.' },
   { id: 'horatio', title: 'Academy', name: 'Horatio', cost: 5, attack: 4, element: 'Terra', role: 'Enchanter', art: 'assets/cards/AcademyHoratio.webp?v=20261125horatio2', ability: 'On summon, draw a Terra Action card.' },
@@ -42,7 +42,7 @@ const wildWestLibrary = [
   { id: 'ww-blake', title: 'Wild West', name: 'Blake', cost: 3, attack: 3, element: 'Terra', role: 'Shielder', art: 'assets/cards/WildWestBlake.webp?v=style-v1', ability: 'Activate on the field: return Blake and the opposing fighter in its lane to their owners’ hands.' },
   { id: 'ww-fritz', title: 'Wild West', name: 'Fritz', cost: 2, attack: 2, element: 'Dark', role: 'Trickster', art: 'assets/cards/WIldWestFritz.webp?v=20261125art5', ability: 'On summon, return an Eggscythe from your Pandemonium Zone to your hand.' },
   { id: 'ww-academy-rick', title: 'Academy', name: 'Rick', cost: 4, attack: 4, element: 'Terra', role: 'Shielder', art: 'assets/cards/AcademyRick.webp?v=rick-clean-finish', ability: 'Cannot be destroyed or returned by card effects, except Avatar Gem or Locker Room.' },
-  { id: 'ww-academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261120a', ability: 'Draw an Academy card with a different element.' },
+  { id: 'ww-academy-fritz', title: 'Academy', name: 'Fritz', cost: 1, attack: 1, element: 'Dark', role: 'Summoner', art: 'assets/cards/AcademyFritz.webp?v=20261127-fritz-familiar', webpCrops: true, ability: 'Draw an Academy card with a different element.' },
   { id: 'ww-academy-lynda', title: 'Academy', name: 'Lynda', cost: 1, attack: 1, element: 'Solar', role: 'Trickster', art: 'assets/cards/AcademyLynda-WildWest.webp', ability: 'Draw an Academy card with a different element.' },
   { id: 'ww-medusa', title: 'Wild West', name: 'Medusa', cost: 2, attack: 2, element: 'Mind', role: 'Trickster', art: 'assets/cards/WildWestMedusa.webp', ability: 'Once per turn, spend 1 Mana to look at the top card of your deck.' },
   { id: 'ww-wild-ox', title: 'Zodiac', name: 'Wild Ox', type: 'Creature', cost: 2, attack: 2, element: 'Terra', role: 'Shielder', art: 'assets/cards/ZodiacWildOx.webp', ability: 'If Rick is on your field, draw an Avatar Gem.' },
@@ -198,18 +198,26 @@ const toxicSewerLibrary = [
 const deckNames = { academy: 'Academy', 'wild-west': 'Wild West', 'island-paradise': 'Island Paradise', 'living-toy': 'Living Toy', 'winter-ball': 'Winter Ball', valhalla: 'Valhalla', 'toxic-sewer': 'Toxic Sewer', fun: 'Fun Deck', mixed: 'Mixed', collection: 'My Collection' };
 const isSewerAvatar = (id) => id === 'academy-ryuu' || id.startsWith('ts-');
 const aemiArtworkIds = new Set(['aemi', 'ts-aemi', 'ts-zodiac-aemi']);
-const avatarPortrait = (id) => `assets/avatar-headshots/${id}.webp?v=${aemiArtworkIds.has(id) ? '20261127-aemi-details' : '20261127-square-portraits'}`;
+const profileAvatarId = (id) => id === 'ww-academy-fritz' ? 'academy-fritz' : id;
+window.peppermintProfileAvatarId = profileAvatarId;
+const avatarPortrait = (id) => `assets/avatar-headshots/${profileAvatarId(id)}.webp?v=${profileAvatarId(id) === 'academy-fritz' ? '20261127-fritz-familiar' : aemiArtworkIds.has(id) ? '20261127-aemi-details' : '20261127-square-portraits'}`;
 const isFighterCard = (card) => (card.type || 'Fighter') === 'Fighter' && Boolean(card.role) && displayedCardType(card) === 'Fighter';
 const avatarLabel = (card) => `${card.title ? card.title + ' ' : ''}${card.name}`;
 const playerProfileName = (user) => user?.nickname || user?.email?.split('@')[0] || '';
 function allCardCatalog() { return [...new Map([...toxicSewerLibrary, ...cardLibrary, ...wildWestLibrary, ...islandParadiseLibrary, ...livingToyLibrary, ...winterBallLibrary, ...valhallaLibrary].map((card) => [card.id, card])).values()]; }
 window.peppermintFighterAvatars = () => allCardCatalog()
-  .filter((card) => card.title === 'Zodiac Guardian' || isFighterCard(card))
+  .filter((card) => profileAvatarId(card.id) === card.id && (card.title === 'Zodiac Guardian' || isFighterCard(card)))
   .map(({ id, name, title }) => ({ id, name, title, art: avatarPortrait(id) }));
-window.peppermintOwnsAvatar = (id) => Boolean(id && window.peppermintCurrentUser && window.peppermintCollection?.count(id) > 0);
+window.peppermintOwnsAvatar = (id) => {
+  if (!id || !window.peppermintCurrentUser) return false;
+  const canonical = profileAvatarId(id);
+  const collection = window.peppermintCollection;
+  return collection?.count(canonical) > 0
+    || (canonical === 'academy-fritz' && collection?.count('ww-academy-fritz') > 0);
+};
 function ownedProfileAvatar(user) {
   return window.peppermintOwnsAvatar(user?.avatarCardId)
-    ? window.peppermintFighterAvatars().find((card) => card.id === user.avatarCardId)
+    ? window.peppermintFighterAvatars().find((card) => card.id === profileAvatarId(user.avatarCardId))
     : null;
 }
 window.peppermintSyncPlayerIdentity = (user = window.peppermintCurrentUser) => {
@@ -2953,7 +2961,10 @@ function setResultCharacterArt(playerWon) {
   setResultCharacterImage('result-player-character-art', playerCard, playerWon ? 'victory' : 'loss');
   setResultCharacterImage('result-opponent-character-art', opponentCard, playerWon ? 'loss' : 'victory');
 }
-const poseArtVersion = (id, fallback) => ['ts-aemi', 'ts-zodiac-aemi'].includes(id)
+const revisedCharacterPoses = new Set(['academy-fritz', 'academy-ryuu', 'lt-rat-king', 'ww-blake']);
+const poseArtVersion = (id, fallback) => revisedCharacterPoses.has(id)
+  ? '20261127-character-designs'
+  : ['ts-aemi', 'ts-zodiac-aemi'].includes(id)
   ? '20261127-aemi-sprites-clean'
   : id === 'ts-zenon'
   ? '20261127-zenon-sprites-v4'
@@ -3477,7 +3488,7 @@ const versusStanceFrames = new Map([
   ['valhalla-khendal', [0.9854, 0.0068, 1.7, 0.2]],
   ['valhalla-pryce', [0.9748, 0.0137, 1.7, 0.157]],
   ['valhalla-ryota', [0.9941, 0.001, 1.7, 0.14]],
-  ['lt-rat-king', [0.9693, 0.0088, 1.7, 0.215]],
+  ['lt-rat-king', [0.9912, 0.0035, 1.7, 0.169]],
   ['zodiac-guardian-sabrina', [0.9883, 0.0058, 1.7, 0.143]],
   ['valhalla-sabrina', [0.9844, 0.0088, 8, 0.13]],
   ['wb-magnus', [0.9916, 0.003, 1.7, 0.133]],
@@ -3486,7 +3497,7 @@ const versusStanceFrames = new Map([
   ['winter-ball-dimitri', [0.9808, 0.0124, 27, 0.127]],
   ['wb-zodiac-dimitri', [0.9676, 0.0294, 1.7, 0.18]],
   ['wb-zodiac-topaz', [0.9902, 0.0029, 1.7, 0.187]],
-  ['academy-ryuu', [0.9645, 0.0183, 1.7, 0.14]],
+  ['academy-ryuu', [0.9751, 0.0142, 1.7, 0.121]],
   ['ts-zenon', [0.9707, 0.0195, 1.7, 0.187]],
   ['ts-momozan', [0.9903, 0.0048, 1.7, 0.207]],
   ['ts-ryuu', [0.965, 0.0191, 1.7, 0.14]],
@@ -3496,15 +3507,15 @@ const versusStanceFrames = new Map([
   ['ts-zodiac-aemi', [0.9578, 0.0205, 1.7, 0.14]],
   ['ts-zodiac-ryuu', [0.9627, 0.0206, 1.7, 0.167]],
   ['academy-coyote', [0.9688, 0.0127, 9.7005, 0.155]],
-  ['academy-fritz', [0.9879, 0.0068, 3.8558, 0.153]],
-  ['academy-lynda', [0.9823, 0.0077, 4.1425, 0.17]],
+  ['academy-fritz', [0.9947, 0.0015, 3.8558, 0.155]],
+  ['academy-lynda', [0.9877, 0.0061, 4.1425, 0.177]],
   ['academy-sabrina', [0.9821, 0.0082, 8.4255, 0.143]],
   ['aemi', [0.9848, 0.0138, 3.5383, 0.15]],
   ['amethyst', [0.9775, 0.0209, 1.753, 0.145]],
-  ['den', [0.9858, 0.0075, 7.3933, 0.173]],
-  ['dharma', [0.9916, 0.003, 0.5838, 0.167]],
+  ['den', [0.9858, 0.0083, 7.3933, 0.16]],
+  ['dharma', [0.9931, 0.0015, 0.5838, 0.192]],
   ['horatio', [0.9688, 0.0156, 2.0182, 0.175]],
-  ['ip-brody', [0.9785, 0.0117, 13.8672, 0.213]],
+  ['ip-brody', [0.9814, 0.0107, 13.8672, 0.195]],
   ['ip-coyote', [0.9742, 0.0083, 7.942, 0.16]],
   ['ip-natsuki', [0.9891, 0.0054, 2.8712, 0.15]],
   ['ip-sabrina', [0.9847, 0.0093, 12.4164, 0.14]],
@@ -3517,14 +3528,14 @@ const versusStanceFrames = new Map([
   ['wild-west-rick', [0.9844, 0.0098, 2.0508, 0.107]],
   ['ww-academy-brian', [0.9848, 0.0083, 7.9698, 0.153]],
   ['ww-academy-rick', [0.9811, 0.0091, 2.0508, 0.143]],
-  ['ww-blake', [0.9844, 0.0068, 0.7161, 0.225]],
+  ['ww-blake', [0.9902, 0.002, 0.7161, 0.172]],
   ['ww-brian', [0.993, 0.0023, 0.9024, 0.207]],
   ['ww-fritz', [0.9878, 0.0084, 6.7613, 0.167]],
   ['ww-medusa', [0.9813, 0.0107, 2.4251, 0.19]],
   ['ww-wade', [0.9855, 0.0053, 1.3344, 0.117]],
   ['ww-zodiac-guardian-brian', [0.9909, 0.007, 0.6352, 0.143]],
-  ['zodiac-guardian-kage', [0.9961, 0.001, 3.0599, 0.18]],
-  ['zodiac-guardian-rick', [0.9261, 0.0366, 2.2519, 0.147]],
+  ['zodiac-guardian-kage', [0.9844, 0.0098, 3.0599, 0.182]],
+  ['zodiac-guardian-rick', [0.9973, 0, 2.2519, 0.135]],
   ['zodiac-guardian-ryota', [0.9518, 0.0202, 1.1594, 0.15]],
   ['zoya', [0.9831, 0.0098, 2.2461, 0.11]],
 ]);
@@ -3534,7 +3545,7 @@ function setVersusCharacterImage(elementId, card) {
   const assetId = characterArtAliases[card.id] || card.id;
   const frame = versusStanceFrames.get(assetId);
   const fallback = resultCharacterPath(card, 'victory');
-  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v8')}` : fallback;
+  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v9')}` : fallback;
   if (image.dataset.versusArt !== url) {
     image.dataset.versusArt = url;
     if (frame) {
