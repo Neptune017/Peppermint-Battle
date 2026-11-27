@@ -61,10 +61,15 @@
   document.getElementById('menu-account').addEventListener('click', openAccountSettings);
   document.getElementById('main-menu-profile').addEventListener('click', openAccountSettings);
   document.getElementById('menu-logout').addEventListener('click', () => window.peppermintAccount?.signOut());
-  document.getElementById('menu-logout').classList.toggle('hidden', !window.peppermintCurrentUser);
+  const syncAccountActions = (user) => {
+    const label = user ? 'ACCOUNT SETTINGS' : 'LOG IN';
+    document.querySelector('#menu-account strong').textContent = window.peppermintLanguage?.translate(label) || label;
+    document.getElementById('menu-logout').classList.toggle('hidden', !user);
+  };
+  syncAccountActions(window.peppermintCurrentUser);
   window.peppermintSyncPlayerIdentity?.(window.peppermintCurrentUser);
   window.addEventListener('peppermint-auth-state', (event) => {
-    document.getElementById('menu-logout').classList.toggle('hidden', !event.detail?.user);
+    syncAccountActions(event.detail?.user || null);
   });
   const topbar = document.querySelector('.topbar'); const mobileMenuToggle = document.getElementById('mobile-menu-toggle'); const topbarActions = document.getElementById('topbar-actions'); const setMobileMenuOpen = (open) => { topbar.classList.toggle('mobile-menu-open', open); mobileMenuToggle.setAttribute('aria-expanded', String(open)); mobileMenuToggle.setAttribute('aria-label', open ? 'Close battle menu' : 'Open battle menu'); }; mobileMenuToggle.addEventListener('click', () => setMobileMenuOpen(!topbar.classList.contains('mobile-menu-open'))); document.addEventListener('pointerdown', (event) => { if (topbar.classList.contains('mobile-menu-open') && !mobileMenuToggle.contains(event.target) && !topbarActions.contains(event.target)) setMobileMenuOpen(false); }); topbarActions.addEventListener('click', (event) => { if (event.target.closest('button')) setMobileMenuOpen(false); }); window.addEventListener('resize', () => { if (window.innerWidth > 780) setMobileMenuOpen(false); });   document.getElementById('quick-menu-button').addEventListener('click', () => { returnToMenu = false; if (!menu.open) menu.showModal(); });
   document.querySelector('.topbar .brand').addEventListener('click', (event) => { event.preventDefault(); returnToMenu = false; document.querySelectorAll('dialog[open]').forEach((dialog) => { if (dialog !== menu) dialog.close(); }); if (!menu.open) menu.showModal(); });

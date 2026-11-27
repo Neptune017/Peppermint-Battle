@@ -2113,6 +2113,9 @@ function clearTemporaryAttackModifiers(owner) {
 }
 function triggerOnSummon(card, owner, laneIndex) {
   if (owner !== match.player && owner !== match.opponent) return;
+  // Spider's poison is a death-in-battle trigger. Do not infer a Spider skill
+  // cue from unrelated summon changes (for example, the free Sewer Frog).
+  if (card.id === 'ts-spider') return resolveTriggerOnSummon(card, owner, laneIndex);
   return trackCombatCue(card, owner, laneIndex, () => resolveTriggerOnSummon(card, owner, laneIndex), { reveal: card.id === 'valhalla-morrikyn' && Boolean((owner === match.player ? match.opponent : match.player).deck.length) });
 }
 function resolveSewerSummon(card, owner, opponent) {
@@ -2947,7 +2950,9 @@ function setResultCharacterArt(playerWon) {
 const poseArtVersion = (id, fallback) => ['ts-aemi', 'ts-zodiac-aemi'].includes(id)
   ? '20261127-aemi-sprites-clean'
   : id === 'ts-zenon'
-  ? '20261127-zenon-sprites-clean'
+  ? '20261127-zenon-sprites-v4'
+  : id === 'ts-elyza'
+  ? '20261127-elyza-clean'
   : aemiArtworkIds.has(id)
   ? '20261127-aemi-details'
   : ['ts-zenon', 'ts-momozan'].includes(id)
