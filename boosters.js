@@ -3,6 +3,8 @@
   const DISPLAY_SIZE = { Common: 150, Uncommon: 60, Rare: 30, 'Super Rare': 3, 'Ultra Rare': 1 };
   const DUPLICATE_DIAMONDS = { Common: 1, Uncommon: 1, Rare: 1, 'Super Rare': 2, 'Ultra Rare': 3 };
   const BUNDLE_PACK_COUNT = 3;
+  const PACK_TEAR_DURATION = 720;
+  const reducedPackMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const DECKS = [
     { id: 'wild-west', name: 'Wild West', logo: 'assets/deck-logos/wild-west.webp', pack: 'assets/booster-packs/wild-west-booster-pack-cutout.webp', field: 'assets/backgrounds/field-cactus-creek.webp' },
     { id: 'island-paradise', name: 'Island Paradise', logo: 'assets/deck-logos/island-paradise.webp', pack: 'assets/booster-packs/island-paradise-coyote-chase-booster-pack-cutout.webp', field: 'assets/backgrounds/field-island-paradise.webp' },
@@ -324,7 +326,10 @@
     const item = revealItems[revealIndex], stage = document.getElementById('booster-flight-stage');
     const flying = document.createElement('div'); flying.className = 'booster-flying-wrap ' + rarityClass(item.card.rarity);
     flying.innerHTML = '<img src="' + item.card.art.split('?')[0] + '" alt="' + item.card.title + ' ' + item.card.name + '"/>' + (item.wasNew ? '<span class="booster-new-badge">NEW</span>' : '');
-    stage.appendChild(flying); window.setTimeout(() => flying.remove(), 700);
+    if (!reducedPackMotion.matches) {
+      stage.appendChild(flying);
+      window.setTimeout(() => flying.remove(), 700);
+    }
     const packNumber = Math.floor(revealIndex / 10) + 1, cardNumber = (revealIndex % 10) + 1;
     document.getElementById('booster-opening-progress').textContent = revealBundle ? 'Pack ' + packNumber + ' of ' + BUNDLE_PACK_COUNT + ' · Card ' + cardNumber + ' of 10' : 'Card ' + cardNumber + ' of 10';
     appendRevealCard(item); revealIndex += 1;
@@ -332,19 +337,84 @@
       const next = document.getElementById('next-booster-pack'); next.hidden = false;
       next.textContent = revealIndex >= revealItems.length ? 'VIEW ALL PULLS' : 'NEXT PACK · ' + (Math.floor(revealIndex / 10) + 1) + ' OF ' + BUNDLE_PACK_COUNT; return;
     }
-    if (revealIndex >= revealItems.length) { finishPackReveal(); return; }
+    if (revealIndex >= revealItems.length) {
+      revealTimer = window.setTimeout(finishPackReveal, reducedPackMotion.matches ? 0 : 700);
+      return;
+    }
     revealTimer = window.setTimeout(revealNextCard, 380);
   }
   function finishPackReveal() {
-    if (revealTimer) window.clearTimeout(revealTimer); revealTimer = null; opening = false;
-    document.getElementById('booster-opening').classList.add('hidden'); document.getElementById('booster-flight-stage').replaceChildren(); document.getElementById('next-booster-pack').hidden = true;
-    renderDisplay(); renderResults(revealItems, revealBundle); setMessage(revealBundle ? 'All 3 packs are open. The bundle included a guaranteed Super Rare or Ultra Rare card.' : 'Cards were pulled from this display and will not be replaced.', 'success'); revealItems = [];
+    if (!opening) return;
+    window.clearTimeout(revealTimer);
+    revealTimer = null;
+    opening = false;
+    document.getElementById('booster-opening').classList.add('hidden');
+    delete document.getElementById('booster-pack-scene').dataset.state;
+    document.getElementById('booster-flight-stage').replaceChildren();
+    document.getElementById('next-booster-pack').hidden = true;
+    renderDisplay();
+    renderResults(revealItems, revealBundle);
+    setMessage(revealBundle ? 'All 3 packs are open. The bundle included a guaranteed Super Rare or Ultra Rare card.' : 'Cards were pulled from this display and will not be replaced.', 'success');
+    revealItems = [];
   }
+
+  function revealNextPack() {
+    const items = revealItems;
+    const scene = document.getElementById('booster-pack-scene');
+    const body = document.getElementById('booster-opening-pack');
+    const seal = document.getElementById('booster-pack-seal');
+    const progress = document.getElementById('booster-opening-progress');
+    const packNumber = Math.floor(revealIndex / 10) + 1;
+    scene.dataset.state = 'sealed';
+    document.getElementById('booster-flight-stage').replaceChildren();
+    document.getElementById('booster-pack-revealed').replaceChildren();
+    document.getElementById('next-booster-pack').hidden = true;
+    progress.textContent = revealBundle
+      ? `Opening pack ${packNumber} of ${BUNDLE_PACK_COUNT}…`
+      : 'Opening booster pack…';
+
+    let started = false;
+    const tear = () => {
+      if (started || !opening || revealItems !== items) return;
+      started = true;
+      window.clearTimeout(revealTimer);
+      if (reducedPackMotion.matches) {
+        scene.dataset.state = 'open';
+        revealNextCard();
+        return;
+      }
+      scene.dataset.state = 'tearing';
+      revealTimer = window.setTimeout(() => {
+        scene.dataset.state = 'open';
+        revealNextCard();
+      }, PACK_TEAR_DURATION);
+    };
+    // A failed or stalled image should not hold up an already purchased pack.
+    revealTimer = window.setTimeout(tear, 650);
+    Promise.allSettled([body.decode(), seal.decode()]).then(tear);
+  }
+
   function startPackReveal(items, bundle) {
-    revealItems = items; revealIndex = 0; revealBundle = bundle; opening = true;
-    const overlay = document.getElementById('booster-opening'); document.getElementById('booster-results').replaceChildren(); document.getElementById('booster-pack-revealed').replaceChildren(); document.getElementById('next-booster-pack').hidden = true; overlay.classList.remove('hidden');
-    document.getElementById('booster-opening-pack').src = getDeck().pack; document.getElementById('booster-opening-progress').textContent = bundle ? 'Pack 1 of ' + BUNDLE_PACK_COUNT + ' · Card 1 of 10' : 'Opening booster pack · Card 1 of 10';
-    renderDisplay(); requestAnimationFrame(() => overlay.scrollIntoView({ block: 'start', behavior: 'smooth' })); revealTimer = window.setTimeout(revealNextCard, 400);
+    revealItems = items;
+    revealIndex = 0;
+    revealBundle = bundle;
+    opening = true;
+    const overlay = document.getElementById('booster-opening');
+    const scene = document.getElementById('booster-pack-scene');
+    const deck = getDeck();
+    scene.dataset.deck = deck.id;
+    scene.style.setProperty('--pack-tear-duration', PACK_TEAR_DURATION + 'ms');
+    document.getElementById('booster-opening-pack').src = deck.pack;
+    document.getElementById('booster-pack-seal').src = deck.pack;
+    document.getElementById('booster-results').replaceChildren();
+    overlay.classList.remove('hidden');
+    renderDisplay();
+    requestAnimationFrame(() => {
+      if (opening && revealItems === items) {
+        overlay.scrollIntoView({ block: 'start', behavior: reducedPackMotion.matches ? 'instant' : 'smooth' });
+      }
+    });
+    revealNextPack();
   }
   function drawOne(deckId, guaranteed = false) {
     const stock = player.displays[deckId] || (player.displays[deckId] = {});
@@ -666,7 +736,15 @@
   document.getElementById('close-boosters').addEventListener('click', () => document.getElementById('booster-dialog').close());
   document.getElementById('booster-dialog').addEventListener('close', () => { if (opening) finishPackReveal(); });
   document.getElementById('skip-booster-animation').addEventListener('click', finishPackReveal);
-  document.getElementById('next-booster-pack').addEventListener('click', () => { if (!revealBundle) return; if (revealIndex >= revealItems.length) { finishPackReveal(); return; } document.getElementById('booster-pack-revealed').replaceChildren(); document.getElementById('next-booster-pack').hidden = true; revealTimer = window.setTimeout(revealNextCard, 180); });
+  const nextBoosterPack = document.getElementById('next-booster-pack');
+  nextBoosterPack.addEventListener('click', () => {
+    if (!opening || !revealBundle || nextBoosterPack.hidden) return;
+    if (revealIndex >= revealItems.length) {
+      finishPackReveal();
+      return;
+    }
+    revealNextPack();
+  });
   document.getElementById('booster-deck-tabs').addEventListener('click', (event) => {
     const tab = event.target.closest('[data-booster-deck]'); if (!tab) return;
     if (!isUnlocked(tab.dataset.boosterDeck)) { setMessage(`Defeat the ${getDeck(tab.dataset.boosterDeck).name} deck in Standard to unlock this booster.`, 'error'); return; }
