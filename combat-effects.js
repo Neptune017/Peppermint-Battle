@@ -97,8 +97,11 @@
       });
     }
     const fist = melee && card.role === 'Brawler' ? scenes.fistStyles[card.id] : null;
+    const laneShift = kind === 'skill' && card.id === 'ip-ride-the-wave' && targetFrames.length === 2;
+    const rasterOrigin = laneShift ? targetFrames[reduced ? 1 : 0].box : origin;
+    const rasterTargets = laneShift ? [targetFrames[1].box] : destinations.map(({box}) => box);
     const rasterDuration = window.peppermintCombatFrameSheets?.play({
-      card, kind, origin, targets:destinations.map(({box}) => box), impactAt, baseAttack,
+      card, kind, origin:rasterOrigin, targets:rasterTargets, impactAt, baseAttack,
       viewport:{w:window.innerWidth,h:window.innerHeight},
     });
     if (rasterDuration) {

@@ -189,7 +189,7 @@ const toxicSewerLibrary = [
   { id: 'ts-ryuu', title: 'Toxic Sewer', name: 'Ryuu', cost: 4, attack: 4, element: 'Aer', role: 'Healer', type: 'Fighter', maxCopies: 1, deckCopies: 1, art: 'assets/cards/ToxicSewerRyuu.webp?v=20261127-ryuu-aer', webpCrops: true, ability: 'On summon, poison one of the rival’s three side Life Cards.' },
   { id: 'ts-aemi', title: 'Toxic Sewer', name: 'Aemi', cost: 3, attack: 3, element: 'Ignis', role: 'Shooter', type: 'Fighter', maxCopies: 1, deckCopies: 1, art: 'assets/cards/ToxicSewerAemi.webp?v=20261127-aemi-details', webpCrops: true, ability: 'Gains +1 attack for each Voodoo Witch or Ryuu on the field or in either Pandemonium Zone.' },
   { id: 'ts-elyza', title: 'Voodoo Witch', name: 'Maman Elyza', cost: 3, attack: 3, element: 'Dark', role: 'Healer', type: 'Fighter', maxCopies: 1, deckCopies: 1, art: 'assets/cards/VoodooWitchMamanElyza.webp', webpCrops: true, ability: 'On summon, draw an Aemi or Ryuu card.' },
-  { id: 'ts-lorette', title: 'Voodoo Witch', name: 'Lorette', cost: 3, attack: 3, element: 'Dark', role: 'Enchanter', type: 'Fighter', maxCopies: 1, deckCopies: 1, art: 'assets/cards/VoodooWitchLorette.webp', webpCrops: true, ability: 'When destroyed, draw a Maman Elyza card from your deck, then return Lorette to your hand.' },
+  { id: 'ts-lorette', title: 'Voodoo Witch', name: 'Lorette', cost: 3, attack: 3, element: 'Dark', role: 'Enchanter', type: 'Fighter', maxCopies: 1, deckCopies: 1, art: 'assets/cards/VoodooWitchLorette.webp', webpCrops: true, ability: 'When destroyed, draw a Maman Elyza card from your deck, then return Lorette to your hand. Whenever she returns from the field to your hand, her Mana cost increases by 1.' },
   { id: 'ts-poison', title: 'General', name: 'Poison', cost: 2, attack: 0, element: 'Dark', role: 'Action', type: 'Action', maxCopies: 3, deckCopies: 3, art: 'assets/cards/Poison.webp', webpCrops: true, ability: 'Poison a Battle Card. It is destroyed at the start of its owner’s second turn after being poisoned.' },
   { id: 'ts-shady-potion', title: 'General', name: 'Shady Potion', cost: 2, attack: 0, element: 'Dark', role: 'Action', type: 'Action', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ShadyPotion.webp', webpCrops: true, ability: 'Summon a card from your Pandemonium Zone into an empty Battle Zone and poison it.' },
   { ...cardLibrary.find((card) => card.id === 'aemi'), deckCopies: 1 },
@@ -1884,12 +1884,16 @@ function animateLifeShatter(owner, laneIndex, main = false) {
   const selector = main ? `#${side}-life .main-life-back .life-card` : `#${side}-life .life-middle .life-card:nth-child(${laneIndex + 1})`;
   return animateShatter(document.querySelector(selector), 'Solar', 'life-shatter-overlay');
 }
+function sendFieldCardToHand(owner, card) {
+  if (card.id === 'ts-lorette') card.cost += 1;
+  owner.hand.push(card);
+}
 function returnFighterToHand(owner, laneIndex) {
   const target = owner.lanes[laneIndex];
   if (!target) return;
   if (isEffectProtected(target)) { showCombatCue(target, owner, laneIndex); announceEffect('Academy Rick is protected from card effects.'); return null; }
   delete target.poisonTurns;
-  owner.lanes[laneIndex] = null; owner.hand.push(target);
+  owner.lanes[laneIndex] = null; sendFieldCardToHand(owner, target);
   const familiarIndex = owner.life.familiars?.findIndex((familiar) => familiar?.attachedTo === target.instance) ?? -1;
   if (familiarIndex >= 0) { const familiar = owner.life.familiars[familiarIndex]; owner.life.familiars[familiarIndex] = null; owner.destroyed.push(familiar); announceEffect(`${target.name}’s Familiar was destroyed with its owner.`); }
   if (target.id === 'ip-natsuki') [match.player, match.opponent].forEach((side) => side.lanes.forEach((unit) => { if (unit?.protectedBy === target.instance) delete unit.protectedBy; }));
@@ -1917,9 +1921,9 @@ function destroyUnit(owner, laneIndex, inBattle = false, destroyedBy = null) {
   if (familiarIndex >= 0) { owner.destroyed.push(owner.life.familiars[familiarIndex]); owner.life.familiars[familiarIndex] = null; announceEffect(`${card.name}’s Familiar was destroyed with its owner.`); }
   if (card.id === 'ts-lorette') {
     drawMatching(owner, (unit) => unit.id === 'ts-elyza', 'Maman Elyza');
-    owner.hand.push(card);
+    sendFieldCardToHand(owner, card);
     showCombatCue(card, owner, laneIndex);
-    announceEffect('Lorette returned to your hand.');
+    announceEffect('Lorette returned to hand and now costs ' + card.cost + ' Mana.');
   }
   else if (zombyReturns) { card.cost += 1; owner.hand.push(card); showCombatCue(card, owner, laneIndex); announceEffect(`Zomby returned to its owner’s hand and its cost increased to ${card.cost} Mana.`); }
   else if (galactaSaves) { owner.hand.push(card); const sourceLane = owner.lanes.findIndex((unit) => unit?.id === 'ww-galacta'); showCombatCue(owner.lanes[sourceLane], owner, sourceLane, [combatLane(owner, laneIndex)]); announceEffect(`${card.name} returned to your hand through GaLacta.`); }
@@ -2955,6 +2959,7 @@ const poseArtVersion = (id, fallback) => ['ts-aemi', 'ts-zodiac-aemi'].includes(
   ? '20261127-elyza-clean'
   : aemiArtworkIds.has(id)
   ? '20261127-aemi-details'
+  : ['ts-momozan', 'ts-lorette'].includes(id) ? '20261127-clean-sprites'
   : ['ts-zenon', 'ts-momozan'].includes(id)
   ? '20261127-pose-details'
   : isSewerAvatar(id) ? 'toxic-sewer-v2' : fallback;
@@ -3454,11 +3459,11 @@ document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEv
 const versusStanceFrames = new Map([
   ['academy-ryuu', [1.0381, -.019, 1.7]],
   ['ts-zenon', [1.0436, -.0218, 1.7]],
-  ['ts-momozan', [1.0434, -.0217, 1.7]],
+  ['ts-momozan', [1, 0, 1.7]],
   ['ts-ryuu', [1.0364, -.0182, 1.7]],
   ['ts-aemi', [1.0451, -.0225, 1.7]],
   ['ts-elyza', [1.0377, -.0189, 1.7]],
-  ['ts-lorette', [1.0382, -.0191, 1.7]],
+  ['ts-lorette', [1, 0, 1.7]],
   ['ts-zodiac-aemi', [1.0427, -.0213, 1.7]],
   ['ts-zodiac-ryuu', [1.0374, -.0187, 1.7]],
   ['academy-coyote', [1.0302, -0.0181, 9.7005]],

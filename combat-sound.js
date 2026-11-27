@@ -6,7 +6,6 @@
     'ip-floatbite': 'combat-wet-splash.ogg',
     'ip-zodiac-aqua-kentaur': 'combat-wet-splash.ogg',
     'ip-coyote-zodiac': 'combat-goo-splatter.ogg',
-    'lt-scribble': 'combat-fabric-slash.ogg',
     'lt-boxy': 'combat-toy-spring.ogg',
   };
   const samplePlayers = new WeakMap();

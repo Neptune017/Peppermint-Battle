@@ -85,7 +85,7 @@ ip-chase-zodiac buoyThrow/zodiacSplash/lifebuoy buoyThrow/zodiacSplash/lifebuoy
 ip-ride-the-wave - surf/tide/splash
 ip-no-pain-no-gain - forge/bolts/metal
 ip-swim-dont-sink - armor/drops/water
-lt-scribble ribbon/sugar/paper pages/folds/paper
+lt-scribble ribbon/sugar/syrup pages/folds/paper
 lt-clary swing/threads/steel stitch/feathers/fabric
 lt-fritz score/threads/flute chains/mask/chain
 lt-rat-king chains/gashes/chain curtain/plates/shadow
