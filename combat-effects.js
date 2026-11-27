@@ -104,7 +104,7 @@
     if (rasterDuration) {
       try {
         window.peppermintCombatSound.play({
-          audio, mode:direction.sound, seed:signature, strike:attack, release:prepared, impact:impactAt, baseAttack,
+          audio, cardId:card.id, mode:direction.sound, seed:signature, strike:attack, release:prepared, impact:impactAt, baseAttack,
           aer:theme.aer, melee, fist:Boolean(fist), finish:direction.contact, count:direction.move === 'kettles' ? 3 : 1,
         });
       } catch { /* Visual feedback remains available without audio. */ }
@@ -291,7 +291,7 @@
     });
     try {
       window.peppermintCombatSound.play({
-        audio, mode: direction.sound, seed: signature, strike: attack, release: prepared, impact: impactAt, baseAttack,
+        audio, cardId: card.id, mode: direction.sound, seed: signature, strike: attack, release: prepared, impact: impactAt, baseAttack,
         aer: theme.aer, melee, fist: Boolean(fist), finish: direction.contact, count: direction.move === 'kettles' ? 3 : 1,
       });
     } catch { /* Visual feedback remains available without audio. */ }

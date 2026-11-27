@@ -1,5 +1,15 @@
 (() => {
   const noiseBuffers = new WeakMap();
+  const samplePaths = {
+    patchy: 'combat-fabric-slash.ogg',
+    'ip-banaphin': 'combat-wet-splash.ogg',
+    'ip-floatbite': 'combat-wet-splash.ogg',
+    'ip-zodiac-aqua-kentaur': 'combat-wet-splash.ogg',
+    'ip-coyote-zodiac': 'combat-goo-splatter.ogg',
+    'lt-scribble': 'combat-fabric-slash.ogg',
+    'lt-boxy': 'combat-toy-spring.ogg',
+  };
+  const samplePlayers = new WeakMap();
   const bands = {
     paper:[3400,5100,.135,1.5], rustle:[1550,2650,.30,1.8], air:[670,2200,.38,2.4], water:[630,1700,.31,2.5],
     splash:[2300,650,.31,1.3], syrup:[720,300,.27,3], boil:[730,2000,.43,4], pour:[1200,3400,.45,3],
@@ -17,7 +27,7 @@
     hollow:[1,1.23,1.77,2.36], buzz:[1,1.5,2], reed:[1,2,3.03,4],
   };
   const note = (midi) => 440 * 2 ** ((midi-69)/12);
-  function play({audio, mode, seed, strike, release, impact, baseAttack, aer, melee, fist, finish, count = 1}) {
+  function play({audio, cardId, mode, seed, strike, release, impact, baseAttack, aer, melee, fist, finish, count = 1}) {
     if (!audio || audio.state!=='running') return;
     const start=audio.currentTime+.015;
     const gain=audio.createGain();
@@ -25,6 +35,35 @@
     gain.connect(audio.destination);
     const r = release / 1000;
     const t = impact / 1000;
+    const samplePath = samplePaths[cardId];
+    if (samplePath) {
+      let players = samplePlayers.get(audio);
+      if (!players) { players = new Map(); samplePlayers.set(audio, players); }
+      let pool = players.get(samplePath);
+      if (!pool) { pool = []; players.set(samplePath, pool); }
+      let player = pool.find(item => item.ready && !item.busy);
+      if (!player) {
+        const element = new Audio(`assets/audio/${samplePath}`);
+        element.preload = 'auto';
+        player = { element, ready: false, busy: false };
+        element.addEventListener('canplaythrough', () => { player.ready = true; }, { once: true });
+        element.addEventListener('ended', () => { player.busy = false; });
+        pool.push(player);
+        element.load();
+      } else {
+        player.busy = true;
+        const when = Math.max(0, (t - .08) * 1000);
+        window.setTimeout(() => {
+          const element = player.element;
+          element.currentTime = 0;
+          element.volume = Math.max(.5, Math.min(1, .78 + baseAttack * .014));
+          element.playbackRate = Math.max(.9, Math.min(1.12, 1.02 + baseAttack * .002));
+          element.play().catch(() => { player.busy = false; });
+        }, when);
+        gain.disconnect();
+        return;
+      }
+    }
     const root=note(48+seed%12);
     const weight=1+baseAttack*.044;
     function sweep(at,len,from,to,level,wave='sine'){
