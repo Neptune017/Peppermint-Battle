@@ -106,6 +106,9 @@
   bottom: calc(100cqh * var(--stance-offset-bottom));
   height: calc(100cqh * var(--stance-height-scale));
 }
+.versus-portrait > img[data-versus-stance="wb-topaz-diamond"] {
+  --stance-pan: max(0px, calc(49% - 50cqw));
+}
 .versus-identity {
   grid-row: 2;
   min-width: 0;
