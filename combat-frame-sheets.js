@@ -2,7 +2,7 @@
   const canvas = document.createElement('canvas');
   canvas.className = 'combat-raster-fx-layer';
   canvas.setAttribute('aria-hidden', 'true');
-  Object.assign(canvas.style, { position:'fixed', inset:'0', width:'100vw', height:'100vh', pointerEvents:'none', zIndex:'480' });
+  Object.assign(canvas.style, { position:'fixed', inset:'0', width:'100vw', height:'100vh', pointerEvents:'none', zIndex:'620' });
   const ctx = canvas.getContext('2d', { alpha:true });
   const featheredFrames = new Map();
   const active = [];
