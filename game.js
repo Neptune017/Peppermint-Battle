@@ -174,7 +174,7 @@ const toxicSewerLibrary = [
   { id: 'ts-big-troll', title: 'Toxic Sewer', name: 'Big Troll', cost: 2, attack: 2, element: 'Dark', role: 'Brawler', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewerBigTroll.webp', webpCrops: true, ability: 'On summon, gain +1 attack for each Troll Boy and Troll Girl in a Battle Zone.' },
   { id: 'ts-frog', title: 'Toxic Sewer', name: 'Frog', cost: 1, attack: 1, element: 'Dark', role: 'Shooter', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewerFrog.webp', webpCrops: true, ability: 'When you summon another Toxic Sewer card, summon Frog from your hand for free if an open Battle Zone is available.' },
   { id: 'ts-alligator', title: 'Toxic Sewer', name: 'Alligator', cost: 2, attack: 2, element: 'Dark', role: 'Shielder', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewersAlligator.webp', webpCrops: true, ability: 'Gains +1 attack against poisoned enemies.' },
-  { id: 'ts-spider', title: 'Toxic Sewer', name: 'Spider', cost: 2, attack: 1, element: 'Dark', role: 'Trickster', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewerSpider.webp', webpCrops: true, ability: 'When destroyed, poison an enemy Battle Card.' },
+  { id: 'ts-spider', title: 'Toxic Sewer', name: 'Spider', cost: 2, attack: 1, element: 'Dark', role: 'Trickster', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewerSpider.webp', webpCrops: true, ability: 'When destroyed in battle, poison the Battle Card that destroyed it.' },
   { id: 'ts-troll-girl', title: 'Toxic Sewer', name: 'Troll Girl', cost: 1, attack: 1, element: 'Ignis', role: 'Shooter', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewersTrollgirl.webp', webpCrops: true, ability: 'On summon, spend 1 Mana to discard a random card from the rival’s hand.' },
   { id: 'ts-troll-boy', title: 'Toxic Sewer', name: 'Troll Boy', cost: 1, attack: 1, element: 'Dark', role: 'Blader', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewerTroll.webp', webpCrops: true, ability: 'Can attack on the turn it is summoned.' },
   { id: 'ts-slime', title: 'Toxic Sewer', name: 'Slime', cost: 1, attack: 1, element: 'Dark', role: 'Brawler', type: 'Creature', maxCopies: 3, deckCopies: 3, art: 'assets/cards/ToxicSewrSlime.webp', webpCrops: true, ability: 'When destroyed, draw a Toxic Sewer Slime from your deck.' },
@@ -1896,7 +1896,7 @@ function returnFighterToHand(owner, laneIndex) {
   render(); announceEffect(`${target.name} returned to hand.`);
   return target;
 }
-function destroyUnit(owner, laneIndex, inBattle = false) {
+function destroyUnit(owner, laneIndex, inBattle = false, destroyedBy = null) {
   const card = owner.lanes[laneIndex];
   if (!card) return null;
   const actor = match.eventActor || (inBattle ? (owner === match.player ? match.opponent : match.player) : null);
@@ -1928,10 +1928,10 @@ function destroyUnit(owner, laneIndex, inBattle = false) {
     drawMatching(owner, (unit) => unit.id === 'ts-slime', 'Toxic Sewer Slime');
     showCombatCue(card, owner, laneIndex);
   }
-  if (card.id === 'ts-spider') {
+  if (card.id === 'ts-spider' && inBattle && destroyedBy) {
     const enemy = owner === match.player ? match.opponent : match.player;
-    const targetLane = [laneIndex, 0, 1, 2].find((lane) => canPoison(enemy.lanes[lane]));
-    if (targetLane !== undefined && applyPoison(enemy.lanes[targetLane])) {
+    const targetLane = enemy.lanes.indexOf(destroyedBy);
+    if (targetLane >= 0 && applyPoison(destroyedBy)) {
       showCombatCue(card, owner, laneIndex, [combatLane(enemy, targetLane)]);
     }
   }
@@ -2601,12 +2601,12 @@ function battle(attacker, index, from, target = { type: 'lane', index }) {
   if (opposing?.id === 'ww-sunnythorn' && loseDefender) { attacker.attackBonus = (attacker.attackBonus || 0) - 1; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), opposing.name]; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: -1, source: opposing.name }]; showCombatCue(opposing, defender, targetLane, [combatLane(from, index)]); announceEffect(`${attacker.name} loses 1 attack to Sunnythorn.`); }
   if (attacker.id === 'ww-sunnythorn' && loseAttacker && opposing) { opposing.attackBonus = (opposing.attackBonus || 0) - 1; opposing.attackBonusSources = [...(opposing.attackBonusSources || []), attacker.name]; opposing.attackBonusModifiers = [...(opposing.attackBonusModifiers || []), { amount: -1, source: attacker.name }]; showCombatCue(attacker, from, index, [combatLane(defender, targetLane)]); announceEffect(`${opposing.name} loses 1 attack to Sunnythorn.`); }
   if (loseDefender) {
-    destroyUnit(defender, targetLane, true);
+    destroyUnit(defender, targetLane, true, attacker);
     if (from===match.player && match.tutorialMode && ((tutorialLessonIndex===2)||(tutorialLessonIndex===3)||(tutorialLessonIndex===7)||(tutorialLessonIndex===9)||(tutorialLessonIndex===14)||(tutorialLessonIndex===15))) window.setTimeout(completeTutorialObjective,120);
     if (attacker.id === 'ip-brody') { attacker.attackBonus = (attacker.attackBonus || 0) + 1; attacker.attackBonusModifiers = [...(attacker.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; attacker.attackBonusSources = [...(attacker.attackBonusSources || []), attacker.name]; showCombatCue(attacker, from, index); announceEffect('Brody gained 1 attack for destroying a card.'); }
     if (attacker.id === 'ip-floatbite') { const owner = from; const targets = [index - 1, index + 1].filter((slot) => slot >= 0 && slot < 3 && owner.lanes[slot]?.role === 'Brawler' && owner.lanes[slot]?.element === 'Aqua').map((slot) => ({ value: slot, label: owner.lanes[slot].name, detail: `Lane ${slot + 1} · +1 attack` })); if (targets.length) trackCombatCue(attacker, owner, index, () => chooseEffect(owner, 'Floatbite: tide of strength', 'Choose an adjacent Aqua Brawler to gain +1 attack.', targets, (slot) => { const ally = owner.lanes[slot]; ally.attackBonus = (ally.attackBonus || 0) + 1; ally.attackBonusModifiers = [...(ally.attackBonusModifiers || []), { amount: 1, source: attacker.name }]; ally.attackBonusSources = [...(ally.attackBonusSources || []), attacker.name]; render(); })); }
   }
-  if (loseAttacker) { match.eventActor = defender; match.eventSource = opposing.name; destroyUnit(from, index, true); }
+  if (loseAttacker) { match.eventActor = defender; match.eventSource = opposing.name; destroyUnit(from, index, true, opposing); }
   if (tie) announceEffect(`Both fighters were destroyed in the ${attackPower}–${defensePower} clash.`);
   resolveEuphoriaAfterAttack(from, index);
 }
