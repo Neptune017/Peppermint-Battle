@@ -3465,6 +3465,11 @@ const versusStanceFrames = new Map([
   ['ip-academy-chase', [1, 0, 1.7]],
   ['lt-clary', [1, 0, 1.7]],
   ['valhalla-wendy', [1, 0, 1.7]],
+  ['valhalla-khendal', [1, 0, 1.7]],
+  ['valhalla-pryce', [1, 0, 1.7]],
+  ['valhalla-ryota', [1, 0, 1.7]],
+  ['lt-rat-king', [1, 0, 1.7]],
+  ['zodiac-guardian-sabrina', [1, 0, 1.7]],
   ['wb-magnus', [1, 0, 1.7]],
   ['academy-ryuu', [1.0381, -.019, 1.7]],
   ['ts-zenon', [1.0436, -.0218, 1.7]],
@@ -3514,7 +3519,7 @@ function setVersusCharacterImage(elementId, card) {
   const assetId = characterArtAliases[card.id] || card.id;
   const frame = versusStanceFrames.get(assetId);
   const fallback = resultCharacterPath(card, 'victory');
-  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v2')}` : fallback;
+  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v3')}` : fallback;
   if (image.dataset.versusArt !== url) {
     image.dataset.versusArt = url;
     if (frame) {
