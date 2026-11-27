@@ -2697,9 +2697,11 @@ function animateSummon(owner, index, card) {
     const side = owner === match.player ? 'player' : 'opponent';
     const lane = document.querySelector(`[data-side="${side}"][data-lane="${index}"]`);
     lane?.classList.remove('ai-summon-pending');
-    lane?.querySelector('.battle-card')?.classList.add('summon-pop');
+    const summoned = lane?.querySelector('.battle-card');
+    summoned?.classList.add('summon-pop');
+    const played = summoned && window.peppermintSummonEffects?.play(lane, summoned, card.element);
     const glyphs = { Ignis: '✹', Glacial: '❄', Terra: '✿', Aer: '〰', Aqua: '◉', Mind: '✧', Dark: '◐', Solar: '☼' };
-    if (lane) { const burst = document.createElement('div'); burst.className = `element-burst summon-burst effect-${card.element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[card.element] || '✧'}</span><i></i><i></i><i></i><i></i>`; lane.appendChild(burst); window.setTimeout(() => burst.remove(), owner.isAI ? 1500 : 1050); }
+    if (lane && !played) { const burst = document.createElement('div'); burst.className = `element-burst summon-burst effect-${card.element.toLowerCase()}`; burst.innerHTML = `<span>${glyphs[card.element] || '✧'}</span><i></i><i></i><i></i><i></i>`; lane.appendChild(burst); window.setTimeout(() => burst.remove(), owner.isAI ? 1500 : 1050); }
     playSfx('summon', card.element);
     return new Promise((resolve) => window.setTimeout(resolve, currentRivalAnimations() ? (owner.isAI ? 1500 : 1050) : owner.isAI ? 1250 : 850));
   };
