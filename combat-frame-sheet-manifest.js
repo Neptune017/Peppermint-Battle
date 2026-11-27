@@ -1408,6 +1408,12 @@ window.peppermintCombatFrameSheetManifest = {
       mode: 'projectile', trajectory: 'direct', anchor: 'target', aimAlongPath: true,
       hitOffset: .12, width: 270, height: 225, fade: true, edgeFeather: .08, blend: 'screen',
     },
+    'zodiac-swordtiger:strike': {
+      enabled: true, file: 'assets/effects/frame-sheets/zodiac-swordtiger-crystal-slash-strike-v1.webp',
+      columns: 4, rows: 4, frames: 16, impactFrame: 10, fps: 20,
+      mode: 'scene', anchor: 'target', layered: true, replaceContact: true,
+      hitOffset: .11, width: 258, height: 226, fade: true, edgeFeather: .08, blend: 'screen',
+    },
     'ww-zodiac-guardian-brian:strike': {
       enabled: true, file: 'assets/effects/frame-sheets/ww-zodiac-brian-hammer-strike-v1.webp',
       columns: 4, rows: 4, frames: 16, impactFrame: 8, fps: 20,
