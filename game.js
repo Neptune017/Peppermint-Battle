@@ -3459,6 +3459,13 @@ document.querySelectorAll('[data-battle-mode]').forEach((button) => button.addEv
 }));
 // Relative to the visible silhouette, so transparent image margins do not shrink the pose.
 const versusStanceFrames = new Map([
+  ['academy-diamond', [1, 0, 1.7]],
+  ['academy-dimitri', [1, 0, 1.7]],
+  ['academy-topaz', [1, 0, 1.7]],
+  ['ip-academy-chase', [1, 0, 1.7]],
+  ['lt-clary', [1, 0, 1.7]],
+  ['valhalla-wendy', [1, 0, 1.7]],
+  ['wb-magnus', [1, 0, 1.7]],
   ['academy-ryuu', [1.0381, -.019, 1.7]],
   ['ts-zenon', [1.0436, -.0218, 1.7]],
   ['ts-momozan', [1, 0, 1.7]],
@@ -3507,7 +3514,7 @@ function setVersusCharacterImage(elementId, card) {
   const assetId = characterArtAliases[card.id] || card.id;
   const frame = versusStanceFrames.get(assetId);
   const fallback = resultCharacterPath(card, 'victory');
-  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v1')}` : fallback;
+  const url = frame ? `assets/versus-characters/${assetId}.webp?v=${poseArtVersion(assetId, 'stances-v2')}` : fallback;
   if (image.dataset.versusArt !== url) {
     image.dataset.versusArt = url;
     if (frame) {
