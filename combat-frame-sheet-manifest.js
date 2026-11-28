@@ -909,7 +909,7 @@ window.peppermintCombatFrameSheetManifest = {
     },
     'ww-wade:strike': {
       enabled: true,
-      file: 'assets/effects/frame-sheets/ww-wade-blasters-v1.webp',
+      file: 'assets/effects/frame-sheets/ww-wade-blasters-v2.webp',
       columns: 4, rows: 4, impactFrame: 10, fps: 24,
       mode: 'projectile', layered: true, trajectory: 'direct', releaseFraction: .3, aimAlongPath: true, hitOffset: .32,
       width: 300, height: 194, scale: .88,

@@ -626,20 +626,24 @@
       return true;
     },
     claimTutorialReward() { if (player.tutorialRewardClaimed) return { total:0, base:0, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; player.tutorialRewardClaimed=true; player.diamonds+=100; storeSave(); render(); return { total:100, base:100, avatarGem:0, life:0, turns:0, destroyed:0, unlocked:false, won:true, tutorialBonus:true }; },
-    awardBattle({ won, opponentDeckId, remainingLifeCards = 0, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
+    awardBattle({ won, opponentDeckId, remainingLifeCards = 0, remainingBattleCards = null, avatarGemUses = 0, turnsElapsed = 0, battleDestroyedCards = 0 }) {
       const base = won ? 20 : 10;
       const gem = Math.max(0, Math.floor(Number(avatarGemUses) || 0)) * 20;
-      const life = Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 15;
+      const formation = remainingBattleCards !== null;
+      const life = formation ? 0 : Math.max(0, Math.floor(Number(remainingLifeCards) || 0)) * 15;
+      const field = formation ? Math.max(0, Math.floor(Number(remainingBattleCards) || 0)) * 10 : 0;
       const turns = Math.max(0, Math.floor(Number(turnsElapsed) || 0));
       const destroyed = Math.max(0, Math.floor(Number(battleDestroyedCards) || 0));
-      const unlocked = Boolean(won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId) && !player.unlockedBoosters[opponentDeckId]);
-      if (won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId)) {
+      const unlockEligible = !formation && won && opponentDeckId !== 'academy' && DECKS.some((deck) => deck.id === opponentDeckId);
+      const unlocked = Boolean(unlockEligible && !player.unlockedBoosters[opponentDeckId]);
+      if (unlockEligible) {
         player.defeatedDecks[opponentDeckId] = true;
         player.unlockedBoosters[opponentDeckId] = true;
       }
-      player.diamonds += base + gem + life + turns + destroyed;
+      const total = base + gem + life + field + turns + destroyed;
+      player.diamonds += total;
       storeSave(); render();
-      return { total: base + gem + life + turns + destroyed, base, avatarGem: gem, life, turns, destroyed, unlocked };
+      return { total, base, avatarGem: gem, life, field, turns, destroyed, unlocked };
     },
   };
   function renderDeckEditor() {

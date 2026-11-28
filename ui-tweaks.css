@@ -458,3 +458,75 @@ h1,h2,h3,h4,h5,h6,.eyebrow{font-family:Cinzel,Georgia,serif;letter-spacing:.055e
   .result-actions { gap: 6px; }
   .result-actions button { padding-inline: 9px; font-size: 8px; }
 }
+.app-shell.formation-battle {
+  padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+}
+.formation-battle .player-life-row,
+.formation-battle .enemy-life-row .life-zone-layout,
+.formation-battle .life-count-copy,
+.formation-battle .board-heading:first-child .lane-hint {
+  display: none;
+}
+.formation-battle .enemy-life-row { min-height: 0; }
+.formation-board {
+  grid-template-rows: repeat(6, auto);
+  row-gap: 3px;
+  margin-bottom: 12px;
+}
+.formation-lane {
+  display: grid;
+  grid-column: var(--lane-column);
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid #a58ace60;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #2b2340df 0%, #221b33cc 49%, #172a34cc 51%, #1a2739df 100%);
+}
+.formation-lane-label {
+  margin: 5px 0;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: clamp(8px, 1.6vw, 12px);
+  letter-spacing: .08em;
+  color: #e7dff4;
+}
+.formation-lane .lane {
+  border-color: transparent;
+  background: #120d1b20;
+}
+.formation-lane .lane-target,
+.formation-lane .drag-drop-target,
+.formation-lane .attack-target,
+.formation-lane .attack-target-hint,
+.formation-lane .attack-drop-target { border-color: currentColor; }
+.formation-lane-divider {
+  border-top: 1px solid #b19cc178;
+  margin: 5px 0;
+}
+.formation-board > .field-zone {
+  grid-column: 1 / -1;
+  grid-row: 4;
+  z-index: 1;
+  margin: 2px 0;
+}
+.formation-score {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 4vw, 48px);
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid #8e77ae70;
+  background: #1b1728;
+  color: #e7dff4;
+  font-size: clamp(11px, 2.8vw, 14px);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.formation-score strong { font-size: 1.3em; }
+.formation-score-player { color: var(--mint); }
+.formation-score-rival { color: #e6b4f7; }
